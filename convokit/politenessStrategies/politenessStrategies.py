@@ -46,6 +46,7 @@ class PolitenessStrategies(Transformer):
     
         for utt in corpus.iter_utterances():
             if selector(utt):
+                
                 for i, sent in enumerate(utt.meta["parsed"]):
                     
                     for p in sent["toks"]:
@@ -82,11 +83,11 @@ class PolitenessStrategies(Transformer):
         utterance.meta['parsed'] = process_text(utterance.text, spacy_nlp=spacy_nlp)
         
         for i, sent in enumerate(utterance.meta["parsed"]):
+            
             for p in sent["toks"]:
                 
-                # do not remove punctuations 
-                p["tok"] = p["tok"].lower()
-            
+                p["tok"] = p['tok'].lower()
+
         utterance.meta[self.strategy_attribute_name], marks = self.__extractor_lookup[self.strategy_collection](utterance)
 
         if markers:

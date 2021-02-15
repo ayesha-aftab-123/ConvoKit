@@ -2,6 +2,10 @@ import nltk
 import spacy
 import sys
 
+import warnings
+from spacy.pipeline import Sentencizer
+
+
 from .textProcessor import TextProcessor
 
 class TextParser(TextProcessor):
@@ -49,29 +53,42 @@ class TextParser(TextProcessor):
 		if spacy_nlp is None:
 			try:
 				if mode == 'parse':
-					aux_input['spacy_nlp'] = spacy.load('en', disable=['ner'])
+					aux_input['spacy_nlp'] = spacy.load('en_core_web_sm', disable=['ner'])
 				elif mode == 'tag':
-					aux_input['spacy_nlp'] = spacy.load('en', disable=['ner','parser'])
+					aux_input['spacy_nlp'] = spacy.load('en_core_web_sm', disable=['ner','parser'])
 				elif mode == 'tokenize':
-					aux_input['spacy_nlp'] = spacy.load('en', disable=['ner','parser', 'tagger'])
+                    # also disable lemmatizer otherwise it triggers warning W108 
+					aux_input['spacy_nlp'] = spacy.load('en_core_web_sm', disable=['ner','parser', 'tagger', 'lemmatizer'])
 			except OSError:
-				print("Convokit requires a SpaCy English model to be installed. Run `python -m spacy download en` and retry.")
+                
+				print("Convokit requires a SpaCy model to be installed. Run `python -m spacy download MODEL_NAME` and retry.")
 				sys.exit()
 		else:
 			aux_input['spacy_nlp'] = spacy_nlp
 
 		if mode in ('tag','tokenize'):
+            
 			if sent_tokenizer is None:
-				try:
-					aux_input['sent_tokenizer'] = nltk.data.load('tokenizers/punkt/english.pickle')
-				except OSError:
-					print("Convokit requires nltk data to be downloaded. Run `python -m nltk.downloader all` and retry.")
-					sys.exit()
+                
+				# Use NLTK only when an English model is loaded
+				if aux_input['spacy_nlp'].lang == "en":
+                
+					try:
+						aux_input['sent_tokenizer'] = nltk.data.load('tokenizers/punkt/english.pickle')
+					except OSError:
+						print("Convokit requires nltk data to be downloaded. Run `python -m nltk.downloader all` and retry.")
+						sys.exit()
+            
+				# For other languages, use spaCy's rule-based sentencizer 
+                # first check is for when the user provides a spacy_nlp with parser (despite the mode)
+				elif 'parser' not in aux_input['spacy_nlp'].pipe_names and 'sentencizer' not in aux_input['spacy_nlp'].pipe_names:
+					aux_input['spacy_nlp'].add_pipe('sentencizer', first=True)
+                
 			else:
 				aux_input['sent_tokenizer'] = sent_tokenizer
 
 		TextProcessor.__init__(self, proc_fn=self._process_text_wrapper, output_field=output_field, input_field=input_field, input_filter=input_filter, aux_input=aux_input, verbosity=verbosity)
-	
+
 	def _process_text_wrapper(self, text, aux_input={}):
 		return process_text(text, aux_input.get('mode','parse'), 
 						aux_input.get('sent_tokenizer',None), aux_input.get('spacy_nlp',None))
@@ -98,6 +115,7 @@ def _process_sentence(sent_obj, mode='parse', offset=0):
 	else:
 		return {'toks': tokens}
 
+    
 def process_text(text, mode='parse', sent_tokenizer=None, spacy_nlp=None):
 	"""
 		Stand-alone function that computes the dependency parse of a string.
@@ -108,24 +126,32 @@ def process_text(text, mode='parse', sent_tokenizer=None, spacy_nlp=None):
 		:param spacy_nlp: if provided, use this spacy object
 		:return: the parse, in json-serializable form.
 	"""
-
 	if spacy_nlp is None:
 		raise ValueError('spacy object required')
+    
+    # if sent_tokenizer is not provided
+    # use spacy's rule-based sentencizer (only for these two modes)
 	if mode in ('tag', 'tokenize'):
+        
 		if sent_tokenizer is None:
-			raise ValueError('sentence tokenizer required')
+            
+			warnings.warn('Sentence tokenizer is not provided. Spacy\'s rule-based sentencizer will be used.')
+            
+			# add sentencizing to spacy's pipeline
+			if 'parser' not in spacy_nlp.pipe_names and 'sentencizer' not in spacy_nlp.pipe_names:
+				spacy_nlp.add_pipe('sentencizer', first=True)
 	
-	if mode == 'parse':
+	if mode == 'parse' or sent_tokenizer is None:
 		sents = spacy_nlp(text).sents
 	else:
-		sents = [spacy_nlp(x) for x in sent_tokenizer.tokenize(text)]
+		sents = [spacy_nlp(x) for x in (sent_tokenizer.tokenize(text))]
 	
+    
 	sentences = []
 	offset = 0
 	for sent in sents:
 		curr_sent = _process_sentence(sent, mode, offset)
 		sentences.append(curr_sent)
 		offset += len(curr_sent['toks'])
+        
 	return sentences
-
-

@@ -1,10 +1,13 @@
 from typing import Callable, Optional
 from convokit.model import Utterance
-from convokit.politeness_api.features.politeness_strategies import get_politeness_strategy_features
-from convokit.politeness_local.marker_extractor import get_local_politeness_strategy_features
 from convokit.text_processing.textParser import process_text
 from convokit.transformer import Transformer
-from convokit.model import Corpus
+from convokit.model import Corpus, Utterance, Speaker
+
+from convokit.politeness_collections.politeness_api.features.politeness_strategies import get_politeness_strategy_features
+from convokit.politeness_collections.politeness_local.marker_extractor import get_local_politeness_strategy_features
+from convokit.politeness_collections.chinese_strategies.strategy_extractor import get_chinese_politeness_strategy_features
+
 import re
 import spacy
 import pandas as pd
@@ -30,7 +33,8 @@ class PolitenessStrategies(Transformer):
         self.verbose = verbose
         
         self.__extractor_lookup = {"politeness_api": get_politeness_strategy_features, \
-                                   "politeness_local": get_local_politeness_strategy_features}
+                                   "politeness_local": get_local_politeness_strategy_features, \
+                                   "politeness_chinese": get_chinese_politeness_strategy_features}
 
     def transform(self, corpus: Corpus, selector: Optional[Callable[[Utterance], bool]] = lambda utt: True,
                   markers: bool = False):
@@ -67,7 +71,7 @@ class PolitenessStrategies(Transformer):
     
     def transform_utterance(self, utterance, spacy_nlp = None, markers = False):
         """
-        Extract politeness strategies for raw string inputs. 
+        Extract politeness strategies for raw string inputs (or individual utterances)
         
         :param utterance: the utterance to be annotated with politeness strategies. 
         :spacy_nlp: if provided, will use this SpaCy object to do parsing; otherwise will initialize an object via `load('en')`.
@@ -75,12 +79,13 @@ class PolitenessStrategies(Transformer):
         """
         
         if isinstance(utterance, str):
-            utterance = Utterance(text=utterance)
+            utterance = Utterance(text=utterance, speaker=Speaker(id='speaker'))
         
         if spacy_nlp is None:
-            spacy_nlp = spacy.load('en', disable=['ner'])
-            
-        utterance.meta['parsed'] = process_text(utterance.text, spacy_nlp=spacy_nlp)
+            raise ValueError('spacy object required')
+        
+        if "parsed" not in utterance.meta:
+            utterance.meta['parsed'] = process_text(utterance.text, spacy_nlp=spacy_nlp)
         
         for i, sent in enumerate(utterance.meta["parsed"]):
             
@@ -110,11 +115,13 @@ class PolitenessStrategies(Transformer):
             self.transform(corpus, markers=True)
             print("Done.")
 
-        counts = {k[21:len(k)-2]: 0 for k in utts[0].meta[self.marker_attribute_name].keys()}
+        counts = {k: 0 for k in utts[0].meta[self.marker_attribute_name].keys()}
 
         for utt in utts:
             for k, v in utt.meta[self.marker_attribute_name].items():
-                counts[k[21: len(k)-2]] += len(v)
+                
+                # TODO fix this 
+                counts[k] += len(v)
         scores = {k: v/len(utts) for k, v in counts.items()}
         return scores
 

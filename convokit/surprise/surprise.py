@@ -114,7 +114,7 @@ class Surprise(Transformer):
   def transform(self, corpus: Corpus,
       obj_type: str,
       group_and_models: Callable[[Utterance], Tuple[str, List[str]]]=None,
-      group_model_attr_key: Callable[[str, str], str]=self._format_attr_key,
+      group_model_attr_key: Callable[[str, str], str]=Surprise._format_attr_key,
       selector: Callable[[CorpusComponent], bool]=lambda _: True,
       target_text_func: Callable[[Utterance], List[str]]=None):
     """

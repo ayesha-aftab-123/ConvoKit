@@ -47,8 +47,9 @@ def sample(tokens: List[Union[np.ndarray, List[str]]], sample_size: int, n_sampl
 
 class Surprise(Transformer):
   """
-  Computes how surprising a target is based on some context. The measure for surprise used is cross entropy.
-  Uses fixed size samples from target and context text to mitigate effects of length on cross entropy.
+  Computes how surprising a target (an utterance or group of utterances) is based on some context. 
+  The measure for surprise used is cross entropy. Uses fixed size samples from target and context text 
+  to mitigate effects of length on cross entropy.
 
   :param model_key_selector: function that defines how utterances should be mapped to models. 
       Takes in an utterance and returns the key to use for mapping the utterance to a corresponding model.
@@ -83,10 +84,9 @@ class Surprise(Transformer):
     """
     Fits a model for each group of utterances in a corpus. The group that an 
     utterance belongs to is determined by the `model_key_selector` parameter in 
-    the transformer's constructor. The type of model used is defined by the `cv` 
-    parameter in the constructor.
+    the transformer's constructor.
 
-    :param corpus: corpus to fit models on.
+    :param corpus: corpus to create models from.
     :param text_func: optional function to define how the text a model is trained 
         on should be selected. Takes an utterance as input and returns a list of 
         strings to train the model corresponding to that utterance on. The model 

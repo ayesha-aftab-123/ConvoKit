@@ -114,7 +114,7 @@ class Surprise(Transformer):
   def transform(self, corpus: Corpus,
       obj_type: str,
       group_and_models: Callable[[Utterance], Tuple[str, List[str]]]=None,
-      group_model_attr_key: Callable[[str, str], str]=Surprise._format_attr_key,
+      group_model_attr_key: Callable[[str, str], str]=None,
       selector: Callable[[CorpusComponent], bool]=lambda _: True,
       target_text_func: Callable[[Utterance], List[str]]=None):
     """
@@ -139,8 +139,9 @@ class Surprise(Transformer):
         `self.models` corresponding to the group.
     :param group_model_attr_key: optional function to define what key should be used 
         for a given `groupname` and `modelkey`. 
-        By default the key used will be "GROUP_groupname_MODEL_modelkey" unless 
-        `groupname` and `modelkey` are equal in which case just "modelkey" will be used as the key.
+        If `group_model_attr_key` is `None`, the default key used will be 
+        "GROUP_groupname_MODEL_modelkey" unless `groupname` and `modelkey` are equal 
+        in which case just "modelkey" will be used as the key.
     :param selector: function to select objects to annotate. if function returns true, object will be annotated.
     :param target_text_func: optional function to define what the target text corresponding to an utterance should be. 
         takes in an utterance and returns a list of string tokens
@@ -165,7 +166,7 @@ class Surprise(Transformer):
         for model_key in group_models[group_name]:
           context = self.model_groups[model_key]
           target = list(chain(*utt_groups[group_name]))
-          surprise_scores[group_model_attr_key(group_name, model_key)] = self._compute_surprise(target, context)
+          surprise_scores[Surprise._format_attr_key(group_name, model_key, group_model_attr_key)] = self._compute_surprise(target, context)
       corpus.add_meta(self.surprise_attr_name, surprise_scores)
     elif obj_type == 'utterance':
       for utt in tqdm(corpus.iter_utterances(selector=selector), desc='transform'):
@@ -175,7 +176,7 @@ class Surprise(Transformer):
           for model_key in models:
             context = self.model_groups[model_key]
             target = target_text_func(utt) if target_text_func else self.tokenizer(utt.text)
-            surprise_scores[group_model_attr_key(group_name, model_key)] = self._compute_surprise(target, context)
+            surprise_scores[Surprise._format_attr_key(group_name, model_key, group_model_attr_key)] = self._compute_surprise(target, context)
           utt.add_meta(self.surprise_attr_name, surprise_scores)
         else:
           group_name = self.model_key_selector(utt)
@@ -205,7 +206,7 @@ class Surprise(Transformer):
             if not self.model_groups[model_key]: continue
             context = self.model_groups[model_key]
             target = list(chain(*utt_groups[group_name]))
-            surprise_scores[group_model_attr_key(group_name, model_key)] = self._compute_surprise(target, context)
+            surprise_scores[Surprise._format_attr_key(group_name, model_key, group_model_attr_key)] = self._compute_surprise(target, context)
         obj.add_meta(self.surprise_attr_name, surprise_scores)
     return corpus
 
@@ -229,7 +230,9 @@ class Surprise(Transformer):
     return np.nanmean([_cross_entropy(target_sample, context_sample, self.smooth) for target_sample, context_sample in zip(target_samples, context_samples)])
 
   @staticmethod
-  def _format_attr_key(group_name, model_key):
+  def _format_attr_key(group_name, model_key, format_fn=None):
+    if format_fn:
+      return format_fn(group_name, model_key)
     if group_name == model_key:
         return model_key
     return f'GROUP_{group_name}__MODEL_{model_key}'

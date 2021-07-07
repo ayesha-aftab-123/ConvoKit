@@ -38,11 +38,14 @@ def sample(tokens: List[Union[np.ndarray, List[str]]], sample_size: int, n_sampl
 
   :return: numpy array where each row is a sample of tokens
   """
+  if not sample_size:
+    assert len(tokens) == 1
+    return np.tile(tokens[0], (n_samples,1))
   tokens_list = np.array([toks for toks in tokens if len(toks) >= sample_size])
   if tokens_list.shape[0] == 0: return None
   rng = np.random.default_rng()
   sample_idxes = rng.integers(0, tokens_list.shape[0], size=(n_samples))
-  return [rng.choice(tokens_list[i], sample_size) for i in sample_idxes]
+  return np.array([rng.choice(tokens_list[i], sample_size) for i in sample_idxes])
 
 
 class Surprise(Transformer):
@@ -57,8 +60,8 @@ class Surprise(Transformer):
       default: nltk's word_tokenize
   :param surprise_attr_name: the name for the metadata attribute to add to objects.
       default: surprise
-  :param target_sample_size: number of tokens to sample from each target (test text).
-  :param context_sample_size: number of tokens to sample from each context (training text).
+  :param target_sample_size: number of tokens to sample from each target (test text). If `None`, then the entire target will be used.
+  :param context_sample_size: number of tokens to sample from each context (training text). If `None`, then the entire context will be used.
   :param n_samples: number of samples to take for each target-context pair.
   :param sampling_fn: function for generating samples of tokens.
   :param smooth: whether to use laplace smoothing when calculating surprise.

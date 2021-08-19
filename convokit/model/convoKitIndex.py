@@ -2,27 +2,110 @@ from typing import Optional, Dict, List
 
 
 class ConvoKitIndex:
-    def __init__(self, owner, utterances_index: Optional[Dict[str, List[str]]] = None,
+    def __init__(self,
+                 owner,
+                 utterances_index: Optional[Dict[str, List[str]]] = None,
                  speakers_index: Optional[Dict[str, List[str]]] = None,
                  conversations_index: Optional[Dict[str, List[str]]] = None,
                  overall_index: Optional[Dict[str, List[str]]] = None,
                  vectors: Optional[List[str]] = None,
                  version: Optional[int] = 0):
+        self.fields = owner.ItemMapping()
         self.owner = owner
         self.utterances_index = utterances_index if utterances_index is not None else {}
         self.speakers_index = speakers_index if speakers_index is not None else {}
         self.conversations_index = conversations_index if conversations_index is not None else {}
         self.overall_index = overall_index if overall_index is not None else {}
-        self.indices = {'utterance': self.utterances_index,
-                        'conversation': self.conversations_index,
-                        'speaker': self.speakers_index,
-                        'corpus': self.overall_index}
+        self.indices = {
+            'utterance': self.utterances_index,
+            'conversation': self.conversations_index,
+            'speaker': self.speakers_index,
+            'corpus': self.overall_index
+        }
         self.vectors = set(vectors) if vectors is not None else set()
         self.version = version
-        self.type_check = True # toggle-able to enable/disable type checks on metadata additions
-        self.lock_metadata_deletion = {'utterance': True,
-                                       'conversation': True,
-                                       'speaker': True}
+        self.type_check = True  # toggle-able to enable/disable type checks on metadata additions
+        self.lock_metadata_deletion = {
+            'utterance': True,
+            'conversation': True,
+            'speaker': True
+        }
+
+    # Defining Properties for abstract storage
+    @property
+    def owner(self):
+        return self.fields.__getitem__('owner')
+
+    @owner.setter
+    def owner(self, new_owner):
+        self.fields.__setitem__('owner', new_owner)
+
+    @property
+    def utterances_index(self):
+        return self.fields.__getitem__('utterances_index')
+
+    @utterances_index.setter
+    def utterances_index(self, new_utterances_index):
+        self.fields.__setitem__('utterances_index', new_utterances_index)
+
+    @property
+    def speakers_index(self):
+        return self.fields.__getitem__('speakers_index')
+
+    @speakers_index.setter
+    def speakers_index(self, new_speakers_index):
+        self.fields.__setitem__('speakers_index', new_speakers_index)
+
+    @property
+    def conversations_index(self):
+        return self.fields.__getitem__('conversations_index')
+
+    @conversations_index.setter
+    def conversations_index(self, new_conversations_index):
+        self.fields.__setitem__('conversations_index', new_conversations_index)
+
+    @property
+    def overall_index(self):
+        return self.fields.__getitem__('overall_index')
+
+    @overall_index.setter
+    def overall_index(self, new_overall_index):
+        self.fields.__setitem__('overall_index', new_overall_index)
+
+    @property
+    def vectors(self):
+        return self.fields.__getitem__('vectors')
+
+    @vectors.setter
+    def vectors(self, new_vectors):
+        self.fields.__setitem__('vectors', new_vectors)
+
+    @property
+    def version(self):
+        return self.fields.__getitem__('version')
+
+    @version.setter
+    def version(self, new_version):
+        self.fields.__setitem__('version', new_version)
+
+    @property
+    def type_check(self):
+        return self.fields.__getitem__('type_check')
+
+    @type_check.setter
+    def type_check(self, new_type_check):
+        self.fields.__setitem__('type_check', new_type_check)
+
+    @property
+    def lock_metadata_deletion(self):
+        return self.fields.__getitem__('lock_metadata_deletion')
+
+    @lock_metadata_deletion.setter
+    def lock_metadata_deletion(self, new_lock_metadata_deletion):
+        self.fields.__setitem__('lock_metadata_deletion',
+                                new_lock_metadata_deletion)
+
+    ############
 
     def update_index(self, obj_type: str, key: str, class_type: str):
         """

@@ -1,4 +1,5 @@
 from typing import Optional, Dict, List
+from convokit.storage import defaultStorageManager
 
 
 class ConvoKitIndex:
@@ -10,7 +11,14 @@ class ConvoKitIndex:
                  overall_index: Optional[Dict[str, List[str]]] = None,
                  vectors: Optional[List[str]] = None,
                  version: Optional[int] = 0):
-        self.fields = owner.ItemMapping()
+
+        if owner is None:
+            self.storage = defaultStorageManager
+        else:
+            self.storage = owner.storage
+
+        self.fields = self.storage.ItemMapping(
+            self.storage.CollectionMapping('misc'), '_index')
         self.owner = owner
         self.utterances_index = utterances_index if utterances_index is not None else {}
         self.speakers_index = speakers_index if speakers_index is not None else {}
@@ -31,14 +39,14 @@ class ConvoKitIndex:
             'speaker': True
         }
 
-    # Defining Properties for abstract storage
-    @property
-    def owner(self):
-        return self.fields.__getitem__('owner')
+    # # Defining Properties for abstract storage
+    # @property
+    # def owner(self):
+    #     return self.fields.__getitem__('owner')
 
-    @owner.setter
-    def owner(self, new_owner):
-        self.fields.__setitem__('owner', new_owner)
+    # @owner.setter
+    # def owner(self, new_owner):
+    #     self.fields.__setitem__('owner', new_owner)
 
     @property
     def utterances_index(self):
@@ -74,11 +82,11 @@ class ConvoKitIndex:
 
     @property
     def vectors(self):
-        return self.fields.__getitem__('vectors')
+        return set(self.fields.__getitem__('vectors'))
 
     @vectors.setter
     def vectors(self, new_vectors):
-        self.fields.__setitem__('vectors', new_vectors)
+        self.fields.__setitem__('vectors', list(new_vectors))
 
     @property
     def version(self):

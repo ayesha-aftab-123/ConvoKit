@@ -1,8 +1,12 @@
+# from .utterance import Utterance
+# from .conversation import Conversation
 from functools import total_ordering
-from typing import Dict, List, Optional, Callable
+from typing import Dict, List, MutableMapping, Optional, Callable
 from convokit.util import deprecation
 from .corpusComponent import CorpusComponent
 from .corpusUtil import *
+
+from convokit.storage import DBDocumentMapping, StorageManager
 
 
 @total_ordering
@@ -26,36 +30,37 @@ class Speaker(CorpusComponent):
                  owner=None,
                  id: str = None,
                  name: str = None,
-                 utts=None,
-                 convos=None,
-                 meta: Optional[Dict] = None):
+                 utts: MutableMapping = None,
+                 convos: MutableMapping = None,
+                 meta: Optional[Dict] = None,
+                 from_db=False,
+                 storage: Optional[StorageManager] = None):
         name_var = id if id is not None else name  # to be deprecated
         super().__init__(obj_type="speaker",
                          owner=owner,
                          id=name_var,
-                         meta=meta)
-        self.utterances = utts if utts is not None else owner.CollectionMapping(
-        ) if owner is not None else dict()
-        self.conversations = convos if convos is not None else owner.CollectionMapping(
-        ) if owner is not None else dict()
-        # self._split_attribs = set()
-        # self._update_uid()
+                         meta=meta,
+                         storage=storage)
+        if from_db:
+            return
 
-    # def identify_by_attribs(self, attribs: Collection) -> None:
-    #     """Identify a speaker by a list of attributes. Sets which speaker info
-    #     attributes should distinguish speakers of the same name in equality tests.
-    #     For example, in the Supreme Court dataset, speakers are labeled with the
-    #     current case id. Call this method with attribs = ["case"] to count
-    #     the same person across different cases as different speakers.
-    #
-    #     By default, if this function is not called, speakers are identified by name only.
-    #
-    #     :param attribs: Collection of attribute names.
-    #     :type attribs: Collection
-    #     """
-    #
-    #     self._split_attribs = set(attribs)
-    #     # self._update_uid()
+        if utts is not None:
+            for u_id, utt in utts:
+                self.utterances[u_id] = utt
+        if convos is not None:
+            for c_id, convo in convos:
+                self.conversations[c_id] = convo
+
+        self._speakers[id] = self
+
+    # Properties for get-only access
+    @property
+    def utterances(self) -> MutableMapping:
+        return self._utterances
+
+    @property
+    def conversations(self) -> MutableMapping:
+        return self._conversations
 
     # Properties for backwards compatability
     @property
@@ -68,12 +73,7 @@ class Speaker(CorpusComponent):
         deprecation("speaker.name", "speaker.id")
         self.id = new_name
 
-    def _add_utterance(self, utt):
-        self.utterances[utt.id] = utt
-
-    def _add_conversation(self, convo):
-        self.conversations[convo.id] = convo
-
+    # End properties
     def get_utterance(self, ut_id: str):  #-> Utterance:
         """
         Get the Utterance with the specified Utterance id

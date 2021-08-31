@@ -1,4 +1,4 @@
-from typing import List, Collection, Callable, Set, Generator, Tuple, Optional, ValuesView, Union
+from typing import List, Collection, Callable, Set, Generator, Tuple, Optional, ValuesView, Union, MutableMapping
 from .corpusHelper import *
 from convokit.util import deprecation, warn
 from .corpusUtil import *
@@ -7,7 +7,12 @@ import random
 from .convoKitMeta import ConvoKitMeta
 from .convoKitMatrix import ConvoKitMatrix
 import shutil
-from .dbmappings import DBCollectionMapping, DBDocumentMapping
+
+from convokit.storage import StorageManager, defaultStorageManager
+
+from .speaker import Speaker
+from .utterance import Utterance
+from .conversation import Conversation
 
 
 class Corpus:
@@ -39,6 +44,7 @@ class Corpus:
     """
     def __init__(self,
                  filename: Optional[str] = None,
+                 corpus_name: Optional[str] = None,
                  utterances: Optional[List[Utterance]] = None,
                  preload_vectors: List[str] = None,
                  utterance_start_index: int = None,
@@ -48,129 +54,169 @@ class Corpus:
                  exclude_conversation_meta: Optional[List[str]] = None,
                  exclude_speaker_meta: Optional[List[str]] = None,
                  exclude_overall_meta: Optional[List[str]] = None,
-                 disable_type_check=True,
+                 disable_type_check=False,
                  storage='mem'):
 
-        self.storage = None if storage == 'mem' else 12  # todo: replace 12 with DB connection object
+        # Setup Storage
+        self.storage = StorageManager(storage_type=storage,
+                                      corpus_name=corpus_name)
+
+        # Collections
+        self.storage._utterances = self.storage.CollectionMapping(
+            'utterances', item_type=Utterance)
+        self.storage._conversations = self.storage.CollectionMapping(
+            'conversations', item_type=Conversation)
+        self.storage._speakers = self.storage.CollectionMapping(
+            '_speakers', item_type=Speaker)
+
+        self._utterances = self.storage._utterances
+        self._conversations = self.storage._conversations
+        self._speakers = self.storage._speakers
+
+        # Fields
+        self.fields = self.storage.ItemMapping(
+            self.storage.CollectionMapping('misc'), '_corpus')
+
+        # Corpus Init
+        if storage == 'db':
+            raise NotImplementedError()
+
         if storage == 'mem':
-            self.CollectionMapping = dict
-            self.ItemMapping = dict
-        else:
-            self.CollectionMapping = DBCollectionMapping
-            self.ItemMapping = DBDocumentMapping
-
-        self.fields = self.ItemMapping()
-
-        if filename is None:
-            self.corpus_dirpath = None
-        elif os.path.isdir(filename):
-            self.corpus_dirpath = filename
-        else:
-            self.corpus_dirpath = os.path.dirname(filename)
-
-        self.meta_index = ConvoKitIndex(self)  # todo
-        self.meta = ConvoKitMeta(self.meta_index, 'corpus')
-
-        # private storage
-        self._vector_matrices = self.CollectionMapping()
-
-        convos_data = defaultdict(dict)
-        if exclude_utterance_meta is None: exclude_utterance_meta = []
-        if exclude_conversation_meta is None: exclude_conversation_meta = []
-        if exclude_speaker_meta is None: exclude_speaker_meta = []
-        if exclude_overall_meta is None: exclude_overall_meta = []
-
-        # Construct corpus from file or directory
-        if filename is not None:
-            if disable_type_check: self.meta_index.disable_type_check()
-            if os.path.isdir(filename):
-                utterances = load_uttinfo_from_dir(filename,
-                                                   utterance_start_index,
-                                                   utterance_end_index,
-                                                   exclude_utterance_meta)
-
-                speakers_data = load_speakers_data_from_dir(
-                    filename, exclude_speaker_meta)
-                convos_data = load_convos_data_from_dir(
-                    filename, exclude_conversation_meta)
-                load_corpus_meta_from_dir(filename, self.meta,
-                                          exclude_overall_meta)
-
-                with open(os.path.join(filename, "index.json"), "r") as f:
-                    idx_dict = json.load(f)
-                    self.meta_index.update_from_dict(idx_dict)
-
-                # unpack binary data for utterances
-                unpack_binary_data_for_utts(utterances, filename,
-                                            self.meta_index.utterances_index,
-                                            exclude_utterance_meta, KeyMeta)
-                # unpack binary data for speakers
-                unpack_binary_data(filename, speakers_data,
-                                   self.meta_index.speakers_index, "speaker",
-                                   exclude_speaker_meta)
-
-                # unpack binary data for conversations
-                unpack_binary_data(filename, convos_data,
-                                   self.meta_index.conversations_index,
-                                   "convo", exclude_conversation_meta)
-
-                # unpack binary data for overall corpus
-                unpack_binary_data(filename, self.meta,
-                                   self.meta_index.overall_index, "overall",
-                                   exclude_overall_meta)
-
+            if filename is None:
+                self.corpus_dirpath = None
+            elif os.path.isdir(filename):
+                self.corpus_dirpath = filename
             else:
-                speakers_data = defaultdict(dict)
-                convos_data = defaultdict(dict)
-                utterances = load_from_utterance_file(filename,
-                                                      utterance_start_index,
-                                                      utterance_end_index)
+                self.corpus_dirpath = os.path.dirname(filename)
 
-            self.utterances = self.CollectionMapping()
-            self.speakers = self.CollectionMapping()
+            self.meta_index = ConvoKitIndex(self)
+            self.meta = ConvoKitMeta(self.meta_index, 'corpus')
 
-            initialize_speakers_and_utterances_objects(self, self.utterances,
-                                                       utterances,
-                                                       self.speakers,
-                                                       speakers_data)
+            # private storage
+            self._vector_matrices = self.storage.CollectionMapping(
+                'vector_matrices')
 
+            convos_data = defaultdict(dict)
+            if exclude_utterance_meta is None: exclude_utterance_meta = []
+            if exclude_conversation_meta is None:
+                exclude_conversation_meta = []
+            if exclude_speaker_meta is None: exclude_speaker_meta = []
+            if exclude_overall_meta is None: exclude_overall_meta = []
+
+            # Construct corpus from file or directory
+            if filename is not None:
+                if disable_type_check: self.meta_index.disable_type_check()
+                if os.path.isdir(filename):
+                    utterances = load_uttinfo_from_dir(filename,
+                                                       utterance_start_index,
+                                                       utterance_end_index,
+                                                       exclude_utterance_meta)
+
+                    speakers_data = load_speakers_data_from_dir(
+                        filename, exclude_speaker_meta)
+                    convos_data = load_convos_data_from_dir(
+                        filename, exclude_conversation_meta)
+                    load_corpus_meta_from_dir(filename, self.meta,
+                                              exclude_overall_meta)
+
+                    with open(os.path.join(filename, "index.json"), "r") as f:
+                        idx_dict = json.load(f)
+                        self.meta_index.update_from_dict(idx_dict)
+
+                    # unpack binary data for utterances
+                    unpack_binary_data_for_utts(
+                        utterances, filename, self.meta_index.utterances_index,
+                        exclude_utterance_meta, KeyMeta)
+                    # unpack binary data for speakers
+                    unpack_binary_data(filename, speakers_data,
+                                       self.meta_index.speakers_index,
+                                       "speaker", exclude_speaker_meta)
+
+                    # unpack binary data for conversations
+                    unpack_binary_data(filename, convos_data,
+                                       self.meta_index.conversations_index,
+                                       "convo", exclude_conversation_meta)
+
+                    # unpack binary data for overall corpus
+                    unpack_binary_data(filename, self.meta,
+                                       self.meta_index.overall_index,
+                                       "overall", exclude_overall_meta)
+
+                else:
+                    speakers_data = defaultdict(dict)
+                    convos_data = defaultdict(dict)
+                    utterances = load_from_utterance_file(
+                        filename, utterance_start_index, utterance_end_index)
+
+                initialize_speakers_and_utterances_objects(
+                    self, self.utterances, utterances, self.speakers,
+                    speakers_data)
+
+                self.meta_index.enable_type_check()
+
+                # load preload_vectors
+                if preload_vectors is not None:
+                    for vector_name in preload_vectors:
+                        matrix = ConvoKitMatrix.from_dir(
+                            self.corpus_dirpath, vector_name)
+                        if matrix is not None:
+                            self._vector_matrices[vector_name] = matrix
+
+            elif utterances is not None:  # Construct corpus from utterances list
+                for u in utterances:
+                    u.owner = self
+                    u.meta.index = self.meta_index
+                    self.speakers[u.speaker.id] = u.speaker
+                    self.utterances[u.id] = u
+
+                for _, speaker in self.speakers.items():
+                    speaker.meta.index = self.meta_index
+                    speaker.owner = self
+
+            if merge_lines:
+                self.utterances = merge_utterance_lines(
+                    self.utterances,
+                    self.storage.CollectionMapping(
+                        'utterances'))  # Todo: Fix for db.
+
+            if disable_type_check: self.meta_index.disable_type_check()
+            self.conversations = initialize_conversations(
+                self, self.utterances, convos_data,
+                self.conversations)  # Todo: Fix for db?
             self.meta_index.enable_type_check()
-
-            # load preload_vectors
-            if preload_vectors is not None:
-                for vector_name in preload_vectors:
-                    matrix = ConvoKitMatrix.from_dir(self.corpus_dirpath,
-                                                     vector_name)
-                    if matrix is not None:
-                        self._vector_matrices[vector_name] = matrix
-
-        elif utterances is not None:  # Construct corpus from utterances list
-            self.utterances = self.CollectionMapping()
-            self.speakers = self.CollectionMapping()
-            for u in utterances:
-                u.owner = self
-                self.speakers[u.speaker.id] = u.speaker
-                self.utterances[u.id] = u
-
-            for _, speaker in self.speakers.items():
-                speaker.owner = self
-
-        if merge_lines:
-            self.utterances = merge_utterance_lines(self.utterances)  # todo
-
-        if disable_type_check: self.meta_index.disable_type_check()
-        self.conversations = initialize_conversations(self, self.utterances,
-                                                      convos_data,
-                                                      self.CollectionMapping())
-        self.meta_index.enable_type_check()
-        self.update_speakers_data()
+            self.update_speakers_data()
 
         # print('self.meta_index is')
         # print(self.meta_index)
 
-    ##################################
-    # Defining properties to abstract storage while maintaining the same access patterns
+    # Properties for get-only access
+    @property
+    def utterances(self) -> MutableMapping:
+        return self._utterances
 
+    @property
+    def conversations(self) -> MutableMapping:
+        return self._conversations
+
+    @property
+    def speakers(self) -> MutableMapping:
+        return self._speakers
+
+    # TMP FIX so the mem version will still pass tests for now.
+    # Todo: Actually fix
+    @utterances.setter
+    def utterances(self, x):
+        self._utterances = x
+
+    @conversations.setter
+    def conversations(self, x):
+        self._conversations = x
+
+    @speakers.setter
+    def speakers(self, x):
+        self._speakers = x
+
+    ##################################
     # @property
     # def corpus_dirpath(self):
     #     print('get corpus_dirpath')
@@ -1045,13 +1091,14 @@ class Corpus:
                 speakers_convos[utt.speaker.id].append(convo)
 
         for speaker in self.iter_speakers():
-            speaker.utterances = self.CollectionMapping()
+            # Todo: Clear speaker.utterances to re-initilize it
+            speaker.utterance_ids = []
             for utt in speakers_utts[speaker.id]:
-                speaker.utterances[utt.id] = utt
+                speaker._add_utterance(utt)
 
-            speaker.conversations = self.CollectionMapping()
+            speaker.conversation_ids = []
             for convo in speakers_convos[speaker.id]:
-                speaker.conversations[convo.id] = convo
+                speaker._add_conversation(convo)
 
     def print_summary_stats(self) -> None:
         """

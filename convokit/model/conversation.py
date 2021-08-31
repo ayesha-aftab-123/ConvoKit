@@ -7,6 +7,8 @@ from collections import defaultdict
 from .utteranceNode import UtteranceNode
 from .corpusUtil import *
 
+from convokit.storage import StorageManager
+
 
 class Conversation(CorpusComponent):
     """
@@ -25,32 +27,26 @@ class Conversation(CorpusComponent):
                  owner,
                  id: Optional[str] = None,
                  utterances: Optional[List[str]] = None,
-                 meta: Optional[Dict] = None):
+                 meta: Optional[Dict] = None,
+                 from_db=False,
+                 storage: Optional[StorageManager] = None):
+        if id is None and utterances is not None:
+            id = utterances[0]
         super().__init__(obj_type="conversation",
                          owner=owner,
                          id=id,
-                         meta=meta)
+                         meta=meta,
+                         storage=storage)
+        if from_db:
+            return
+
         self.utterance_ids: List[str] = utterances
         self.speaker_ids = None
         self.tree: Optional[UtteranceNode] = None
 
+        self._conversations[id] = self
+
     # Defining Properties for abstract storage
-    @property
-    def utterance_ids(self):
-        return self.fields.__getitem__('utterance_ids')
-
-    @utterance_ids.setter
-    def utterance_ids(self, new_utterance_ids):
-        self.fields.__setitem__('utterance_ids', new_utterance_ids)
-
-    @property
-    def speaker_ids(self):
-        return self.fields.__getitem__('speaker_ids')
-
-    @speaker_ids.setter
-    def speaker_ids(self, new_speaker_ids):
-        self.fields.__setitem__('speaker_ids', new_speaker_ids)
-
     @property
     def tree(self):
         return self.fields.__getitem__('tree')

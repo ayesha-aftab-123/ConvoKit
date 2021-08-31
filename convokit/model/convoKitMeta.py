@@ -12,8 +12,10 @@ class ConvoKitMeta(MutableMapping):
     """
     def __init__(self, convokit_index, obj_type):
         self.index: ConvoKitIndex = convokit_index
+        self.storage = self.index.storage
         self.obj_type = obj_type
-        self.fields = self.index.owner.ItemMapping()
+        self.fields = self.storage.ItemMapping(
+            self.storage.CollectionMapping('meta'), 'corpus_meta')
 
     def __getitem__(self, item):
         return self.fields.__getitem__(item)
@@ -22,6 +24,9 @@ class ConvoKitMeta(MutableMapping):
     def _check_type_and_update_index(index, obj_type, key, value):
         if not isinstance(value,
                           type(None)):  # do nothing to index if value is None
+            # print(
+            #     f'_check_type_and_update_index: key={key}\nindex.indices[obj_type]={index.indices[obj_type]}'
+            # )
             if key not in index.indices[obj_type]:
                 type_ = _optimized_type_check(value)
                 index.update_index(obj_type, key=key, class_type=type_)
@@ -39,17 +44,20 @@ class ConvoKitMeta(MutableMapping):
                             index.update_index(obj_type, key, new_type)
 
     def __setitem__(self, key, value):
+        # print(f'META: Setting meta[{key}] to {value}')
         if not isinstance(key, str):
             warn(
                 "Metadata attribute keys must be strings. Input key has been casted to a string."
             )
             key = str(key)
 
-        if self.index.type_check:
+        if True:  # self.index.type_check:
             ConvoKitMeta._check_type_and_update_index(self.index,
                                                       self.obj_type, key,
                                                       value)
-        self.fields.__setitem__(key, value)
+        # self.index.update_index(self.obj_type, key, repr(
+        #     type(value)))  # Todo: Should this be here?
+        self.fields[key] = value
 
     def __delitem__(self, key):
         if self.obj_type == 'corpus':
@@ -77,6 +85,17 @@ class ConvoKitMeta(MutableMapping):
 
     def to_dict(self):
         return self.fields.__dict__
+
+    def __eq__(self, o: object) -> bool:
+        if isinstance(o, ConvoKitMeta):
+            return self.fields.dict() == o.fields.dict()
+        elif isinstance(o, dict):
+            return self.fields.dict() == o
+        else:
+            return False
+
+    def __repr__(self):
+        return str(self.__dict__)
 
 
 _basic_types = {type(0), type(1.0),

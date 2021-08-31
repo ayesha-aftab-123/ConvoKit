@@ -1,6 +1,9 @@
+from .convoKitIndex import ConvoKitIndex
 from .convoKitMeta import ConvoKitMeta
 from convokit.util import warn, deprecation
-from typing import List, Optional
+from typing import List, Optional, Type
+
+from convokit.storage import defaultStorageManager, DBDocumentMapping, StorageManager
 
 
 class CorpusComponent:
@@ -9,35 +12,76 @@ class CorpusComponent:
                  owner=None,
                  id=None,
                  vectors: List[str] = None,
-                 meta=None):
-        self.fields = owner.ItemMapping() if owner is not None else dict()
+                 meta=None,
+                 storage: Optional[StorageManager] = None):
+        if storage is not None:
+            self.storage = storage
+        elif owner is not None:
+            self.storage = owner.storage
+        else:
+            self.storage = defaultStorageManager
+
+        self._utterances = self.storage._utterances
+        self._conversations = self.storage._conversations
+        self._speakers = self.storage._speakers
+
+        if id is None:
+            id = 'tmp'  # Todo: make more robust
+
+        self.fields = self.storage.ItemMapping(
+            self._speakers if obj_type == 'speaker' else self._conversations
+            if obj_type == 'conversation' else self._utterances, id)
+
         self.owner = owner
         self.obj_type = obj_type  # utterance, speaker, conversation
 
-        if meta is None:
-            meta = owner.ItemMapping() if owner is not None else dict()
-        self.meta = self.init_meta(meta)
-        self.id = id
+        self.meta: ConvoKitMeta = self.init_meta(meta)
         self.vectors = vectors if vectors is not None else []
 
-    # Defining Properties for abstract storage
-    @property
-    def owner(self):
-        return self.fields.__getitem__('owner')
+        self.id = id
 
-    @owner.setter
-    def owner(self, new_owner):
-        self.fields.__setitem__('owner', new_owner)
-        if new_owner is not None and hasattr(self, 'meta'):
-            self.meta = self.init_meta(self.meta)
+    # Defining Properties for abstract storage
+    # @property
+    # def owner(self):
+    #     return self.fields.__getitem__('owner')
+
+    # @owner.setter
+    # def owner(self, new_owner):
+    #     self.fields.__setitem__('owner', new_owner)
+    #     if new_owner is not None and hasattr(self, 'meta'):
+    #         self.meta = self.init_meta(self.meta)
+
+    @property
+    def utterance_ids(self):
+        return self.fields['utterance_ids']
+
+    @utterance_ids.setter
+    def utterance_ids(self, new_utterance_ids):
+        self.fields['utterance_ids'] = new_utterance_ids
+
+    @property
+    def speaker_ids(self):
+        return self.fields['speaker_ids']
+
+    @speaker_ids.setter
+    def speaker_ids(self, new_speaker_ids):
+        self.fields['speaker_ids'] = new_speaker_ids
+
+    @property
+    def conversation_ids(self):
+        return self.fields['conversation_ids']
+
+    @conversation_ids.setter
+    def conversation_ids(self, new_conversation_ids):
+        self.fields['conversation_ids'] = new_conversation_ids
 
     @property
     def obj_type(self):
-        return self.fields.__getitem__('obj_type')
+        return self.fields['obj_type']
 
     @obj_type.setter
     def obj_type(self, new_obj_type):
-        self.fields.__setitem__('obj_type', new_obj_type)
+        self.fields['obj_type'] = new_obj_type
 
     @property
     def id(self):
@@ -63,12 +107,30 @@ class CorpusComponent:
 
     def init_meta(self, meta):
         if self.owner is None:
-            return meta
+            index = ConvoKitIndex(None)
         else:
-            ck_meta = ConvoKitMeta(self.owner.meta_index, self.obj_type)
+            index = self.owner.meta_index
+        ck_meta = ConvoKitMeta(index, self.obj_type)
+        if meta is not None:
             for key, value in meta.items():
                 ck_meta[key] = value
-            return ck_meta
+        return ck_meta
+
+    def _add_utterance(self, utt):
+        if self.utterance_ids is None:
+            self.utterance_ids = [utt.id]
+        else:
+            self.utterance_ids.append(utt.id)
+
+        self.utterances[utt.id] = utt
+
+    def _add_conversation(self, convo):
+        if self.conversation_ids is None:
+            self.conversation_ids = [convo.id]
+        else:
+            self.conversation_ids.append(convo.id)
+
+        self.conversations[convo.id] = convo
 
     # def __eq__(self, other):
     #     if type(self) != type(other): return False
@@ -193,3 +255,13 @@ class CorpusComponent:
             return self.obj_type.capitalize() + "(" + str(copy) + ")"
         except AttributeError:  # for backwards compatibility when corpus objects are saved as binary data, e.g. wikiconv
             return "(" + str(copy) + ")"
+
+    # @classmethod
+    # def from_dbdoc(cls, doc):
+    #     raise NotImplementedError()
+
+    @classmethod
+    def from_dbdoc(cls, doc: DBDocumentMapping, storage: StorageManager):
+        ret = cls(from_db=True, storage=storage)
+        ret.fields = doc
+        return ret

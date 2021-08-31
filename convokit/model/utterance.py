@@ -2,6 +2,9 @@ from typing import Dict, Optional
 from convokit.util import deprecation, warn
 from .corpusComponent import CorpusComponent
 from .speaker import Speaker
+# from .conversation import Conversation
+
+from convokit.storage import StorageManager
 
 
 class Utterance(CorpusComponent):
@@ -34,8 +37,16 @@ class Utterance(CorpusComponent):
                  reply_to: Optional[str] = None,
                  timestamp: Optional[int] = None,
                  text: str = '',
-                 meta: Optional[Dict] = None):
-        super().__init__(obj_type="utterance", owner=owner, id=id, meta=meta)
+                 meta: Optional[Dict] = None,
+                 from_db=False,
+                 storage: Optional[StorageManager] = None):
+        super().__init__(obj_type="utterance",
+                         owner=owner,
+                         id=id,
+                         meta=meta,
+                         storage=storage)
+        if from_db:
+            return
         speaker_ = speaker if speaker is not None else user
         self.speaker = speaker_
         if self.speaker is None:
@@ -58,22 +69,26 @@ class Utterance(CorpusComponent):
             text = '' if text is None else str(text)
         self.text = text
 
+        self._utterances[id] = self
+
     # Defining Properties for abstract storage
     @property
     def conversation_id(self):
-        return self.fields.__getitem__('conversation_id')
+        return self.fields['conversation_id']
 
     @conversation_id.setter
     def conversation_id(self, new_conversation_id):
-        self.fields.__setitem__('conversation_id', new_conversation_id)
+        self.fields['conversation_id'] = new_conversation_id
 
     @property
     def speaker(self):
-        return self.fields.__getitem__('speaker')
+        id = self.fields['speaker_id']
+        return self._speakers[id]
 
     @speaker.setter
     def speaker(self, new_speaker):
-        self.fields.__setitem__('speaker', new_speaker)
+        self.fields['speaker_id'] = new_speaker.id
+        self._speakers[new_speaker.id] = new_speaker
 
     @property
     def reply_to(self):
@@ -128,7 +143,7 @@ class Utterance(CorpusComponent):
 
         :return: a Conversation object
         """
-        return self.owner.get_conversation(self.conversation_id)
+        return self._conversations[self.conversation_id]
 
     def get_speaker(self):
         """
@@ -136,8 +151,7 @@ class Utterance(CorpusComponent):
 
         :return: a Speaker object
         """
-
-        return self.speaker
+        return self._speakers[self.speaker_id]
 
     def __hash__(self):
         return super().__hash__()

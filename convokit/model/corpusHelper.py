@@ -255,11 +255,11 @@ def initialize_speakers_and_utterances_objects(corpus, utt_dict, utterances,
         utt_dict[utt.id] = utt
 
 
-def merge_utterance_lines(utt_dict):
+def merge_utterance_lines(utt_dict, data_store):
     """
     For merging adjacent utterances by the same speaker
     """
-    new_utterances = {}
+    new_utterances = data_store
     merged_with = {}
     for uid, utt in utt_dict.items():
         merged = False

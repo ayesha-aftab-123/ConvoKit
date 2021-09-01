@@ -24,7 +24,7 @@ class Conversation(CorpusComponent):
         conversation-level metadata.
     """
     def __init__(self,
-                 owner,
+                 owner=None,
                  id: Optional[str] = None,
                  utterances: Optional[List[str]] = None,
                  meta: Optional[Dict] = None,
@@ -40,8 +40,11 @@ class Conversation(CorpusComponent):
         if from_db:
             return
 
-        self.utterance_ids: List[str] = utterances
-        self.speaker_ids = None
+        self.utterance_ids: List[
+            str] = utterances if utterances is not None else []
+        self.speaker_ids = [
+            self.storage._utterances[utt].speaker.id for utt in utterances
+        ] if utterances is not None else []
         self.tree: Optional[UtteranceNode] = None
 
         self._conversations[id] = self
@@ -56,8 +59,15 @@ class Conversation(CorpusComponent):
         self.fields.__setitem__('tree', new_tree)
 
     def _add_utterance(self, utt: Utterance):
-        self.utterance_ids.append(utt.id)
-        self.speaker_ids = None
+        if utt.id not in self.utterance_ids:
+            ids = self.utterance_ids
+            ids.append(utt.id)
+            self.utterance_ids = ids
+        if utt.speaker.id not in self.speaker_ids:
+            ids = self.speaker_ids
+            ids.append(utt.speaker.id)
+            self.speaker_ids = ids
+
         self.tree = None
 
     def get_utterance_ids(self) -> List[str]:

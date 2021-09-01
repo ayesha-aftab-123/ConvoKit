@@ -90,6 +90,10 @@ class DBStorage(unittest.TestCase):
                        reply_to='0',
                        storage=storage)
 
+        c0 = Conversation(utterances=['0'], storage=storage)
+        c0._add_utterance(u0)
+        c0._add_utterance(u1)
+
         u0_ = storage._utterances['0']
         u1_ = storage._utterances['1']
 
@@ -99,7 +103,10 @@ class DBStorage(unittest.TestCase):
         self.assertEqual(u0.speaker, u0_.speaker)
         self.assertEqual(u1.speaker, u1_.speaker)
 
-        del u0, u1, u0_, u1_, storage
+        self.assertEqual(c0.speaker_ids, ['Bob', 'Jim'])
+        self.assertEqual(c0.get_utterance_ids(), ['0', '1'])
+
+        del u0, u1, u0_, u1_, storage, c0
 
         # Test persistent storage
         storage_ = StorageManager(storage_type='db')
@@ -119,6 +126,11 @@ class DBStorage(unittest.TestCase):
         self.assertEqual(storage_._speakers['Bob'].utterances['0'].text,
                          BOBS_TEXT)
         self.assertEqual(storage_._utterances['1'].speaker.id, 'Jim')
+        self.assertEqual(storage_._conversations['0'].speaker_ids,
+                         ['Bob', 'Jim'])
+
+        self.assertEqual(storage_._conversations['0'].get_utterance_ids(),
+                         ['0', '1'])
 
     def test_mem_corpusComponent(self):
         storage = StorageManager(storage_type='mem')
@@ -143,6 +155,10 @@ class DBStorage(unittest.TestCase):
                        reply_to='0',
                        storage=storage)
 
+        c0 = Conversation(utterances=['0'], storage=storage)
+        c0._add_utterance(u0)
+        c0._add_utterance(u1)
+
         u0_ = storage._utterances['0']
         u1_ = storage._utterances['1']
 
@@ -152,7 +168,10 @@ class DBStorage(unittest.TestCase):
         self.assertEqual(u0.speaker, u0_.speaker)
         self.assertEqual(u1.speaker, u1_.speaker)
 
-        del u0, u1, u0_, u1_, storage
+        self.assertEqual(c0.speaker_ids, ['Bob', 'Jim'])
+        self.assertEqual(c0.get_utterance_ids(), ['0', '1'])
+
+        del u0, u1, u0_, u1_, storage, c0
 
         # Test the lack of persistent storage
         storage_ = StorageManager(storage_type='mem')
@@ -181,6 +200,10 @@ class DBStorage(unittest.TestCase):
                        text=JIMS_TEXT,
                        reply_to='0')
 
+        c0 = Conversation(utterances=['0'])
+        c0._add_utterance(u0)
+        c0._add_utterance(u1)
+
         u0_ = defaultStorageManager._utterances['0']
         u1_ = defaultStorageManager._utterances['1']
 
@@ -190,7 +213,10 @@ class DBStorage(unittest.TestCase):
         self.assertEqual(u0.speaker, u0_.speaker)
         self.assertEqual(u1.speaker, u1_.speaker)
 
-        del u0, u1, u0_, u1_
+        self.assertEqual(c0.speaker_ids, ['Bob', 'Jim'])
+        self.assertEqual(c0.get_utterance_ids(), ['0', '1'])
+
+        del u0, u1, u0_, u1_, c0
 
         # Test persistent storage
         self.assertEqual(
@@ -204,6 +230,12 @@ class DBStorage(unittest.TestCase):
             BOBS_TEXT)
         self.assertEqual(defaultStorageManager._utterances['1'].speaker.id,
                          'Jim')
+
+        self.assertEqual(defaultStorageManager._conversations['0'].speaker_ids,
+                         ['Bob', 'Jim'])
+        self.assertEqual(
+            defaultStorageManager._conversations['0'].get_utterance_ids(),
+            ['0', '1'])
 
 
 if __name__ == '__main__':

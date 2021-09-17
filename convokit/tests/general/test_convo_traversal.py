@@ -133,7 +133,8 @@ class CorpusTraversal(unittest.TestCase):
         ])
 
         # test broken convo where there are multiple conversation_ids
-        convo = corpus1.get_conversation(None)
+        convo = corpus1.get_conversation(
+            '0')  # Todo: Was get_conversation(None)
         self.assertRaises(
             ValueError, lambda: list(convo.traverse("dfs", as_utterance=True)))
 

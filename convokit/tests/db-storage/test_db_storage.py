@@ -1,7 +1,9 @@
+from convokit.expected_context_framework.demos.demo_text_pipelines import wiki_arc_pipeline
 import unittest
 from pymongo import MongoClient
-from convokit.storage import DBDocumentMapping, DBCollectionMapping, StorageManager, defaultStorageManager
-from convokit.model import Utterance, Conversation, Speaker
+from convokit import storage
+from convokit.storage import DBDocumentMapping, DBCollectionMapping, StorageManager, defaultCorpusStorageManager
+from convokit.model import Utterance, Conversation, Speaker, Corpus, ConvoKitMeta, utterance
 
 BOBS_TEXT = "Hi, I'm Bob."
 JIMS_TEXT = "Hi Bob, I'm Jim!"
@@ -68,6 +70,9 @@ class DBStorage(unittest.TestCase):
 
     def test_db_corpusComponent(self):
         storage = StorageManager(storage_type='db')
+        print(
+            f'(test_db_corpusComponent)\tstorage.CollectionMapping: {storage.CollectionMapping}'
+        )
         # For testing repeatability.
         print('purging DB storage')
         storage.purge_all_collections()
@@ -78,6 +83,8 @@ class DBStorage(unittest.TestCase):
             'conversations', item_type=Conversation)
         storage._speakers = storage.CollectionMapping('speakers',
                                                       item_type=Speaker)
+        storage._metas = storage.CollectionMapping('metas',
+                                                   item_type=ConvoKitMeta)
 
         u0 = Utterance(id='0',
                        speaker=Speaker(id='Bob', storage=storage),
@@ -116,6 +123,8 @@ class DBStorage(unittest.TestCase):
             'conversations', item_type=Conversation)
         storage_._speakers = storage_.CollectionMapping('speakers',
                                                         item_type=Speaker)
+        storage_._metas = storage_.CollectionMapping('metas',
+                                                     item_type=ConvoKitMeta)
 
         # Test persistent storage
         self.assertEqual(storage_._speakers['Bob'].utterances['0'],
@@ -134,6 +143,9 @@ class DBStorage(unittest.TestCase):
 
     def test_mem_corpusComponent(self):
         storage = StorageManager(storage_type='mem')
+        print(
+            f'(test_mem_corpusComponent)\tstorage.CollectionMapping: {storage.CollectionMapping}'
+        )
         print('purging mem storage (no-op)')
         storage.purge_all_collections()
 
@@ -143,6 +155,8 @@ class DBStorage(unittest.TestCase):
             'conversations', item_type=Conversation)
         storage._speakers = storage.CollectionMapping('speakers',
                                                       item_type=Speaker)
+        storage._metas = storage.CollectionMapping('metas',
+                                                   item_type=ConvoKitMeta)
 
         u0 = Utterance(id='0',
                        speaker=Speaker(id='Bob', storage=storage),
@@ -181,61 +195,112 @@ class DBStorage(unittest.TestCase):
             'conversations', item_type=Conversation)
         storage_._speakers = storage_.CollectionMapping('speakers',
                                                         item_type=Speaker)
+        storage_._metas = storage_.CollectionMapping('metas',
+                                                     item_type=ConvoKitMeta)
+
         with self.assertRaises(KeyError):
             storage_._speakers['Bob']
         with self.assertRaises(KeyError):
             storage_._utterances['1']
 
-    def test_default_corpusComponent(self):
-        # For testing repeatability.
-        print('purging default storage')
-        defaultStorageManager.purge_all_collections(
-        )  # Todo: remove before shipping
-        u0 = Utterance(id='0',
-                       speaker=Speaker(id='Bob'),
-                       text=BOBS_TEXT,
-                       reply_to=None)
-        u1 = Utterance(id='1',
-                       speaker=Speaker(id='Jim'),
-                       text=JIMS_TEXT,
-                       reply_to='0')
+    def test_db_migration(self):
+        _storage = StorageManager(storage_type='db',
+                                  corpus_name='not_the_default_corpus')
+        _storage.purge_all_collections()
 
-        c0 = Conversation(utterances=['0'])
-        c0._add_utterance(u0)
-        c0._add_utterance(u1)
+        del _storage
 
-        u0_ = defaultStorageManager._utterances['0']
-        u1_ = defaultStorageManager._utterances['1']
+        outside_storage = StorageManager(storage_type='db',
+                                         corpus_name='not_the_default_corpus')
+        outside_storage.setup_collections(Utterance, Conversation, Speaker,
+                                          ConvoKitMeta)
 
-        self.assertEqual(u0, u0_)
-        self.assertEqual(u1, u1_)
+        corpus = Corpus(storage_type='db')
+        corpus.storage.purge_all_collections()
 
-        self.assertEqual(u0.speaker, u0_.speaker)
-        self.assertEqual(u1.speaker, u1_.speaker)
+        u = Utterance(id='0',
+                      text='Starting the convo.',
+                      speaker=Speaker(id='Bob', storage=outside_storage),
+                      storage=outside_storage)
+        text_len = len(u.text)
+        height = "6'2''"
+        u.meta['text-len'] = text_len
+        u.speaker.meta['height'] = height
+        print(u)
 
-        self.assertEqual(c0.speaker_ids, ['Bob', 'Jim'])
-        self.assertEqual(c0.get_utterance_ids(), ['0', '1'])
+        self.assertEqual(u.storage.storage_type, 'db')
+        print(231)
+        corpus = corpus.add_utterances([u])
 
-        del u0, u1, u0_, u1_, c0
+        print(u)
+        print(corpus.get_utterance('0'))
+        print(236)
 
-        # Test persistent storage
+        self.assertEqual(u, corpus.get_utterance('0'))
+        self.assertEqual(corpus.get_utterance('0').text, 'Starting the convo.')
+
+        self.assertEqual(u.meta, {'text-len': text_len})
+        self.assertEqual(u.speaker.meta, {'height': height})
+
+        self.assertEqual(u.meta.get('text-len', None), text_len)
+        self.assertEqual(u.retrieve_meta('text-len'), text_len)
+        self.assertEqual(u.speaker.retrieve_meta('height'), height)
+
+        self.assertEqual(outside_storage._metas['utterance_0'], {
+            '_id': 'utterance_0',
+            'text-len': text_len
+        })
+
         self.assertEqual(
-            defaultStorageManager._speakers['Bob'].utterances['0'],
-            defaultStorageManager._utterances['0'])
-        self.assertEqual(defaultStorageManager._utterances['1'].speaker,
-                         defaultStorageManager._speakers['Jim'])
-
+            corpus.get_utterance('0').meta, {'text-len': text_len})
         self.assertEqual(
-            defaultStorageManager._speakers['Bob'].utterances['0'].text,
-            BOBS_TEXT)
-        self.assertEqual(defaultStorageManager._utterances['1'].speaker.id,
-                         'Jim')
-
-        self.assertEqual(defaultStorageManager._conversations['0'].speaker_ids,
-                         ['Bob', 'Jim'])
+            corpus.get_utterance('0').speaker.meta, {'height': height})
         self.assertEqual(
-            defaultStorageManager._conversations['0'].get_utterance_ids(),
-            ['0', '1'])
+            corpus.get_utterance('0').retrieve_meta('text-len'), text_len)
+        self.assertEqual(
+            corpus.get_speaker('Bob').retrieve_meta('height'), height)
+
+    def test_init_corpus_from_db(self):
+        storage = StorageManager(storage_type='db', corpus_name='testo')
+        storage.purge_all_collections()
+
+        storage._utterances = storage.CollectionMapping('utterances',
+                                                        item_type=Utterance)
+        storage._conversations = storage.CollectionMapping(
+            'conversations', item_type=Conversation)
+        storage._speakers = storage.CollectionMapping('speakers',
+                                                      item_type=Speaker)
+        storage._metas = storage.CollectionMapping('metas',
+                                                   item_type=ConvoKitMeta)
+
+        s0 = Speaker(id="alice", storage=storage)
+        self.assertEqual(storage._speakers['alice'], s0)
+        self.assertEqual(s0.id, 'alice')
+
+        s1 = Speaker(id="bob", storage=storage)
+        s2 = Speaker(id="charlie", storage=storage)
+
+        u0 = Utterance(id="0",
+                       text="hello world!!!",
+                       speaker=s0,
+                       storage=storage)
+        self.assertEqual(u0.fields['speaker_id'], 'alice')
+        self.assertEqual(u0.speaker.id, 'alice')
+
+        u1 = Utterance(id="1",
+                       text="my name is bob",
+                       speaker=s1,
+                       storage=storage)
+        u2 = Utterance(id="2",
+                       text="this is a test",
+                       speaker=s2,
+                       storage=storage)
+
+        corpus = Corpus(utterances=[u0, u1, u2],
+                        storage_type='db',
+                        corpus_name='testo')
+        self.assertEqual(corpus.get_speaker('alice'), s0)
+        self.assertEqual(corpus.get_utterance('1').speaker, s1)
 
 
 if __name__ == '__main__':

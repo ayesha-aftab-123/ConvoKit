@@ -1,10 +1,11 @@
+from collections import defaultdict
 from typing import Optional, Dict, List
-from convokit.storage import defaultStorageManager
+import json
 
 
 class ConvoKitIndex:
     def __init__(self,
-                 owner,
+                 storage,
                  utterances_index: Optional[Dict[str, List[str]]] = None,
                  speakers_index: Optional[Dict[str, List[str]]] = None,
                  conversations_index: Optional[Dict[str, List[str]]] = None,
@@ -12,14 +13,8 @@ class ConvoKitIndex:
                  vectors: Optional[List[str]] = None,
                  version: Optional[int] = 0):
 
-        if owner is None:
-            self.storage = defaultStorageManager
-        else:
-            self.storage = owner.storage
-
-        self.fields = self.storage.ItemMapping(
-            self.storage.CollectionMapping('misc'), '_index')
-        self.owner = owner
+        self.storage = storage
+        self.fields = defaultdict(dict)
         self.utterances_index = utterances_index if utterances_index is not None else {}
         self.speakers_index = speakers_index if speakers_index is not None else {}
         self.conversations_index = conversations_index if conversations_index is not None else {}
@@ -128,7 +123,8 @@ class ConvoKitIndex:
         assert 'class' in class_type or class_type == 'bin'
         if key not in self.indices[obj_type]:
             self.indices[obj_type][key] = []
-        self.indices[obj_type][key].append(class_type)
+        if class_type not in self.indices[obj_type][key]:
+            self.indices[obj_type][key].append(class_type)
 
     def set_index(self, obj_type: str, key: str, class_type: str):
         """
@@ -206,3 +202,71 @@ class ConvoKitIndex:
 
     def __repr__(self):
         return str(self)
+
+    def reinitialize_for(self, corpus):
+        """
+        Reinitialize the Corpus Index from scratch.
+
+        :return: The reinitilized index
+        """
+        new_index = ConvoKitIndex(corpus)
+
+        new_index._reinitialize_index_helper(corpus, "utterance")
+        new_index._reinitialize_index_helper(corpus, "speaker")
+        new_index._reinitialize_index_helper(corpus, "conversation")
+
+        for key, value in corpus.meta.items():  # overall
+            new_index.update_index('corpus', key, str(type(value)))
+
+        new_index.version = self.version
+        return new_index
+
+    def _reinitialize_index_helper(self, corpus, obj_type):
+        """
+        Helper for reinitializing the index of the different Corpus object types
+        :param new_index: new ConvoKitIndex object
+        :param obj_type: utterance, speaker, or conversation
+        :return: None (mutates new_index)
+        """
+        for obj in corpus.iter_objs(obj_type):
+            for key, value in obj.meta.items():
+                self._check_type_and_update_index(obj_type, key, value)
+            obj.storage.index = self
+
+    def _check_type_and_update_index(self, obj_type, key, value):
+        if not isinstance(value,
+                          type(None)):  # do nothing to index if value is None
+            # print(
+            #     f'_check_type_and_update_index: key={key}\nindex.indices[obj_type]={index.indices[obj_type]}'
+            # )
+            if key not in self.indices[obj_type]:
+                type_ = _optimized_type_check(value)
+                self.update_index(obj_type, key=key, class_type=type_)
+            else:
+                # entry exists
+                if self.get_index(obj_type)[key] != [
+                        "bin"
+                ]:  # if "bin" do no further checks
+                    if str(type(value)) not in self.get_index(obj_type)[key]:
+                        new_type = _optimized_type_check(value)
+
+                        if new_type == "bin":
+                            self.set_index(obj_type, key, "bin")
+                        else:
+                            self.update_index(obj_type, key, new_type)
+
+
+_basic_types = {type(0), type(1.0),
+                type('str'), type(True)}  # cannot include lists or dicts
+
+
+def _optimized_type_check(val):
+    # if type(obj)
+    if type(val) in _basic_types:
+        return str(type(val))
+    else:
+        try:
+            json.dumps(val)
+            return str(type(val))
+        except (TypeError, OverflowError):
+            return "bin"

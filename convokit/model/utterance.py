@@ -44,22 +44,30 @@ class Utterance(CorpusComponent):
                          owner=owner,
                          id=id,
                          meta=meta,
-                         storage=storage)
+                         storage=storage,
+                         from_db=from_db)
         if from_db:
             return
         speaker_ = speaker if speaker is not None else user
-        self.speaker = speaker_
-        if self.speaker is None:
+        if speaker_ is None:
             raise ValueError(
                 "No Speaker found: Utterance must be initialized with a Speaker."
             )
-        self.conversation_id = conversation_id if conversation_id is not None else root
-        if self.conversation_id is not None and not isinstance(
-                self.conversation_id, str):
+        else:
+            self.speaker = speaker_
+        conversation_id = conversation_id if conversation_id is not None else root
+        if conversation_id is not None and not isinstance(
+                conversation_id, str):
             warn(
                 "Utterance conversation_id must be a string: conversation_id of utterance with ID: {} "
                 "has been casted to a string.".format(self.id))
-            self.conversation_id = str(self.conversation_id)
+            conversation_id = str(self.conversation_id)
+        elif conversation_id is None:
+            conversation_id = id
+        self.conversation_id = conversation_id
+        # if self.conversation is None:
+        #     self.conversation = Conversation(id=self.conversation_id,
+        #                                      storage=self.storage)
         self.reply_to = reply_to
         self.timestamp = timestamp  # int(timestamp) if timestamp is not None else timestamp
         if not isinstance(text, str):
@@ -69,7 +77,7 @@ class Utterance(CorpusComponent):
             text = '' if text is None else str(text)
         self.text = text
 
-        self._utterances[id] = self
+        self.storage._utterances[id] = self
 
     # Defining Properties for abstract storage
     @property
@@ -81,14 +89,33 @@ class Utterance(CorpusComponent):
         self.fields['conversation_id'] = new_conversation_id
 
     @property
+    def conversation(self):
+        return self.storage._conversations[self.conversation_id]
+
+    @conversation.setter
+    def conversation(self, new_conversation):
+        self.conversation_id = new_conversation.id
+        self.storage._conversations[self.conversation_id] = new_conversation
+
+    @property
     def speaker(self):
-        id = self.fields['speaker_id']
-        return self._speakers[id]
+        return self.storage._speakers[self.speaker_id]
 
     @speaker.setter
     def speaker(self, new_speaker):
-        self.fields['speaker_id'] = new_speaker.id
-        self._speakers[new_speaker.id] = new_speaker
+        self.speaker_id = new_speaker.id
+        # if self.storage.storage_type == 'db':
+        #     print(f'\tUtterance {self.id} - {self.storage.db.name}: '
+        #           f'Set self.speaker_id to {self.speaker_id }')
+        self.storage._speakers[self.speaker_id] = new_speaker
+
+    @property
+    def speaker_id(self):
+        return self.fields.__getitem__('speaker_id')
+
+    @speaker_id.setter
+    def speaker_id(self, new_speaker_id):
+        self.fields.__setitem__('speaker_id', new_speaker_id)
 
     @property
     def reply_to(self):
@@ -143,7 +170,7 @@ class Utterance(CorpusComponent):
 
         :return: a Conversation object
         """
-        return self._conversations[self.conversation_id]
+        return self.storage._conversations[self.conversation_id]
 
     def get_speaker(self):
         """
@@ -151,18 +178,27 @@ class Utterance(CorpusComponent):
 
         :return: a Speaker object
         """
-        return self._speakers[self.speaker_id]
+        return self.storage._speakers[self.speaker_id]
 
     def __hash__(self):
         return super().__hash__()
 
     def __eq__(self, other):
+        # print('utterance __eq__:')
         if not isinstance(other, Utterance):
             return False
         try:
+            # print('\ttrying comparison of fields')
+            mine = (self.id, self.conversation_id, self.reply_to, self.speaker,
+                    self.timestamp, self.text)
+            theirs = (other.id, other.conversation_id, other.reply_to,
+                      other.speaker, other.timestamp, other.text)
+            # print('\t', mine)
+            # print('\t', theirs)
             return self.id == other.id and self.conversation_id == other.conversation_id and self.reply_to == other.reply_to and \
                    self.speaker == other.speaker and self.timestamp == other.timestamp and self.text == other.text
-        except AttributeError:  # for backwards compatibility with wikiconv
+        except AttributeError as e:  # for backwards compatibility with wikiconv
+            # print(f'\tUsing direct __dict__ comparison because of error {e}')
             return self.__dict__ == other.__dict__
 
     def __str__(self):
@@ -175,3 +211,6 @@ class Utterance(CorpusComponent):
                                                                                     repr(self.text),
                                                                                     self.vectors,
                                                                                     self.meta)
+
+    def __repr__(self):
+        return self.__str__()

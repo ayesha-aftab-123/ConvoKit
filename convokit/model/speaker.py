@@ -40,7 +40,8 @@ class Speaker(CorpusComponent):
                          owner=owner,
                          id=name_var,
                          meta=meta,
-                         storage=storage)
+                         storage=storage,
+                         from_db=from_db)
         if from_db:
             return
 
@@ -51,16 +52,16 @@ class Speaker(CorpusComponent):
             for c_id, convo in convos:
                 self.conversations[c_id] = convo
 
-        self._speakers[id] = self
+        self.storage._speakers[id] = self
 
     # Properties for get-only access
     @property
     def utterances(self) -> MutableMapping:
-        return self._utterances
+        return self.storage._utterances
 
     @property
     def conversations(self) -> MutableMapping:
-        return self._conversations
+        return self.storage._conversations
 
     # Properties for backwards compatability
     @property
@@ -81,7 +82,10 @@ class Speaker(CorpusComponent):
         :param ut_id: The id of the Utterance
         :return: An Utterance object
         """
-        return self.utterances[ut_id]
+        if ut_id in self.utterance_ids:
+            return self.utterances[ut_id]
+        else:
+            return None
 
     def iter_utterances(
             self,
@@ -94,8 +98,8 @@ class Speaker(CorpusComponent):
 			By default, the selector includes all Utterances in the Corpus.
         :return: An iterator of the Utterances made by the speaker
         """
-        for v in self.utterances.values():
-            if selector(v):
+        for k, v in self.utterances.items():
+            if k in self.utterance_ids and selector(v):
                 yield v
 
     def get_utterances_dataframe(self,
@@ -118,7 +122,8 @@ class Speaker(CorpusComponent):
 
         :return: a List of the ids of Utterances made by the speaker
         """
-        return list([utt.id for utt in self.iter_utterances(selector)])
+        return self.utterance_ids
+        # return list([utt.id for utt in self.iter_utterances(selector)])
 
     def get_conversation(self, cid: str):  # -> Conversation:
         """
@@ -127,7 +132,10 @@ class Speaker(CorpusComponent):
         :param cid: The id of the Conversation
         :return: A Conversation object
         """
-        return self.conversations[cid]
+        if cid in self.conversation_ids:
+            return self.conversations[cid]
+        else:
+            return None
 
     def iter_conversations(self,
                            selector=lambda convo: True
@@ -136,8 +144,8 @@ class Speaker(CorpusComponent):
 
         :return: An iterator of the Conversations that the speaker has participated in
         """
-        for v in self.conversations.values():
-            if selector(v):
+        for k, v in self.conversations.items():
+            if k in self.conversation_ids and selector(v):
                 yield v
 
     def get_conversations_dataframe(self,
@@ -160,7 +168,8 @@ class Speaker(CorpusComponent):
 
         :return: a List of the ids of Conversations started by the speaker
         """
-        return [convo.id for convo in self.iter_conversations(selector)]
+        return self.conversation_ids
+        # return [convo.id for convo in self.iter_conversations(selector)]
 
     def print_speaker_stats(self):
         """
@@ -186,3 +195,9 @@ class Speaker(CorpusComponent):
             return self.id == other.id
         except AttributeError:
             return self.__dict__['_name'] == other.__dict__['_name']
+
+    def __str__(self):
+        return f'Speaker(id: {self.id})'
+
+    def __repr__(self):
+        return self.__str__()

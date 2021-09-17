@@ -36,18 +36,20 @@ class Conversation(CorpusComponent):
                          owner=owner,
                          id=id,
                          meta=meta,
-                         storage=storage)
+                         storage=storage,
+                         from_db=from_db)
         if from_db:
             return
+        # print(f'initilizing conversation {id} with utterances {utterances}')
 
         self.utterance_ids: List[
             str] = utterances if utterances is not None else []
-        self.speaker_ids = [
-            self.storage._utterances[utt].speaker.id for utt in utterances
+        self.speaker_ids = [  # Todo: change speaker.id to speaker_id
+            self.storage._utterances[utt].speaker_id for utt in utterances
         ] if utterances is not None else []
         self.tree: Optional[UtteranceNode] = None
 
-        self._conversations[id] = self
+        self.storage._conversations[id] = self
 
     # Defining Properties for abstract storage
     @property
@@ -88,7 +90,8 @@ class Conversation(CorpusComponent):
         """
         # delegate to the owner Corpus since Conversation does not itself own
         # any Utterances
-        return self.owner.get_utterance(ut_id)
+        if ut_id not in self.utterance_ids: raise KeyError()
+        return self.storage._utterances[ut_id]
 
     def iter_utterances(self, selector: Callable[[Utterance], bool] = lambda utt: True) -> \
             Generator[Utterance, None, None]:
@@ -100,7 +103,7 @@ class Conversation(CorpusComponent):
 		:return: a generator of Utterances
         """
         for ut_id in self.utterance_ids:
-            utt = self.owner.get_utterance(ut_id)
+            utt = self.storage._utterances[ut_id]
             if selector(utt):
                 yield utt
 
@@ -144,13 +147,14 @@ class Conversation(CorpusComponent):
 
         :return: a list of speaker ids
         """
-        if self.speaker_ids is None:
-            # first call to get_speaker_ids or iter_speakers; precompute cached list of speaker ids
-            self.speaker_ids = set()
-            for ut_id in self.utterance_ids:
-                ut = self.owner.get_utterance(ut_id)
-                self.speaker_ids.add(ut.speaker.id)
-        return list(self.speaker_ids)
+        return self.speaker_ids
+        # if self.speaker_ids is None:
+        #     # first call to get_speaker_ids or iter_speakers; precompute cached list of speaker ids
+        #     self.speaker_ids = set()
+        #     for ut_id in self.utterance_ids:
+        #         ut = self.owner.get_utterance(ut_id)
+        #         self.speaker_ids.add(ut.speaker.id)
+        # return list(self.speaker_ids)
 
     def get_speaker(self, speaker_id: str) -> Speaker:
         """

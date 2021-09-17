@@ -1,9 +1,10 @@
-from .convoKitIndex import ConvoKitIndex
+from random import randrange
+
 from .convoKitMeta import ConvoKitMeta
 from convokit.util import warn, deprecation
 from typing import List, Optional, Type
 
-from convokit.storage import defaultStorageManager, DBDocumentMapping, StorageManager
+from convokit.storage import memUntrackedStorageManager, DBDocumentMapping, StorageManager
 
 
 class CorpusComponent:
@@ -13,32 +14,43 @@ class CorpusComponent:
                  id=None,
                  vectors: List[str] = None,
                  meta=None,
-                 storage: Optional[StorageManager] = None):
+                 storage: Optional[StorageManager] = None,
+                 from_db=False):
+
         if storage is not None:
             self.storage = storage
         elif owner is not None:
             self.storage = owner.storage
         else:
-            self.storage = defaultStorageManager
+            self.storage = StorageManager(storage_type='mem')
+            self.storage.setup_collections(None, None, None, None)
 
-        self._utterances = self.storage._utterances
-        self._conversations = self.storage._conversations
-        self._speakers = self.storage._speakers
-
+        # if id is None:
+        #     if obj_type == 'utterance':
+        #         raise ValueError('utterance with id=None')
+        #     id = 'tmp'
         if id is None:
-            id = 'tmp'  # Todo: make more robust
+            id = randrange(0, 100)
+        if ((obj_type == 'utterance' and id in self.storage._utterances) or
+            (obj_type == 'conversation' and id in self.storage._conversations)
+                or (obj_type == 'speaker' and id in self.storage._speakers)):
+            id = f'{id}.1'
 
         self.fields = self.storage.ItemMapping(
-            self._speakers if obj_type == 'speaker' else self._conversations
-            if obj_type == 'conversation' else self._utterances, id)
+            self.storage._speakers
+            if obj_type == 'speaker' else self.storage._conversations
+            if obj_type == 'conversation' else self.storage._utterances, id)
+
+        self.obj_type = obj_type  # utterance, speaker, conversation
+        self.id = id
+
+        if from_db:
+            return
 
         self.owner = owner
-        self.obj_type = obj_type  # utterance, speaker, conversation
 
         self.meta: ConvoKitMeta = self.init_meta(meta)
         self.vectors = vectors if vectors is not None else []
-
-        self.id = id
 
     # Defining Properties for abstract storage
     # @property
@@ -50,6 +62,14 @@ class CorpusComponent:
     #     self.fields.__setitem__('owner', new_owner)
     #     if new_owner is not None and hasattr(self, 'meta'):
     #         self.meta = self.init_meta(self.meta)
+
+    @property
+    def meta(self):
+        return self.storage._metas[self._meta_id()]
+
+    @meta.setter
+    def meta(self, new_meta):
+        self.storage._metas[self._meta_id()] = self.init_meta(new_meta)
 
     @property
     def utterance_ids(self):
@@ -106,15 +126,23 @@ class CorpusComponent:
         self.fields.__setitem__('vectors', new_vectors)
 
     def init_meta(self, meta):
-        if self.owner is None:
-            index = ConvoKitIndex(None)
-        else:
-            index = self.owner.meta_index
-        ck_meta = ConvoKitMeta(index, self.obj_type)
-        if meta is not None:
+        if isinstance(meta, ConvoKitMeta):
+            return meta
+        elif isinstance(meta, dict):
+            ck_meta = ConvoKitMeta(obj_type=self.obj_type,
+                                   id=self._meta_id(),
+                                   storage=self.storage)
             for key, value in meta.items():
                 ck_meta[key] = value
-        return ck_meta
+            return ck_meta
+        elif meta is None:
+            return ConvoKitMeta(obj_type=self.obj_type,
+                                id=self._meta_id(),
+                                storage=self.storage)
+        else:
+            raise TypeError(
+                f'expected meta to be of type ConvoKitMeta or dict, or be None; found type {type(meta)} instead'
+            )
 
     def _add_utterance(self, utt):
         if self.utterance_ids is None:
@@ -132,6 +160,9 @@ class CorpusComponent:
 
         self.conversations[convo.id] = convo
 
+    def _meta_id(self):
+        return f'{self.obj_type}_{self.id}'
+
     # def __eq__(self, other):
     #     if type(self) != type(other): return False
     #     # do not compare 'utterances' and 'conversations' in Speaker.__dict__. recursion loop will occur.
@@ -146,7 +177,10 @@ class CorpusComponent:
         :param key: name of metadata attribute
         :return: value
         """
-        return self.meta.get(key, None)
+        if key in self.meta:
+            return self.meta[key]
+        else:
+            return None
 
     def add_meta(self, key: str, value) -> None:
         """
@@ -262,6 +296,8 @@ class CorpusComponent:
 
     @classmethod
     def from_dbdoc(cls, doc: DBDocumentMapping, storage: StorageManager):
-        ret = cls(from_db=True, storage=storage)
+        # print(f'Initilizing {cls} from dbdoc {doc}')
+        ret = cls(from_db=True, id=doc.id, storage=storage)
         ret.fields = doc
+        # print(f'ret.fields.dict() : {ret.fields.dict()}')
         return ret

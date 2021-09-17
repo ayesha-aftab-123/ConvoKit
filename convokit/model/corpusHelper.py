@@ -7,6 +7,7 @@ import json
 from collections import defaultdict
 from typing import Dict
 import pickle
+from random import randrange
 
 from .speaker import Speaker
 from .utterance import Utterance
@@ -288,7 +289,6 @@ def initialize_conversations(corpus, utt_dict, convos_data, data_store):
     for u in utt_dict.values():
         convo_key = u.conversation_id  # each conversation_id is considered a separate conversation
         convo_to_utts[convo_key].append(u.id)
-    conversations = data_store
     for convo_id in convo_to_utts:
         # look up the metadata associated with this conversation, if any
         convo_data = convos_data.get(convo_id, None)
@@ -311,11 +311,9 @@ def initialize_conversations(corpus, utt_dict, convos_data, data_store):
                              id=convo_id,
                              utterances=convo_to_utts[convo_id],
                              meta=convo_meta)
-
         if convo_data is not None and KeyVectors in convo_data and KeyMeta in convo_data:
             convo.vectors = convo_data.get(KeyVectors, [])
-        conversations[convo_id] = convo
-    return conversations
+        data_store[convo_id] = convo
 
 
 def dump_helper_bin(d: ConvoKitMeta,
@@ -330,7 +328,7 @@ def dump_helper_bin(d: ConvoKitMeta,
     if fields_to_skip is None:
         fields_to_skip = []
 
-    obj_idx = d.index.get_index(d.obj_type)
+    obj_idx = d.storage.index.get_index(d.obj_type)
     d_out = {}
     for k, v in d.items():
         if k in fields_to_skip: continue
@@ -419,3 +417,7 @@ def dump_jsonlist_from_dict(entries,
         for k, v in entries.items():
             json.dump({index_key: k, value_key: v}, f)
             f.write('\n')
+
+
+def safe_corpus_name():
+    return str(randrange(2**15, 2**20))

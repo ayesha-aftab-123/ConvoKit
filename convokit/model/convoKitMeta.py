@@ -1,7 +1,6 @@
 from collections import MutableMapping
 from convokit.util import warn
-from .convoKitIndex import ConvoKitIndex
-import json
+from convokit.storage import DBDocumentMapping, StorageManager
 
 # See reference: https://stackoverflow.com/questions/7760916/correct-usage-of-a-getter-setter-for-dictionary-values
 
@@ -10,38 +9,17 @@ class ConvoKitMeta(MutableMapping):
     """
     ConvoKitMeta is a dictlike object that stores the metadata attributes of a corpus component
     """
-    def __init__(self, convokit_index, obj_type):
-        self.index: ConvoKitIndex = convokit_index
-        self.storage = self.index.storage
+    def __init__(self, obj_type=None, id=None, storage=None, from_db=False):
+
+        self.storage = storage
         self.obj_type = obj_type
-        self.fields = self.storage.ItemMapping(
-            self.storage.CollectionMapping('meta'), 'corpus_meta')
+
+        if from_db:
+            return
+        self.fields = self.storage.ItemMapping(self.storage._metas, id)
 
     def __getitem__(self, item):
         return self.fields.__getitem__(item)
-
-    @staticmethod
-    def _check_type_and_update_index(index, obj_type, key, value):
-        if not isinstance(value,
-                          type(None)):  # do nothing to index if value is None
-            # print(
-            #     f'_check_type_and_update_index: key={key}\nindex.indices[obj_type]={index.indices[obj_type]}'
-            # )
-            if key not in index.indices[obj_type]:
-                type_ = _optimized_type_check(value)
-                index.update_index(obj_type, key=key, class_type=type_)
-            else:
-                # entry exists
-                if index.get_index(obj_type)[key] != [
-                        "bin"
-                ]:  # if "bin" do no further checks
-                    if str(type(value)) not in index.get_index(obj_type)[key]:
-                        new_type = _optimized_type_check(value)
-
-                        if new_type == "bin":
-                            index.set_index(obj_type, key, "bin")
-                        else:
-                            index.update_index(obj_type, key, new_type)
 
     def __setitem__(self, key, value):
         # print(f'META: Setting meta[{key}] to {value}')
@@ -51,20 +29,21 @@ class ConvoKitMeta(MutableMapping):
             )
             key = str(key)
 
-        if True:  # self.index.type_check:
-            ConvoKitMeta._check_type_and_update_index(self.index,
-                                                      self.obj_type, key,
-                                                      value)
-        # self.index.update_index(self.obj_type, key, repr(
-        #     type(value)))  # Todo: Should this be here?
+        if value is not None:
+            if self.storage.index.type_check:
+                self.storage.index._check_type_and_update_index(
+                    self.obj_type, key, value)
+            self.storage.index.update_index(self.obj_type, key,
+                                            repr(type(value)))
+        # print(f'meta: setting {key} -> {value}')
         self.fields[key] = value
 
     def __delitem__(self, key):
         if self.obj_type == 'corpus':
             self.fields.__delitem__(key)
-            self.index.del_from_index(self.obj_type, key)
+            self.storage.index.del_from_index(self.obj_type, key)
         else:
-            if self.index.lock_metadata_deletion[self.obj_type]:
+            if self.storage.index.lock_metadata_deletion[self.obj_type]:
                 warn(
                     "For consistency in metadata attributes in Corpus component objects, deleting metadata attributes "
                     "from component objects individually is not allowed. "
@@ -87,28 +66,46 @@ class ConvoKitMeta(MutableMapping):
         return self.fields.__dict__
 
     def __eq__(self, o: object) -> bool:
+        print('meta __eq__')
         if isinstance(o, ConvoKitMeta):
-            return self.fields.dict() == o.fields.dict()
+            print('\tmeta vs meta')
+            theirs = o.fields.dict()
         elif isinstance(o, dict):
-            return self.fields.dict() == o
+            print('\tmeta vs dict')
+            theirs = o
         else:
             return False
 
+        mine = self.fields.dict()
+        if len(theirs) == len(mine):
+            print('\tdirect comparison:')
+            print('\t', mine)
+            print('\t', theirs)
+            return theirs == mine
+        elif '_id' in mine and '_id' not in theirs:
+            del mine['_id']
+            print('\tdirect comparison after removing my id:')
+            print('\t', mine)
+            print('\t', theirs)
+            return theirs == mine
+        else:
+            print('\tSHRUG?')
+            return False
+
     def __repr__(self):
-        return str(self.__dict__)
+        return str(self.fields.dict())
 
+    def __str__(self):
+        return str(self.fields.dict())
 
-_basic_types = {type(0), type(1.0),
-                type('str'), type(True)}  # cannot include lists or dicts
+    @classmethod
+    def from_dbdoc(cls, doc: DBDocumentMapping, storage: StorageManager):
+        # print(f'Initilizing {cls} from dbdoc {doc}')
+        type_id = doc.id.split('_')
+        obj_type = type_id[0]
+        obj_id = type_id[1]
 
-
-def _optimized_type_check(val):
-    # if type(obj)
-    if type(val) in _basic_types:
-        return str(type(val))
-    else:
-        try:
-            json.dumps(val)
-            return str(type(val))
-        except (TypeError, OverflowError):
-            return "bin"
+        ret = cls(from_db=True, id=doc.id, obj_type=obj_type, storage=storage)
+        ret.fields = doc
+        # print(f'ret.fields.dict() : {ret.fields.dict()}')
+        return ret

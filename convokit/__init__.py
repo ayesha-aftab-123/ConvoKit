@@ -19,11 +19,9 @@ from .expected_context_framework import *
 from .surprise import *
 from .storage import *
 
-defaultStorageManager._utterances = defaultStorageManager.CollectionMapping(
-    'utterances', item_type=Utterance)
-defaultStorageManager._conversations = defaultStorageManager.CollectionMapping(
-    'conversations', item_type=Conversation)
-defaultStorageManager._speakers = defaultStorageManager.CollectionMapping(
-    '_speakers', item_type=Speaker)
+defaultCorpusStorageManager.setup_collections(Utterance, Conversation, Speaker,
+                                              ConvoKitMeta)
+memUntrackedStorageManager.setup_collections(Utterance, Conversation, Speaker,
+                                             ConvoKitMeta)
 
 #__path__ = __import__('pkgutil').extend_path(__path__, __name__)

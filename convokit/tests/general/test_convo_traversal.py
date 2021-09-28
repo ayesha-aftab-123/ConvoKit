@@ -1,9 +1,10 @@
 import unittest
-from convokit.model import Utterance, Speaker, Corpus
+from convokit import Utterance, Speaker, Corpus, StorageManager
 
 
 class CorpusTraversal(unittest.TestCase):
     def setUp(self) -> None:
+        StorageManager.purge_db()
         """
         Basic Conversation tree (left to right within subtree => earliest to latest)
                    0
@@ -82,6 +83,7 @@ class CorpusTraversal(unittest.TestCase):
         self.corpus.meta['foo'] = 'bar'
 
     def test_broken_convos(self):
+        StorageManager.purge_db()
         """
         Test basic meta functions
         """
@@ -133,15 +135,14 @@ class CorpusTraversal(unittest.TestCase):
         ])
 
         # test broken convo where there are multiple conversation_ids
-        convo = corpus1.get_conversation(
-            '0')  # Todo: Was get_conversation(None)
-        self.assertRaises(
-            ValueError, lambda: list(convo.traverse("dfs", as_utterance=True)))
+        convo = corpus1.get_conversation(None)
+        with self.assertRaises(ValueError):
+            l = list(convo.traverse("dfs", as_utterance=True))
 
         # test broken convo where utterance replies to something not in Conversation
         convo = corpus2.get_conversation(None)
-        self.assertRaises(
-            ValueError, lambda: list(convo.traverse("dfs", as_utterance=True)))
+        with self.assertRaises(ValueError):
+            l = list(convo.traverse("dfs", as_utterance=True))
 
     def test_bfs_traversal(self):
         convo = self.corpus.get_conversation("0")
@@ -204,6 +205,7 @@ class CorpusTraversal(unittest.TestCase):
                          ["other"])
 
     def test_reindex_corpus(self):
+        self.setUp()
         new_convo_conversation_ids = ['1', '2', '3']
         new_corpus = self.corpus.reindex_conversations(
             new_convo_conversation_ids)
@@ -219,6 +221,7 @@ class CorpusTraversal(unittest.TestCase):
         self.assertEqual(self.corpus.meta, new_corpus.meta)
 
     def test_reindex_corpus2(self):
+        self.setUp()
         new_convo_conversation_ids = ['1', '2', '3']
         new_corpus = self.corpus.reindex_conversations(
             new_convo_conversation_ids,

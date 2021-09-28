@@ -19,9 +19,9 @@ from .expected_context_framework import *
 from .surprise import *
 from .storage import *
 
-defaultCorpusStorageManager.setup_collections(Utterance, Conversation, Speaker,
-                                              ConvoKitMeta)
-memUntrackedStorageManager.setup_collections(Utterance, Conversation, Speaker,
-                                             ConvoKitMeta)
+# defaultCorpusStorageManager.setup_collections(Utterance, Conversation, Speaker,
+#                                               ConvoKitMeta)
+# memUntrackedStorageManager.setup_collections(Utterance, Conversation, Speaker,
+#                                              ConvoKitMeta)
 
 #__path__ = __import__('pkgutil').extend_path(__path__, __name__)

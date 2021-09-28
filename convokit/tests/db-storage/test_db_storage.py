@@ -1,9 +1,6 @@
-from convokit.expected_context_framework.demos.demo_text_pipelines import wiki_arc_pipeline
 import unittest
 from pymongo import MongoClient
-from convokit import storage
-from convokit.storage import DBDocumentMapping, DBCollectionMapping, StorageManager, defaultCorpusStorageManager
-from convokit.model import Utterance, Conversation, Speaker, Corpus, ConvoKitMeta, utterance
+from convokit import storage, DBDocumentMapping, DBCollectionMapping, StorageManager, Utterance, Conversation, Speaker, Corpus, ConvoKitMeta
 
 BOBS_TEXT = "Hi, I'm Bob."
 JIMS_TEXT = "Hi Bob, I'm Jim!"
@@ -28,21 +25,17 @@ class DBStorage(unittest.TestCase):
         doc1['NAME'] = 'FIRST DOCUMENT'
         doc1['n'] = doc1['n'] + 1
 
-        self.assertDictEqual(
-            col1['doc1'], {
-                '_id': 'doc1',
-                'name': 'first document',
-                'NAME': 'FIRST DOCUMENT',
-                'n': 2
-            })
+        self.assertDictEqual(col1['doc1'], {
+            'name': 'first document',
+            'NAME': 'FIRST DOCUMENT',
+            'n': 2
+        })
 
-        self.assertDictEqual(
-            doc1.dict(), {
-                '_id': 'doc1',
-                'name': 'first document',
-                'NAME': 'FIRST DOCUMENT',
-                'n': 2
-            })
+        self.assertDictEqual(doc1.dict(), {
+            'name': 'first document',
+            'NAME': 'FIRST DOCUMENT',
+            'n': 2
+        })
 
         # Test another document, verifying the wrapper class against the DB directly.
         col1['doc2'] = {'I am': 'the second documet'}
@@ -65,8 +58,8 @@ class DBStorage(unittest.TestCase):
 
         # Check lengths
         self.assertEqual(len(col1), 2)
-        self.assertEqual(len(doc1), 4)
-        self.assertEqual(len(col1['doc2']), 2)
+        self.assertEqual(len(doc1), 3)
+        self.assertEqual(len(col1['doc2']), 1)
 
     def test_db_corpusComponent(self):
         storage = StorageManager(storage_type='db')
@@ -76,15 +69,8 @@ class DBStorage(unittest.TestCase):
         # For testing repeatability.
         print('purging DB storage')
         storage.purge_all_collections()
-
-        storage._utterances = storage.CollectionMapping('utterances',
-                                                        item_type=Utterance)
-        storage._conversations = storage.CollectionMapping(
-            'conversations', item_type=Conversation)
-        storage._speakers = storage.CollectionMapping('speakers',
-                                                      item_type=Speaker)
-        storage._metas = storage.CollectionMapping('metas',
-                                                   item_type=ConvoKitMeta)
+        storage.setup_collections(Utterance, Conversation, Speaker,
+                                  ConvoKitMeta)
 
         u0 = Utterance(id='0',
                        speaker=Speaker(id='Bob', storage=storage),
@@ -117,14 +103,8 @@ class DBStorage(unittest.TestCase):
 
         # Test persistent storage
         storage_ = StorageManager(storage_type='db')
-        storage_._utterances = storage_.CollectionMapping('utterances',
-                                                          item_type=Utterance)
-        storage_._conversations = storage_.CollectionMapping(
-            'conversations', item_type=Conversation)
-        storage_._speakers = storage_.CollectionMapping('speakers',
-                                                        item_type=Speaker)
-        storage_._metas = storage_.CollectionMapping('metas',
-                                                     item_type=ConvoKitMeta)
+        storage_.setup_collections(Utterance, Conversation, Speaker,
+                                   ConvoKitMeta)
 
         # Test persistent storage
         self.assertEqual(storage_._speakers['Bob'].utterances['0'],
@@ -135,10 +115,10 @@ class DBStorage(unittest.TestCase):
         self.assertEqual(storage_._speakers['Bob'].utterances['0'].text,
                          BOBS_TEXT)
         self.assertEqual(storage_._utterances['1'].speaker.id, 'Jim')
-        self.assertEqual(storage_._conversations['0'].speaker_ids,
+        self.assertEqual(storage_._conversations[None].speaker_ids,
                          ['Bob', 'Jim'])
 
-        self.assertEqual(storage_._conversations['0'].get_utterance_ids(),
+        self.assertEqual(storage_._conversations[None].get_utterance_ids(),
                          ['0', '1'])
 
     def test_mem_corpusComponent(self):
@@ -149,15 +129,8 @@ class DBStorage(unittest.TestCase):
         print('purging mem storage (no-op)')
         storage.purge_all_collections()
 
-        storage._utterances = storage.CollectionMapping('utterances',
-                                                        item_type=Utterance)
-        storage._conversations = storage.CollectionMapping(
-            'conversations', item_type=Conversation)
-        storage._speakers = storage.CollectionMapping('speakers',
-                                                      item_type=Speaker)
-        storage._metas = storage.CollectionMapping('metas',
-                                                   item_type=ConvoKitMeta)
-
+        storage.setup_collections(Utterance, Conversation, Speaker,
+                                  ConvoKitMeta)
         u0 = Utterance(id='0',
                        speaker=Speaker(id='Bob', storage=storage),
                        text=BOBS_TEXT,
@@ -189,14 +162,8 @@ class DBStorage(unittest.TestCase):
 
         # Test the lack of persistent storage
         storage_ = StorageManager(storage_type='mem')
-        storage_._utterances = storage_.CollectionMapping('utterances',
-                                                          item_type=Utterance)
-        storage_._conversations = storage_.CollectionMapping(
-            'conversations', item_type=Conversation)
-        storage_._speakers = storage_.CollectionMapping('speakers',
-                                                        item_type=Speaker)
-        storage_._metas = storage_.CollectionMapping('metas',
-                                                     item_type=ConvoKitMeta)
+        storage_.setup_collections(Utterance, Conversation, Speaker,
+                                   ConvoKitMeta)
 
         with self.assertRaises(KeyError):
             storage_._speakers['Bob']
@@ -246,10 +213,8 @@ class DBStorage(unittest.TestCase):
         self.assertEqual(u.retrieve_meta('text-len'), text_len)
         self.assertEqual(u.speaker.retrieve_meta('height'), height)
 
-        self.assertEqual(outside_storage._metas['utterance_0'], {
-            '_id': 'utterance_0',
-            'text-len': text_len
-        })
+        self.assertEqual(outside_storage._metas['utterance_0'],
+                         {'text-len': text_len})
 
         self.assertEqual(
             corpus.get_utterance('0').meta, {'text-len': text_len})

@@ -279,16 +279,18 @@ def merge_utterance_lines(utt_dict, data_store):
     return new_utterances
 
 
-def initialize_conversations(corpus, utt_dict, convos_data, data_store):
+def initialize_conversations(corpus, convos_data):
     """
     Initialize Conversation objects from utterances and conversations data
     """
     # organize utterances by conversation
     convo_to_utts = defaultdict(
         list)  # temp container identifying utterances by conversation
-    for u in utt_dict.values():
+    for u in corpus.utterances.values():
         convo_key = u.conversation_id  # each conversation_id is considered a separate conversation
         convo_to_utts[convo_key].append(u.id)
+        # if convo_key is None:
+        #     raise ValueError(f'utterance {u} has conversation_id None')
     for convo_id in convo_to_utts:
         # look up the metadata associated with this conversation, if any
         convo_data = convos_data.get(convo_id, None)
@@ -300,20 +302,23 @@ def initialize_conversations(corpus, utt_dict, convos_data, data_store):
         else:
             convo_meta = None
 
-        if convo_to_utts[convo_id] is None or len(
-                convo_to_utts[convo_id]) == 0:
-            print('initilizing new conversation with '
-                  f'owner={corpus},'
-                  f'id={convo_id},'
-                  f'utterances={convo_to_utts[convo_id]},'
-                  f'meta={convo_meta}')
-        convo = Conversation(owner=corpus,
+        # if True or convo_to_utts[convo_id] is None or len(
+        #         convo_to_utts[convo_id]) == 0:
+        #     print('initializing new conversation with '
+        #           f'owner={corpus},'
+        #           f'id={convo_id},'
+        #           f'utterances={convo_to_utts[convo_id]},'
+        #           f'meta={convo_meta}')
+        convo = Conversation(storage=corpus.storage,
                              id=convo_id,
                              utterances=convo_to_utts[convo_id],
                              meta=convo_meta)
         if convo_data is not None and KeyVectors in convo_data and KeyMeta in convo_data:
             convo.vectors = convo_data.get(KeyVectors, [])
-        data_store[convo_id] = convo
+        # print('316')
+        # if convo_id != convo.id:
+        #     raise ValueError(f'convo_id={convo_id}; convo.id={convo.id}')
+        # corpus.conversations[convo_id] = convo
 
 
 def dump_helper_bin(d: ConvoKitMeta,

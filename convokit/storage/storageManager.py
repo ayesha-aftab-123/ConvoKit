@@ -7,8 +7,6 @@ from .convoKitIndex import ConvoKitIndex
 from pymongo import MongoClient
 from pymongo.database import Database
 
-client = MongoClient()
-
 
 class StorageManager:
     def __init__(self, storage_type: str = 'db', corpus_name='default_corpus'):
@@ -16,10 +14,12 @@ class StorageManager:
             corpus_name = 'default_corpus'
         self.storage_type = storage_type
         self.index = ConvoKitIndex(self)
+        self.corpus_name = corpus_name
         if storage_type == 'db':
+            self.client = MongoClient()
             if not isinstance(corpus_name, str):
                 raise TypeError(f'{corpus_name}: {type(corpus_name)}')
-            self.db = client[corpus_name]
+            self.db = self.client['convokit']
             self.connection = None
             self.CollectionMapping = DBCollectionMapping.with_storage(self)
             self.ItemMapping = DBDocumentMapping
@@ -32,6 +32,10 @@ class StorageManager:
             raise ValueError(
                 f'Expected storage type to be "mem" or "db"; got {storage_type} instead'
             )
+
+    def __del__(self):
+        if self.storage_type == 'db':
+            self.client.close()
 
     def purge_all_collections(self):
         for attr, value in self.__dict__.items():
@@ -52,6 +56,17 @@ class StorageManager:
                 # print(
                 #     f'(purge) found {attr} -> <type: {type(value)}>; not dropping'
                 # )
+    @staticmethod
+    def purge_db():
+        warn('purging the DB')
+        client = MongoClient()
+        db = client['convokit']
+        for collection_name in db.collection_names():
+            warn(
+                f'\tDropping collection {collection_name} (collection in {db.name}))'
+            )
+            db.drop_collection(collection_name)
+        client.close()
 
     def setup_collections(self, utterance, conversation, speaker,
                           convokitmeta):

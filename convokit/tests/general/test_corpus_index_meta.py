@@ -26,7 +26,8 @@ class CorpusIndexMeta(unittest.TestCase):
                          [repr(type(9))])
 
         # keyErrors result in None output
-        self.assertRaises(KeyError, lambda: first_utt.meta['nonexistent key'])
+        with self.assertRaises(KeyError):
+            first_utt.meta['nonexistent key']
 
         # test that setting a custom get still works
         self.assertEqual(first_utt.meta.get('nonexistent_key', {}), {})
@@ -45,7 +46,7 @@ class CorpusIndexMeta(unittest.TestCase):
         corpus1.get_utterance("2").meta['hey'] = 'jude'
 
         corpus1.get_conversation(
-            '0').meta['convo_meta'] = 1  # Todo: Was get_conversation(None)
+            None).meta['convo_meta'] = 1  # Todo: Was get_conversation(None)
 
         corpus1.get_speaker("alice").meta['surname'] = 1.0
 
@@ -63,10 +64,10 @@ class CorpusIndexMeta(unittest.TestCase):
 
         # test that delete_metadata works
         corpus1.delete_metadata('utterance', 'foo')
-        self.assertRaises(
-            KeyError, lambda: corpus1.storage.index.utterances_index['foo'])
-        self.assertRaises(KeyError,
-                          lambda: corpus1.get_utterance("0").meta["foo"])
+        with self.assertRaises(KeyError):
+            corpus1.storage.index.utterances_index['foo']
+        with self.assertRaises(KeyError):
+            corpus1.get_utterance("0").meta["foo"]
 
     def test_corpus_merge_add(self):
         corpus1 = Corpus(utterances=[

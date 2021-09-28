@@ -36,6 +36,9 @@ class NamedDict(MutableMapping):
     def __contains__(self, x):
         return self.data.__contains__(x)
 
+    def drop_self(self):
+        del self.data
+
 
 class NestedDict(MutableMapping):
     def __init__(self, collection_mapping, id):

@@ -30,14 +30,15 @@ class Conversation(CorpusComponent):
                  meta: Optional[Dict] = None,
                  from_db=False,
                  storage: Optional[StorageManager] = None):
-        if id is None and utterances is not None:
-            id = utterances[0]
+        # if id is None and utterances is not None:
+        #     id = utterances[0]
         super().__init__(obj_type="conversation",
                          owner=owner,
                          id=id,
                          meta=meta,
                          storage=storage,
                          from_db=from_db)
+        self.tree: Optional[UtteranceNode] = None
         if from_db:
             return
         # print(f'initilizing conversation {id} with utterances {utterances}')
@@ -47,18 +48,17 @@ class Conversation(CorpusComponent):
         self.speaker_ids = [  # Todo: change speaker.id to speaker_id
             self.storage._utterances[utt].speaker_id for utt in utterances
         ] if utterances is not None else []
-        self.tree: Optional[UtteranceNode] = None
 
         self.storage._conversations[id] = self
 
     # Defining Properties for abstract storage
-    @property
-    def tree(self):
-        return self.fields.__getitem__('tree')
+    # @property
+    # def tree(self):
+    #     return self.fields.__getitem__('tree')
 
-    @tree.setter
-    def tree(self, new_tree):
-        self.fields.__setitem__('tree', new_tree)
+    # @tree.setter
+    # def tree(self, new_tree):
+    #     self.fields.__setitem__('tree', new_tree)
 
     def _add_utterance(self, utt: Utterance):
         if utt.id not in self.utterance_ids:
@@ -264,7 +264,7 @@ class Conversation(CorpusComponent):
         if len(root_utt_id) != 1:
             if verbose:
                 for utt_id in root_utt_id:
-                    if utt_id is not None:
+                    if utt_id is not None and 'None' not in utt_id:
                         warn("ERROR: Missing utterance {}".format(utt_id))
             return False
         else:
@@ -274,14 +274,16 @@ class Conversation(CorpusComponent):
                 return False
 
         # sanity check
-        utts_replying_to_none = 0
+        utts_replying_to_none = []
         for utt in self.iter_utterances():
             if utt.reply_to is None:
-                utts_replying_to_none += 1
+                utts_replying_to_none.append(utt.id)
 
-        if utts_replying_to_none > 1:
+        if len(utts_replying_to_none) > 1:
             if verbose:
-                warn("ERROR: Found more than one Utterance replying to None.")
+                warn(
+                    f"ERROR: Found more than one Utterance ({utts_replying_to_none}) replying to None."
+                )
             return False
 
         circular = [

@@ -29,8 +29,21 @@ class CorpusComponent:
         #     if obj_type == 'utterance':
         #         raise ValueError('utterance with id=None')
         #     id = 'tmp'
-        if id is None:
+        if from_db:
+            return
+
+        if id is None and obj_type != 'conversation':
             id = randrange(0, 100)
+
+        # if obj_type == 'utterance':
+        #     # print(
+        #     #     f'id = {id}; self.storage._utterances is {self.storage._utterances.name}'
+        #     # )
+        #     # print('\tid in self.storage._utterances: ', id
+        #     #       in self.storage._utterances)
+        #     if id in self.storage._utterances:
+        #         raise KeyError()
+
         if ((obj_type == 'utterance' and id in self.storage._utterances) or
             (obj_type == 'conversation' and id in self.storage._conversations)
                 or (obj_type == 'speaker' and id in self.storage._speakers)):
@@ -43,9 +56,6 @@ class CorpusComponent:
 
         self.obj_type = obj_type  # utterance, speaker, conversation
         self.id = id
-
-        if from_db:
-            return
 
         self.owner = owner
 

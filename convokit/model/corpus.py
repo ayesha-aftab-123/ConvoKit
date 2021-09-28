@@ -1,4 +1,6 @@
+import traceback
 from typing import List, Collection, Callable, Set, Generator, Tuple, Optional, ValuesView, Union, MutableMapping
+from tqdm import tqdm
 
 from convokit import storage
 from .corpusHelper import *
@@ -56,53 +58,84 @@ class Corpus:
                  exclude_speaker_meta: Optional[List[str]] = None,
                  exclude_overall_meta: Optional[List[str]] = None,
                  disable_type_check=False,
-                 storage_type='mem'):
+                 storage_type='db',
+                 storage: Optional[StorageManager] = None):
 
         # Setup Storage
-        if corpus_name is None and filename is not None:
-            corpus_name = filename
-        elif corpus_name is None:
-            corpus_name = safe_corpus_name()
-            print(
-                f'No filename or corpus name specified; using name {corpus_name}'
-            )
+        if storage is not None:
+            self.storage = storage
+        else:
+            if corpus_name is None and filename is not None:
+                corpus_name = filename
+            elif corpus_name is None:
+                corpus_name = safe_corpus_name()
+                print(
+                    f'No filename or corpus name specified; using name {corpus_name}'
+                )
 
-        self.storage = StorageManager(storage_type=storage_type,
-                                      corpus_name=corpus_name)
+            self.storage = StorageManager(storage_type=storage_type,
+                                          corpus_name=corpus_name)
+
+        self.corpus_name = self.storage.corpus_name
 
         # Setup Collections
         self.storage.setup_collections(Utterance, Conversation, Speaker,
                                        ConvoKitMeta)
 
         self.meta = ConvoKitMeta(storage=self.storage,
-                                 id=f'corpus_{corpus_name}',
+                                 id=f'corpus_{self.corpus_name}',
                                  obj_type='corpus')
+        # private storage
+        self._vector_matrices = {}
 
-        # Fields
-        self.fields = self.storage.ItemMapping(
-            self.storage.CollectionMapping('misc'), '_corpus')
+        # # Fields
+        # self.fields = self.storage.ItemMapping(
+        #     self.storage.CollectionMapping('misc'), '_corpus')
 
+        speakers_data = defaultdict(dict)
+        convos_data = defaultdict(dict)
         # Loading in preconstruced & Stored corpus
         if storage_type == 'db':
             if filename is not None:
-                raise NotImplementedError(
-                    'Loading Corpus from filename (on disk) to db storage (mem -> db conversion)'
-                )
-                # Idea:
-                # mem_corpus = Corpus(same args)
-                # convert mem_corpus to db_corpus
+                # raise NotImplementedError(
+                #     'Loading Corpus from filename (on disk) to db storage (mem -> db conversion)'
+                # )
+                mem_corpus = Corpus(
+                    filename=filename,
+                    utterances=utterances,
+                    preload_vectors=preload_vectors,
+                    utterance_start_index=utterance_start_index,
+                    utterance_end_index=utterance_end_index,
+                    merge_lines=merge_lines,
+                    exclude_utterance_meta=exclude_utterance_meta,
+                    exclude_conversation_meta=exclude_conversation_meta,
+                    exclude_speaker_meta=exclude_speaker_meta,
+                    exclude_overall_meta=exclude_overall_meta,
+                    disable_type_check=disable_type_check,
+                    storage_type='mem')
+                self = Corpus(
+                    storage=self.storage,
+                    utterances=list(mem_corpus.iter_utterances()),
+                    preload_vectors=preload_vectors,
+                    utterance_start_index=utterance_start_index,
+                    utterance_end_index=utterance_end_index,
+                    merge_lines=merge_lines,
+                    exclude_utterance_meta=exclude_utterance_meta,
+                    exclude_conversation_meta=exclude_conversation_meta,
+                    exclude_speaker_meta=exclude_speaker_meta,
+                    exclude_overall_meta=exclude_overall_meta,
+                    disable_type_check=disable_type_check,
+                    storage_type='db')
 
             else:
-                assert corpus_name is not None
-                if corpus_name in self.storage.db.list_collection_names():
-                    print(f'Corpus {corpus_name} loaded from DB')
+                assert self.corpus_name is not None
+                if self.corpus_name in self.storage.db.list_collection_names():
+                    print(f'Corpus {self.corpus_name} loaded from DB')
                     utterances = None
                 else:
                     print(
-                        f'Corpus {corpus_name} not found in DB; building new corpus'
+                        f'Corpus {self.corpus_name} not found in DB; building new corpus'
                     )
-                    speakers_data = defaultdict(dict)
-                    convos_data = defaultdict(dict)
 
         elif storage_type == 'mem':
             if filename is None:
@@ -111,10 +144,6 @@ class Corpus:
                 self.corpus_dirpath = filename
             else:
                 self.corpus_dirpath = os.path.dirname(filename)
-
-            # private storage
-            self._vector_matrices = self.storage.CollectionMapping(
-                'vector_matrices')
 
             convos_data = defaultdict(dict)
             if exclude_utterance_meta is None: exclude_utterance_meta = []
@@ -194,16 +223,13 @@ class Corpus:
         if utterances is not None:  # Construct corpus from utterances list
             # print(f'Adding {len(utterances)} utterances to the corpus...')
             # print([utterance.id for utterance in utterances])
-            for u in utterances:
-                # print(198)
-
+            for u in tqdm(utterances):
                 self.speakers[u.speaker_id] = u.speaker
                 self.utterances[u.id] = u
                 # u = self.utterances[u.id]
                 # print('\t', u.id, u.text)
                 # print('\tu.speaker_id:', u.speaker_id)
                 # print('\tu.speaker:', u.speaker)
-                # self.conversations[u.conversation_id] = u.get_conversation()
                 u.owner = self
                 u.meta.index = self.storage.index
 
@@ -220,8 +246,7 @@ class Corpus:
                     'utterances'))  # Todo: Fix for db.
 
         if disable_type_check: self.storage.index.disable_type_check()
-        initialize_conversations(self, self.utterances, convos_data,
-                                 self.conversations)
+        initialize_conversations(self, convos_data)
         self.update_speakers_data()
         self.reinitialize_index()
 
@@ -751,7 +776,8 @@ class Corpus:
                 if verbose:
                     warn(str(e))
 
-        new_corpus_utts = []
+        new_corpus_utts = self.storage.CollectionMapping(
+            'new_corpus_utts', Utterance)
         original_utt_to_convo_id = dict()
 
         for utt_id in new_convo_roots:
@@ -760,17 +786,21 @@ class Corpus:
             original_utt_to_convo_id[utt_id] = orig_convo.id
             try:
                 subtree = orig_convo.get_subtree(utt_id)
-                new_root_utt = subtree.utt
+                new_corpus_utts[subtree.utt.id] = subtree.utt
+                new_root_utt = new_corpus_utts[subtree.utt.id]
+
                 new_root_utt.reply_to = None
                 subtree_utts = [node.utt for node in subtree.bfs_traversal()]
                 for utt in subtree_utts:
-                    utt.conversation_id = utt_id
-                new_corpus_utts.extend(subtree_utts)
-            except ValueError:
+                    new_corpus_utts[utt.id] = utt
+                    new_corpus_utts[utt.id].conversation_id = utt_id
+            except ValueError as e:
                 continue
 
-        new_corpus = Corpus(utterances=new_corpus_utts,
+        new_corpus = Corpus(utterances=list(new_corpus_utts.values()),
                             storage_type=self.storage.storage_type)
+
+        new_corpus_utts.drop_self()
 
         if preserve_corpus_meta:
             new_corpus.meta.update(self.meta)
@@ -1016,13 +1046,14 @@ class Corpus:
         # Merge CORPUS metadata
         new_corpus.meta = self.meta
         for key, val in other_corpus.meta.items():
-            if key in new_corpus.meta and new_corpus.meta[key] != val:
-                if warnings:
-                    warn(
-                        "Found conflicting values for Corpus metadata key: {}. "
-                        "Overwriting with other Corpus's metadata.".format(
-                            repr(key)))
-            new_corpus.meta[key] = val
+            if key != '_id':
+                if key in new_corpus.meta and new_corpus.meta[key] != val:
+                    if warnings:
+                        warn(
+                            "Found conflicting values for Corpus metadata key: {}. "
+                            "Overwriting with other Corpus's metadata.".format(
+                                repr(key)))
+                new_corpus.meta[key] = val
 
         # Merge CONVERSATION metadata
         convos1 = self.iter_conversations()
@@ -1125,7 +1156,7 @@ class Corpus:
             speakers_utts[utt.speaker_id].append(utt)
 
         for convo in self.iter_conversations():
-            # print(f'\t(1128)convo: {convo}')
+            # print(f'\t(1126)convo: {convo}')
             for utt in convo.iter_utterances():
                 speakers_convos[utt.speaker_id].append(convo)
 
@@ -1136,6 +1167,7 @@ class Corpus:
 
             speaker.conversation_ids = []
             for convo in speakers_convos[speaker.id]:
+                # print(1137)
                 speaker._add_conversation(convo)
 
     def print_summary_stats(self) -> None:

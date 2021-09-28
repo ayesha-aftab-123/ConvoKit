@@ -62,12 +62,9 @@ class Utterance(CorpusComponent):
                 "Utterance conversation_id must be a string: conversation_id of utterance with ID: {} "
                 "has been casted to a string.".format(self.id))
             conversation_id = str(self.conversation_id)
-        elif conversation_id is None:
-            conversation_id = id
+        # elif conversation_id is None:
+        #     conversation_id = self.id
         self.conversation_id = conversation_id
-        # if self.conversation is None:
-        #     self.conversation = Conversation(id=self.conversation_id,
-        #                                      storage=self.storage)
         self.reply_to = reply_to
         self.timestamp = timestamp  # int(timestamp) if timestamp is not None else timestamp
         if not isinstance(text, str):
@@ -77,7 +74,11 @@ class Utterance(CorpusComponent):
             text = '' if text is None else str(text)
         self.text = text
 
-        self.storage._utterances[id] = self
+        self.storage._utterances[self.id] = self
+
+        # if self.conversation_id is None:
+        #     raise ValueError(
+        #         f'Initilizing Utterance {self} with conversation_id None')
 
     # Defining Properties for abstract storage
     @property

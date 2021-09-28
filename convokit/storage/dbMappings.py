@@ -1,4 +1,5 @@
 from typing import MutableMapping
+from convokit.util import warn
 from collections.abc import Callable
 from bson import Binary
 
@@ -10,19 +11,23 @@ class DBCollectionMapping(MutableMapping):
         self.collection = db[collection_name]
         self.storage = storage
         self.type = item_type
+        self.name = collection_name
         # print(item_type)
         # print(type(item_type))
 
     def with_storage(storage) -> Callable[[str, type], MutableMapping]:
         return lambda collection_name, item_type=None: DBCollectionMapping(
-            storage.db, collection_name, storage, item_type=item_type)
+            storage.db,
+            f'{storage.corpus_name}_{collection_name}',
+            storage,
+            item_type=item_type)
 
     def __getitem__(self, key):  # -> ??????:
-        # print(f'({self.collection.name}) Getting {key}')
+        # print(f'({self.name}) Getting {key}')
         if self.type is not None:
             # print('\tbuilding from type {self.type}')
             return self.type.from_dbdoc(DBDocumentMapping(
-                self, key), self.storage) if key is not None else None
+                self, key), self.storage)  # if key is not None else None
         else:
             # print('\treturning dict directly')
             return DBDocumentMapping(self, key).dict()
@@ -30,13 +35,13 @@ class DBCollectionMapping(MutableMapping):
 
     def __setitem__(self, key: str, value):
         # if self.collection.name == 'metas':
-        #     print(f'({self.collection.name}) Inserting {key} -> {value}')
+        # print(f'({self.collection.name}) Inserting {key} -> {value}')
         if self.type is None and isinstance(value, dict):
             DBDocumentMapping(self, key, data=value)
         elif isinstance(value, self.type):
             # print('\tsame collection: ', self.db.name, '.',
             #       self.collection.name)
-            if value.fields.collection_mapping == self:
+            if value.fields.collection_mapping.name == self.name:
                 data = {'_id': key}
                 res = self.collection.find_one(data)
                 # print(f'\talready has data {res}')
@@ -47,9 +52,10 @@ class DBCollectionMapping(MutableMapping):
                 # print(
                 #     f'transfering {value} to collection {self.collection.name}'
                 # )
-                value.meta.storage = self.storage
-                value.meta.fields.transfer_to_dbcoll(self.storage._metas,
-                                                     DBDocumentMapping)
+                if hasattr(value, 'meta'):
+                    value.meta.storage = self.storage
+                    value.meta.fields.transfer_to_dbcoll(
+                        self.storage._metas, DBDocumentMapping)
 
                 value.storage = self.storage
                 value.fields.transfer_to_dbcoll(self, DBDocumentMapping)
@@ -82,10 +88,16 @@ class DBCollectionMapping(MutableMapping):
     def __contains__(self, key):
         return self.collection.find_one({'_id': key}) is not None
 
+    def drop_self(self):
+        warn(f'purging the DBCollectionMapping {self.name}')
+        self.db.drop_collection(self.name)
+
 
 class DBDocumentMapping(MutableMapping):
     def __init__(self, collection_mapping, id, data=None):
         super().__init__()
+        if id is None:
+            id = 'None'
         if not type(id) == str:
             raise TypeError(f'Found id type {type(id)}; should be str')
         self.collection_mapping = collection_mapping
@@ -104,7 +116,11 @@ class DBDocumentMapping(MutableMapping):
 
     def dict(self):
         data = self.collection_mapping.collection.find_one({'_id': self.id})
-        return data if data is not None else {}
+        if data is None:
+            data = {}
+        if '_id' in data:
+            del data['_id']
+        return data
 
     def __getitem__(self, key):
         # print(f'({self.collection_mapping.collection.name}[{self.id}])'
@@ -139,6 +155,9 @@ class DBDocumentMapping(MutableMapping):
 
     def __len__(self):
         return len(self.dict())
+
+    def __contains__(self, key):
+        return key in self.dict()
 
     def transfer_to_dbcoll(self, collection_mapping, cls):
         # print(

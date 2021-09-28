@@ -6,7 +6,8 @@ Contains various methods used by Corpus components
 import pandas as pd
 
 
-def get_utterances_dataframe(obj, selector = lambda utt: True,
+def get_utterances_dataframe(obj,
+                             selector=lambda utt: True,
                              exclude_meta: bool = False):
     """
     Get a DataFrame of the utterances of a given object with fields and metadata attributes,
@@ -20,23 +21,26 @@ def get_utterances_dataframe(obj, selector = lambda utt: True,
     """
     ds = dict()
     for utt in obj.iter_utterances(selector):
-        d = utt.__dict__.copy()
+        d = utt.fields.dict()
         if not exclude_meta:
-            for k, v in d['meta'].items():
+            for k, v in utt.meta.items():
                 d['meta.' + k] = v
-        del d['meta']
+        # del d['meta']
+        d['speaker'] = d['speaker_id']
         ds[utt.id] = d
 
     df = pd.DataFrame(ds).T
-    df['id'] = df['_id']
+    # df['id'] = df['_id']
     df = df.set_index('id')
-    df = df.drop(['_id', '_owner', 'obj_type', 'user', '_root'], axis=1)
-    df['speaker'] = df['speaker'].map(lambda spkr: spkr.id)
+    df = df.drop(['obj_type', 'speaker_id'], axis=1)
+    # df['speaker'] = df['speaker'].map(lambda spkr: spkr.id)
     meta_columns = [k for k in df.columns if k.startswith('meta.')]
-    return df[['timestamp', 'text', 'speaker', 'reply_to', 'conversation_id'] + meta_columns]
+    return df[['timestamp', 'text', 'speaker', 'reply_to', 'conversation_id'] +
+              meta_columns]
 
 
-def get_conversations_dataframe(obj, selector = lambda convo: True,
+def get_conversations_dataframe(obj,
+                                selector=lambda convo: True,
                                 exclude_meta: bool = False):
     """
     Get a DataFrame of the conversations of a given object with fields and metadata attributes,
@@ -50,20 +54,22 @@ def get_conversations_dataframe(obj, selector = lambda convo: True,
     """
     ds = dict()
     for convo in obj.iter_conversations(selector):
-        d = convo.__dict__.copy()
+        d = convo.fields.dict()
         if not exclude_meta:
-            for k, v in d['meta'].items():
+            for k, v in convo.meta.items():
                 d['meta.' + k] = v
-        del d['meta']
+        # del d['meta']
         ds[convo.id] = d
 
     df = pd.DataFrame(ds).T
-    df['id'] = df['_id']
+    # df['id'] = df['_id']
     df = df.set_index('id')
-    return df.drop(['_owner', 'obj_type', '_utterance_ids', '_speaker_ids', 'tree', '_id'], axis=1)
+    return df.drop(['obj_type', 'utterance_ids', 'speaker_ids'], axis=1)
 
 
-def get_speakers_dataframe(obj, selector = lambda utt: True, exclude_meta: bool = False):
+def get_speakers_dataframe(obj,
+                           selector=lambda utt: True,
+                           exclude_meta: bool = False):
     """
     Get a DataFrame of the Speakers with fields and metadata attributes, with an optional selector that filters
     Speakers that should be included. Edits to the DataFrame do not change the corpus in any way.
@@ -75,14 +81,14 @@ def get_speakers_dataframe(obj, selector = lambda utt: True, exclude_meta: bool 
     """
     ds = dict()
     for spkr in obj.iter_speakers(selector):
-        d = spkr.__dict__.copy()
+        d = spkr.fields.dict()
         if not exclude_meta:
-            for k, v in d['meta'].items():
+            for k, v in spkr.meta.items():
                 d['meta.' + k] = v
-        del d['meta']
+        # del d['meta']
         ds[spkr.id] = d
 
     df = pd.DataFrame(ds).T
-    df['id'] = df['_id']
+    # df['id'] = df['_id']
     df = df.set_index('id')
-    return df.drop(['_owner', 'obj_type', 'utterances', 'conversations', '_id'], axis=1)
+    return df.drop(['obj_type', 'utterance_ids', 'conversation_ids'], axis=1)

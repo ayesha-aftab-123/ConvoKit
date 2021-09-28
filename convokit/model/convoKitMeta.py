@@ -107,7 +107,7 @@ class ConvoKitMeta(MutableMapping):
             If E present and lacks .keys() method, does:     for (k, v) in E: D[k] = v
             In either case, this is followed by: for k, v in F.items(): D[k] = v
         '''
-        if isinstance(other, ConvoKitMeta):
+        if isinstance(other, ConvoKitMeta) or isinstance(other, dict):
             for key in other:
                 if key != '_id':
                     self[key] = other[key]

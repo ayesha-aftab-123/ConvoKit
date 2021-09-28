@@ -58,7 +58,7 @@ class Corpus:
                  exclude_speaker_meta: Optional[List[str]] = None,
                  exclude_overall_meta: Optional[List[str]] = None,
                  disable_type_check=False,
-                 storage_type='db',
+                 storage_type='mem',
                  storage: Optional[StorageManager] = None):
 
         # Setup Storage
@@ -231,10 +231,10 @@ class Corpus:
                 # print('\tu.speaker_id:', u.speaker_id)
                 # print('\tu.speaker:', u.speaker)
                 u.owner = self
-                u.meta.index = self.storage.index
+                # u.meta.index = self.storage.index
 
             for _, speaker in self.speakers.items():
-                # speaker.meta.index = self.storage.index
+                #     # speaker.meta.index = self.storage.index
                 speaker.owner = self
 
         if merge_lines:

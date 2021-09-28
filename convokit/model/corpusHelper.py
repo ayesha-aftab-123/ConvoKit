@@ -440,10 +440,10 @@ def add_conv_meta_df(conversations_df, corpus):
     ]
     for convo in corpus.iter_conversations():
         # get the conv_id for the conversation by checking from utterance info
-        convo_id = convo.get_id()
+        convo_id = convo.id
         conversation_meta = conversations_df[
             conversations_df['id'] == convo_id][conv_meta_cols].to_dict(
-                orient='records')[0] if conv_meta_cols else None
+                orient='records')[0] if conv_meta_cols else {}
         convo.meta.update(conversation_meta)
 
     return corpus

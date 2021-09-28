@@ -1,11 +1,13 @@
 import unittest
 from convokit.model import Utterance, Speaker, Corpus
-from convokit import download
+from convokit import download, StorageManager
+
 
 class CorpusFromPandas(unittest.TestCase):
-
     def setUp(self) -> None:
+        StorageManager.purge_db()
         self.corpus = Corpus(download('subreddit-hey'))
+        print(0, self.corpus.random_conversation().meta)
         utt_df = self.corpus.get_utterances_dataframe()
         convo_df = self.corpus.get_conversations_dataframe()
         speaker_df = self.corpus.get_speakers_dataframe()
@@ -15,18 +17,27 @@ class CorpusFromPandas(unittest.TestCase):
         """
         Test that reconstructing the Corpus from outputted dataframes results in the same number of corpus components
         """
-        assert len(self.new_corpus.speakers) == len(self.corpus.speakers)
-        assert len(self.new_corpus.conversations) == len(self.corpus.conversations)
-        assert len(self.new_corpus.utterances) == len(self.corpus.utterances)
+        self.assertEqual(set(self.new_corpus.utterances),
+                         set(self.corpus.utterances))
+        self.assertEqual(set(self.new_corpus.speakers),
+                         set(self.corpus.speakers))
+        self.assertEqual(set(self.new_corpus.conversations),
+                         set(self.corpus.conversations))
 
     def test_reconstruction_metadata(self):
-        assert set(self.corpus.random_utterance().meta) == set(self.new_corpus.random_utterance().meta)
-        assert set(self.corpus.random_conversation().meta) == set(self.new_corpus.random_conversation().meta)
-        assert set(self.corpus.random_speaker().meta) == set(self.new_corpus.random_speaker().meta)
+        print(1, self.corpus.random_conversation().meta)
+        print(2, self.new_corpus.random_conversation().meta)
+        self.assertEqual(set(self.corpus.random_utterance().meta),
+                         set(self.new_corpus.random_utterance().meta))
+        self.assertEqual(set(self.corpus.random_conversation().meta),
+                         set(self.new_corpus.random_conversation().meta))
+        self.assertEqual(set(self.corpus.random_speaker().meta),
+                         set(self.new_corpus.random_speaker().meta))
 
     def test_convo_reconstruction(self):
         for convo in self.new_corpus.iter_conversations():
-            assert convo.check_integrity(verbose=False)
+            self.assertTrue(convo.check_integrity(verbose=False))
+
 
 if __name__ == '__main__':
     unittest.main()

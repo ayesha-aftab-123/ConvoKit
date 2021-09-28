@@ -44,8 +44,7 @@ class CorpusComponent:
         #     if id in self.storage._utterances:
         #         raise KeyError()
 
-        if ((obj_type == 'utterance' and id in self.storage._utterances) or
-            (obj_type == 'conversation' and id in self.storage._conversations)
+        if ((obj_type == 'utterance' and id in self.storage._utterances)
                 or (obj_type == 'speaker' and id in self.storage._speakers)):
             id = f'{id}.1'
 

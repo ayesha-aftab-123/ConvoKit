@@ -53,6 +53,7 @@ class DBCollectionMapping(MutableMapping):
                 #     f'transfering {value} to collection {self.collection.name}'
                 # )
                 if hasattr(value, 'meta'):
+                    # print('transfering meta', value.meta)
                     value.meta.storage = self.storage
                     value.meta.fields.transfer_to_dbcoll(
                         self.storage._metas, DBDocumentMapping)

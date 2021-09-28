@@ -1,4 +1,7 @@
 # Cornell Conversational Analysis Toolkit ([ConvoKit](http://convokit.cornell.edu/))
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-28-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 <p>
 <a href="https://convokit.cornell.edu/documentation/">
@@ -166,6 +169,11 @@ A collection of Wikipedia's Articles for Deletion editor debates that occurred b
 
 Name for download: `wiki-articles-for-deletion-corpus`
 
+### [CaSiNo Corpus](https://convokit.cornell.edu/documentation/casino-corpus.html)
+CaSiNo (stands for CampSite Negotiations) is a novel dataset of 1030 negotiation dialogues. Two participants take the role of campsite neighbors and negotiate for Food, Water, and Firewood packages, based on their individual preferences and requirements.
+
+Name for download: `casino-corpus`
+
 ### ...And your own corpus!
 
 In addition to the provided datasets, you may also use ConvoKit with your own custom datasets by loading them into a `convokit.Corpus` object. [This example script](https://github.com/CornellNLP/Cornell-Conversational-Analysis-Toolkit/blob/master/examples/converting_movie_corpus.ipynb) shows how to construct a Corpus from custom data.
@@ -198,3 +206,56 @@ If you use the code or datasets distributed with ConvoKit please acknowledge the
 Jonathan P. Chang, Caleb Chiam, Liye Fu, Andrew Wang, Justine Zhang, Cristian Danescu-Niculescu-Mizil. 2020. "[ConvoKit: A Toolkit for the Analysis of Conversations](https://www.cs.cornell.edu/~cristian/ConvoKit_Demo_Paper_files/convokit-demo-paper.pdf)". Proceedings of SIGDIAL.
 
 [ConvoKit](http://convokit.cornell.edu/)
+
+## Contributors ✨
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="https://github.com/rgangela99"><img src="https://avatars.githubusercontent.com/u/35738132?v=4?s=100" width="100px;" alt=""/><br /><sub><b>rgangela99</b></sub></a><br /><a href="https://github.com/CornellNLP/Cornell-Conversational-Analysis-Toolkit/commits?author=rgangela99" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/Khonzoda"><img src="https://avatars.githubusercontent.com/u/26072772?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Khonzoda Umarova</b></sub></a><br /><a href="#data-Khonzoda" title="Data">🔣</a> <a href="#maintenance-Khonzoda" title="Maintenance">🚧</a></td>
+    <td align="center"><a href="https://github.com/mwilbz"><img src="https://avatars.githubusercontent.com/u/14115641?v=4?s=100" width="100px;" alt=""/><br /><sub><b>mwilbz</b></sub></a><br /><a href="https://github.com/CornellNLP/Cornell-Conversational-Analysis-Toolkit/commits?author=mwilbz" title="Tests">⚠️</a></td>
+    <td align="center"><a href="https://www.alexkoen.com"><img src="https://avatars.githubusercontent.com/u/43913902?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Alex Koen</b></sub></a><br /><a href="https://github.com/CornellNLP/Cornell-Conversational-Analysis-Toolkit/issues?q=author%3Aakoen" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="http://emtseng.me"><img src="https://avatars.githubusercontent.com/u/5270852?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Emily Tseng</b></sub></a><br /><a href="https://github.com/CornellNLP/Cornell-Conversational-Analysis-Toolkit/issues?q=author%3Aemtseng" title="Bug reports">🐛</a> <a href="#data-emtseng" title="Data">🔣</a></td>
+    <td align="center"><a href="https://github.com/ZiggyFloat"><img src="https://avatars.githubusercontent.com/u/41927607?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Uliyana Kubasova</b></sub></a><br /><a href="#data-ZiggyFloat" title="Data">🔣</a></td>
+    <td align="center"><a href="https://jschluger.github.io/"><img src="https://avatars.githubusercontent.com/u/14956008?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Jack Schluger</b></sub></a><br /><a href="https://github.com/CornellNLP/Cornell-Conversational-Analysis-Toolkit/issues?q=author%3Ajschluger" title="Bug reports">🐛</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/kushalchawla"><img src="https://avatars.githubusercontent.com/u/8416863?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Kushal Chawla</b></sub></a><br /><a href="#data-kushalchawla" title="Data">🔣</a></td>
+    <td align="center"><a href="https://github.com/sc782"><img src="https://avatars.githubusercontent.com/u/14970930?v=4?s=100" width="100px;" alt=""/><br /><sub><b>June Cho</b></sub></a><br /><a href="#data-sc782" title="Data">🔣</a></td>
+    <td align="center"><a href="https://github.com/noameshed"><img src="https://avatars.githubusercontent.com/u/40632766?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Noam Eshed</b></sub></a><br /><a href="#data-noameshed" title="Data">🔣</a></td>
+    <td align="center"><a href="https://github.com/szmurlo"><img src="https://avatars.githubusercontent.com/u/31192340?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Andrew Szmurlo</b></sub></a><br /><a href="#data-szmurlo" title="Data">🔣</a></td>
+    <td align="center"><a href="https://github.com/kcsadow"><img src="https://avatars.githubusercontent.com/u/34074151?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Katharine Sadowski</b></sub></a><br /><a href="#data-kcsadow" title="Data">🔣</a></td>
+    <td align="center"><a href="https://github.com/lucasvanbramer"><img src="https://avatars.githubusercontent.com/u/32553676?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Lucas Van Bramer</b></sub></a><br /><a href="#data-lucasvanbramer" title="Data">🔣</a></td>
+    <td align="center"><a href="http://mariannealq.com"><img src="https://avatars.githubusercontent.com/u/16949591?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Marianne Aubin</b></sub></a><br /><a href="#data-maubinle" title="Data">🔣</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/dn273"><img src="https://avatars.githubusercontent.com/u/27926662?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Di Ni</b></sub></a><br /><a href="#data-dn273" title="Data">🔣</a></td>
+    <td align="center"><a href="https://github.com/gdeng96"><img src="https://avatars.githubusercontent.com/u/8600751?v=4?s=100" width="100px;" alt=""/><br /><sub><b>gdeng96</b></sub></a><br /><a href="#data-gdeng96" title="Data">🔣</a></td>
+    <td align="center"><a href="https://github.com/junfrankli"><img src="https://avatars.githubusercontent.com/u/22462584?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Frank Li</b></sub></a><br /><a href="#data-junfrankli" title="Data">🔣</a></td>
+    <td align="center"><a href="http://rujzhao.com"><img src="https://avatars.githubusercontent.com/u/31158748?v=4?s=100" width="100px;" alt=""/><br /><sub><b>rjz46</b></sub></a><br /><a href="#data-rjz46" title="Data">🔣</a></td>
+    <td align="center"><a href="https://github.com/KatyBlumer"><img src="https://avatars.githubusercontent.com/u/3669069?v=4?s=100" width="100px;" alt=""/><br /><sub><b>KatyBlumer</b></sub></a><br /><a href="#data-KatyBlumer" title="Data">🔣</a></td>
+    <td align="center"><a href="https://github.com/als452"><img src="https://avatars.githubusercontent.com/u/15838258?v=4?s=100" width="100px;" alt=""/><br /><sub><b>als452</b></sub></a><br /><a href="#data-als452" title="Data">🔣</a></td>
+    <td align="center"><a href="https://github.com/KaminskyJ"><img src="https://avatars.githubusercontent.com/u/26395772?v=4?s=100" width="100px;" alt=""/><br /><sub><b>KaminskyJ</b></sub></a><br /><a href="https://github.com/CornellNLP/Cornell-Conversational-Analysis-Toolkit/commits?author=KaminskyJ" title="Code">💻</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/cristiandnm"><img src="https://avatars.githubusercontent.com/u/8700563?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Cristian Danescu-Niculescu-Mizil</b></sub></a><br /><a href="https://github.com/CornellNLP/Cornell-Conversational-Analysis-Toolkit/commits?author=cristiandnm" title="Code">💻</a> <a href="#data-cristiandnm" title="Data">🔣</a> <a href="#ideas-cristiandnm" title="Ideas, Planning, & Feedback">🤔</a> <a href="#maintenance-cristiandnm" title="Maintenance">🚧</a> <a href="https://github.com/CornellNLP/Cornell-Conversational-Analysis-Toolkit/commits?author=cristiandnm" title="Documentation">📖</a> <a href="https://github.com/CornellNLP/Cornell-Conversational-Analysis-Toolkit/pulls?q=is%3Apr+reviewed-by%3Acristiandnm" title="Reviewed Pull Requests">👀</a></td>
+    <td align="center"><a href="http://wanganzhou.com"><img src="https://avatars.githubusercontent.com/u/4683423?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Andrew Wang</b></sub></a><br /><a href="https://github.com/CornellNLP/Cornell-Conversational-Analysis-Toolkit/commits?author=qema" title="Code">💻</a> <a href="#data-qema" title="Data">🔣</a> <a href="#ideas-qema" title="Ideas, Planning, & Feedback">🤔</a> <a href="#maintenance-qema" title="Maintenance">🚧</a> <a href="https://github.com/CornellNLP/Cornell-Conversational-Analysis-Toolkit/commits?author=qema" title="Documentation">📖</a> <a href="https://github.com/CornellNLP/Cornell-Conversational-Analysis-Toolkit/pulls?q=is%3Apr+reviewed-by%3Aqema" title="Reviewed Pull Requests">👀</a></td>
+    <td align="center"><a href="http://tisjune.github.io"><img src="https://avatars.githubusercontent.com/u/8534072?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Justine Zhang</b></sub></a><br /><a href="https://github.com/CornellNLP/Cornell-Conversational-Analysis-Toolkit/commits?author=tisjune" title="Code">💻</a> <a href="#data-tisjune" title="Data">🔣</a> <a href="#ideas-tisjune" title="Ideas, Planning, & Feedback">🤔</a> <a href="#maintenance-tisjune" title="Maintenance">🚧</a> <a href="https://github.com/CornellNLP/Cornell-Conversational-Analysis-Toolkit/commits?author=tisjune" title="Documentation">📖</a> <a href="https://github.com/CornellNLP/Cornell-Conversational-Analysis-Toolkit/pulls?q=is%3Apr+reviewed-by%3Atisjune" title="Reviewed Pull Requests">👀</a></td>
+    <td align="center"><a href="http://cs.cornell.edu/~jpchang"><img src="https://avatars.githubusercontent.com/u/989906?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Jonathan Chang</b></sub></a><br /><a href="https://github.com/CornellNLP/Cornell-Conversational-Analysis-Toolkit/commits?author=jpwchang" title="Code">💻</a> <a href="#data-jpwchang" title="Data">🔣</a> <a href="#ideas-jpwchang" title="Ideas, Planning, & Feedback">🤔</a> <a href="#maintenance-jpwchang" title="Maintenance">🚧</a> <a href="https://github.com/CornellNLP/Cornell-Conversational-Analysis-Toolkit/commits?author=jpwchang" title="Documentation">📖</a> <a href="https://github.com/CornellNLP/Cornell-Conversational-Analysis-Toolkit/pulls?q=is%3Apr+reviewed-by%3Ajpwchang" title="Reviewed Pull Requests">👀</a></td>
+    <td align="center"><a href="http://www.cs.cornell.edu/~liye/"><img src="https://avatars.githubusercontent.com/u/12224673?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Liye Fu</b></sub></a><br /><a href="https://github.com/CornellNLP/Cornell-Conversational-Analysis-Toolkit/commits?author=liye" title="Code">💻</a> <a href="#data-liye" title="Data">🔣</a> <a href="#ideas-liye" title="Ideas, Planning, & Feedback">🤔</a> <a href="#maintenance-liye" title="Maintenance">🚧</a> <a href="https://github.com/CornellNLP/Cornell-Conversational-Analysis-Toolkit/commits?author=liye" title="Documentation">📖</a> <a href="https://github.com/CornellNLP/Cornell-Conversational-Analysis-Toolkit/pulls?q=is%3Apr+reviewed-by%3Aliye" title="Reviewed Pull Requests">👀</a></td>
+    <td align="center"><a href="https://github.com/calebchiam"><img src="https://avatars.githubusercontent.com/u/14286996?v=4?s=100" width="100px;" alt=""/><br /><sub><b>calebchiam</b></sub></a><br /><a href="https://github.com/CornellNLP/Cornell-Conversational-Analysis-Toolkit/commits?author=calebchiam" title="Code">💻</a> <a href="#data-calebchiam" title="Data">🔣</a> <a href="#ideas-calebchiam" title="Ideas, Planning, & Feedback">🤔</a> <a href="#maintenance-calebchiam" title="Maintenance">🚧</a> <a href="https://github.com/CornellNLP/Cornell-Conversational-Analysis-Toolkit/commits?author=calebchiam" title="Documentation">📖</a> <a href="https://github.com/CornellNLP/Cornell-Conversational-Analysis-Toolkit/pulls?q=is%3Apr+reviewed-by%3Acalebchiam" title="Reviewed Pull Requests">👀</a></td>
+    <td align="center"><a href="https://github.com/Ap1075"><img src="https://avatars.githubusercontent.com/u/25790092?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Armaan Puri</b></sub></a><br /><a href="https://github.com/CornellNLP/Cornell-Conversational-Analysis-Toolkit/commits?author=Ap1075" title="Code">💻</a></td>
+  </tr>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!

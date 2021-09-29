@@ -77,7 +77,12 @@ class StorageManager:
         self._speakers = self.CollectionMapping('speakers', item_type=speaker)
         self._metas = self.CollectionMapping('metas', item_type=convokitmeta)
 
+    def __eq__(self, other):
+        if not isinstance(other, StorageManager):
+            return False
+        else:
+            return self.storage_type == other.storage_type \
+                and self.corpus_name == other.corpus_name
 
-defaultCorpusStorageManager = StorageManager()
-memUntrackedStorageManager = StorageManager(storage_type='mem',
-                                            corpus_name='not_a_corpus')
+    def __repr__(self):
+        return f'StorageManager(storage_type: {self.storage_type}, corpus_name: {self.corpus_name}'

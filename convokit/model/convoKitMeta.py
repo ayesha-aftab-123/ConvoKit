@@ -69,34 +69,34 @@ class ConvoKitMeta(MutableMapping):
         return self.fields.__dict__
 
     def __eq__(self, o: object) -> bool:
-        print('meta __eq__')
+        # print('meta __eq__')
         if isinstance(o, ConvoKitMeta):
-            print('\tmeta vs meta')
+            # print('\tmeta vs meta')
             theirs = o.fields.dict()
         elif isinstance(o, dict):
-            print('\tmeta vs dict')
+            # print('\tmeta vs dict')
             theirs = o
         else:
             return False
 
         mine = self.fields.dict()
         if len(theirs) == len(mine):
-            print('\tdirect comparison:')
-            print('\t', mine)
-            print('\t', theirs)
+            # print('\tdirect comparison:')
+            # print('\t', mine)
+            # print('\t', theirs)
             return theirs == mine
         elif '_id' in mine and '_id' not in theirs:
             del mine['_id']
-            print('\tdirect comparison after removing my id:')
-            print('\t', mine)
-            print('\t', theirs)
+            # print('\tdirect comparison after removing my id:')
+            # print('\t', mine)
+            # print('\t', theirs)
             return theirs == mine
         else:
-            print('\tSHRUG?')
+            # print('\tSHRUG?')
             return False
 
     def __repr__(self):
-        return str(self.fields.dict())
+        return f'{self.fields.collection_mapping.name}.{self.fields.id}: {str(self.fields.dict())}'
 
     def __str__(self):
         return str(self.fields.dict())

@@ -1,6 +1,6 @@
 import unittest
 from pymongo import MongoClient
-from convokit import storage, DBDocumentMapping, DBCollectionMapping, StorageManager, Utterance, Conversation, Speaker, Corpus, ConvoKitMeta
+from convokit import DBDocumentMapping, DBCollectionMapping, StorageManager, Utterance, Conversation, Speaker, Corpus, ConvoKitMeta
 
 BOBS_TEXT = "Hi, I'm Bob."
 JIMS_TEXT = "Hi Bob, I'm Jim!"

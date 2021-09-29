@@ -4,7 +4,7 @@ from .convoKitMeta import ConvoKitMeta
 from convokit.util import warn, deprecation
 from typing import List, Optional, Type
 
-from convokit.storage import memUntrackedStorageManager, DBDocumentMapping, StorageManager
+from convokit.storage import DBDocumentMapping, StorageManager
 
 
 class CorpusComponent:

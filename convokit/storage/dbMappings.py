@@ -24,6 +24,7 @@ class DBCollectionMapping(MutableMapping):
 
     def __getitem__(self, key):  # -> ??????:
         # print(f'({self.name}) Getting {key}')
+        if not self.__contains__(key): raise KeyError
         if self.type is not None:
             # print('\tbuilding from type {self.type}')
             return self.type.from_dbdoc(DBDocumentMapping(
@@ -54,11 +55,11 @@ class DBCollectionMapping(MutableMapping):
                 # )
                 if hasattr(value, 'meta'):
                     # print('transfering meta', value.meta)
-                    value.meta.storage = self.storage
+                    # value.meta.storage = self.storage
                     value.meta.fields.transfer_to_dbcoll(
                         self.storage._metas, DBDocumentMapping)
 
-                value.storage = self.storage
+                # value.storage = self.storage
                 value.fields.transfer_to_dbcoll(self, DBDocumentMapping)
 
                 # Todo: Make transfering the meta more robust.
@@ -166,6 +167,9 @@ class DBDocumentMapping(MutableMapping):
         #     f'{self.collection_mapping.db.name}.{self.collection_mapping.collection.name} to '
         #     f'{collection_mapping.db.name}.{collection_mapping.collection.name}'
         #     f'\n\twith data {self.dict()}')
+        # print(
+        #     f'transfer {self.collection_mapping.name}.{self.id} to {collection_mapping.name}.{self.id}'
+        # )
         return cls(collection_mapping=collection_mapping,
                    id=self.id,
                    data=self.dict())

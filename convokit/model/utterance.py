@@ -214,4 +214,4 @@ class Utterance(CorpusComponent):
                                                                                     self.meta)
 
     def __repr__(self):
-        return self.__str__()
+        return f'{self.fields.collection_mapping.name}.{self.fields.id}: {self.__str__()}'

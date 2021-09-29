@@ -59,7 +59,8 @@ class Corpus:
                  exclude_overall_meta: Optional[List[str]] = None,
                  disable_type_check=False,
                  storage_type='mem',
-                 storage: Optional[StorageManager] = None):
+                 storage: Optional[StorageManager] = None,
+                 in_place: bool = False):
 
         # Setup Storage
         if storage is not None:
@@ -113,25 +114,20 @@ class Corpus:
                     exclude_overall_meta=exclude_overall_meta,
                     disable_type_check=disable_type_check,
                     storage_type='mem')
-                self = Corpus(
-                    storage=self.storage,
-                    utterances=list(mem_corpus.iter_utterances()),
-                    preload_vectors=preload_vectors,
-                    utterance_start_index=utterance_start_index,
-                    utterance_end_index=utterance_end_index,
-                    merge_lines=merge_lines,
-                    exclude_utterance_meta=exclude_utterance_meta,
-                    exclude_conversation_meta=exclude_conversation_meta,
-                    exclude_speaker_meta=exclude_speaker_meta,
-                    exclude_overall_meta=exclude_overall_meta,
-                    disable_type_check=disable_type_check,
-                    storage_type='db')
+                # To Do: Transfer meta as well!
+                self.copy_from(mem_corpus.storage, storage_type='db')
 
             else:
                 assert self.corpus_name is not None
-                if self.corpus_name in self.storage.db.list_collection_names():
+                # print(self.storage.db.list_collection_names())
+                if f'{self.corpus_name}_utterances' in self.storage.db.list_collection_names(
+                ):
                     print(f'Corpus {self.corpus_name} loaded from DB')
                     utterances = None
+                    if not in_place:
+                        # print('self.storage', repr(self.storage))
+                        self.copy_from(self.storage, storage_type='db')
+                        # print('self.storage', repr(self.storage))
                 else:
                     print(
                         f'Corpus {self.corpus_name} not found in DB; building new corpus'
@@ -1009,7 +1005,7 @@ class Corpus:
         """
         self.storage.index = self.storage.index.reinitialize_for(self)
 
-    def merge(self, other_corpus, warnings: bool = True):
+    def merge(self, other_corpus, warnings: bool = True, modify=False):
         """
         Merges this corpus with another corpus.
 
@@ -1075,8 +1071,33 @@ class Corpus:
 
         new_corpus.update_speakers_data()
         new_corpus.reinitialize_index()
-
+        if modify:
+            self.update_from(new_corpus.storage)
         return new_corpus
+
+    def copy_from(self, storage: StorageManager, storage_type: str):
+        self.storage = StorageManager(storage_type=storage_type,
+                                      corpus_name=f'{self.corpus_name}.1')
+        self.storage.setup_collections(Utterance, Conversation, Speaker,
+                                       ConvoKitMeta)
+        for uid, utt in storage._utterances.items():
+            self.utterances[uid] = utt
+
+        for cid, convo in storage._conversations.items():
+            self.conversations[cid] = convo
+
+        for sid, speaker in storage._speakers.items():
+            self.speakers[sid] = speaker
+
+    def update_from(self, storage: StorageManager):
+        for uid, utt in storage._utterances.items():
+            self.utterances[uid] = utt
+
+        for cid, convo in storage._conversations.items():
+            self.conversations[cid] = convo
+
+        for sid, speaker in storage._speakers.items():
+            self.speakers[sid] = speaker
 
     def add_utterances(self,
                        utterances=List[Utterance],
@@ -1099,8 +1120,9 @@ class Corpus:
         if with_checks:
             helper_corpus = Corpus(utterances=utterances,
                                    storage_type=self.storage.storage_type)
-            return self.merge(helper_corpus, warnings=warnings) if len(
-                list(self.iter_utterances())) > 0 else helper_corpus
+            return self.merge(
+                helper_corpus, warnings=warnings, modify=True) if len(
+                    list(self.iter_utterances())) > 0 else helper_corpus
         else:
             new_speakers = {u.speaker_id: u.speaker for u in utterances}
             new_utterances = {u.id: u for u in utterances}

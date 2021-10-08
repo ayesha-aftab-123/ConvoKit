@@ -115,13 +115,19 @@ class ConvoKitMeta(MutableMapping):
             super().update(other=other, **kwds)
 
     @classmethod
-    def from_dbdoc(cls, doc: DBDocumentMapping, storage: StorageManager):
-        # print(f'Initilizing {cls} from dbdoc {doc}')
+    def from_dbdoc(cls, doc: DBDocumentMapping):
+        """
+        Initilize a corpusComponent object with data contained in the DB document 
+        represented by doc. 
+
+        :param cls: class to initilize: Utterance, Conversation, or Speaker
+        :param doc: DB document to initilize the corpusComponent from
+        :return: the initilized corpusComponent object
+        """
         type_id = doc.id.split('_')
         obj_type = type_id[0]
-        obj_id = type_id[1]
 
-        ret = cls(from_db=True, id=doc.id, obj_type=obj_type, storage=storage)
+        ret = cls(from_db=True, id=doc.id, obj_type=obj_type, storage=doc.collection_mapping.storage)
         ret.fields = doc
         # print(f'ret.fields.dict() : {ret.fields.dict()}')
         return ret

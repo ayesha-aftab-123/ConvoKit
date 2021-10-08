@@ -8,7 +8,7 @@ bill = Speaker(id='Bill')
 
 def get_version_test_corpus():
     StorageManager.purge_db()
-    return Corpus(corpus_name='version_test_corpus',
+    return Corpus(corpus_id='version_test_corpus',
                   storage_type='db',
                   utterances=[
                       Utterance(id='0',
@@ -37,7 +37,7 @@ def get_version_test_corpus():
 class DBStorage(unittest.TestCase):
     def test_connect_by_name_in_place(self):
         version_test_corpus0 = get_version_test_corpus()
-        version_test_corpus1 = Corpus(corpus_name='version_test_corpus',
+        version_test_corpus1 = Corpus(corpus_id='version_test_corpus',
                                       storage_type='db',
                                       in_place=True)
 
@@ -89,7 +89,7 @@ class DBStorage(unittest.TestCase):
 
     def test_connect_by_name_not_in_place(self):
         version_test_corpus0 = get_version_test_corpus()
-        version_test_corpus1 = Corpus(corpus_name='version_test_corpus',
+        version_test_corpus1 = Corpus(corpus_id='version_test_corpus',
                                       storage_type='db',
                                       in_place=False)
         # print('version_test_corpus1.storage',

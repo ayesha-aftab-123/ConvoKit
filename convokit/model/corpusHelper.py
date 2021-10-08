@@ -286,7 +286,7 @@ def initialize_conversations(corpus, convos_data):
     # organize utterances by conversation
     convo_to_utts = defaultdict(
         list)  # temp container identifying utterances by conversation
-    for u in corpus.utterances.values():
+    for u in corpus.storage._utterances.values():
         convo_key = u.conversation_id  # each conversation_id is considered a separate conversation
         convo_to_utts[convo_key].append(u.id)
         # if convo_key is None:
@@ -424,7 +424,7 @@ def dump_jsonlist_from_dict(entries,
             f.write('\n')
 
 
-def safe_corpus_name():
+def safe_corpus_id():
     return str(randrange(2**15, 2**20))
 
 

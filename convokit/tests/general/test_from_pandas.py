@@ -17,12 +17,12 @@ class CorpusFromPandas(unittest.TestCase):
         """
         Test that reconstructing the Corpus from outputted dataframes results in the same number of corpus components
         """
-        self.assertEqual(set(self.new_corpus.utterances),
-                         set(self.corpus.utterances))
-        self.assertEqual(set(self.new_corpus.speakers),
-                         set(self.corpus.speakers))
-        self.assertEqual(set(self.new_corpus.conversations),
-                         set(self.corpus.conversations))
+        self.assertEqual(set(self.new_corpus.iter_utterances()),
+                         set(self.corpus.iter_utterances()))
+        self.assertEqual(set(self.new_corpus.iter_speakers()),
+                         set(self.corpus.iter_speakers()))
+        self.assertEqual(set(self.new_corpus.iter_conversations()),
+                         set(self.corpus.iter_conversations()))
 
     def test_reconstruction_metadata(self):
         print(1, self.corpus.random_conversation().meta)

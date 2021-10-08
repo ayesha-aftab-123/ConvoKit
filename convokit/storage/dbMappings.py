@@ -12,57 +12,42 @@ class DBCollectionMapping(MutableMapping):
         self.storage = storage
         self.type = item_type
         self.name = collection_name
-        # print(item_type)
-        # print(type(item_type))
 
     def with_storage(storage) -> Callable[[str, type], MutableMapping]:
         return lambda collection_name, item_type=None: DBCollectionMapping(
             storage.db,
-            f'{storage.corpus_name}_{collection_name}',
+            f'{storage.corpus_id}_{collection_name}',
             storage,
             item_type=item_type)
 
-    def __getitem__(self, key):  # -> ??????:
-        # print(f'({self.name}) Getting {key}')
+    def __getitem__(self,
+                    key):  # -> self.type if self.type is not None else {}
         if not self.__contains__(key): raise KeyError
         if self.type is not None:
-            # print('\tbuilding from type {self.type}')
-            return self.type.from_dbdoc(DBDocumentMapping(
-                self, key), self.storage)  # if key is not None else None
+            return self.type.from_dbdoc(DBDocumentMapping(self, key))
         else:
-            # print('\treturning dict directly')
             return DBDocumentMapping(self, key).dict()
-        # return self.type().from_dict(DBDocumentMapping(self, key).dict())
 
     def __setitem__(self, key: str, value):
-        # if self.collection.name == 'metas':
-        # print(f'({self.collection.name}) Inserting {key} -> {value}')
         if self.type is None and isinstance(value, dict):
             DBDocumentMapping(self, key, data=value)
         elif isinstance(value, self.type):
-            # print('\tsame collection: ', self.db.name, '.',
-            #       self.collection.name)
-            if value.fields.collection_mapping.name == self.name:
+
+            if isinstance(
+                    value.fields, DBDocumentMapping
+            ) and value.fields.collection_mapping.name == self.name:
                 data = {'_id': key}
                 res = self.collection.find_one(data)
-                # print(f'\talready has data {res}')
                 if res is None:
-                    self.collection.update(data, data, upsert=True)
-
+                    self.collection.update(data,
+                                           value.fields.dict(),
+                                           upsert=True)
             else:
-                # print(
-                #     f'transfering {value} to collection {self.collection.name}'
-                # )
                 if hasattr(value, 'meta'):
-                    # print('transfering meta', value.meta)
-                    # value.meta.storage = self.storage
                     value.meta.fields.transfer_to_dbcoll(
                         self.storage._metas, DBDocumentMapping)
 
-                # value.storage = self.storage
                 value.fields.transfer_to_dbcoll(self, DBDocumentMapping)
-
-                # Todo: Make transfering the meta more robust.
 
         else:
             raise TypeError(
@@ -93,6 +78,14 @@ class DBCollectionMapping(MutableMapping):
     def drop_self(self):
         warn(f'purging the DBCollectionMapping {self.name}')
         self.db.drop_collection(self.name)
+
+    def filter_by(self, condition):
+        keep = []
+        for key, value in self.items():
+            if condition(value):
+                keep.append(key)
+
+        self.collection.delete_many('{"_id":{$nin:' + str(keep) + '}}')
 
 
 class DBDocumentMapping(MutableMapping):
@@ -125,17 +118,12 @@ class DBDocumentMapping(MutableMapping):
         return data
 
     def __getitem__(self, key):
-        # print(f'({self.collection_mapping.collection.name}[{self.id}])'
-        #       f' get {key}')
         value = self.dict().get(key, None)
         if isinstance(value, Binary):
             value = bytearray(value)
         return value
 
     def __setitem__(self, key, value):
-        # if self.collection_mapping.collection.name == 'metas':
-        #     print(f'({self.collection_mapping.collection.name}[{self.id}])'
-        #           f' put {key}, {value}')
         if isinstance(value, bytearray):
             value = Binary(value)
         data = self.dict()
@@ -162,14 +150,6 @@ class DBDocumentMapping(MutableMapping):
         return key in self.dict()
 
     def transfer_to_dbcoll(self, collection_mapping, cls):
-        # print(
-        #     f'transfer {self.collection_mapping.type}.{self.id} from '
-        #     f'{self.collection_mapping.db.name}.{self.collection_mapping.collection.name} to '
-        #     f'{collection_mapping.db.name}.{collection_mapping.collection.name}'
-        #     f'\n\twith data {self.dict()}')
-        # print(
-        #     f'transfer {self.collection_mapping.name}.{self.id} to {collection_mapping.name}.{self.id}'
-        # )
         return cls(collection_mapping=collection_mapping,
                    id=self.id,
                    data=self.dict())

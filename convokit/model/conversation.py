@@ -543,7 +543,7 @@ class Conversation(CorpusComponent):
         if not isinstance(other, Conversation):
             return False
         return self.id == other.id and set(self.utterance_ids) == set(
-            other._utterance_ids)
+            other.utterance_ids)
 
     def __str__(self):
         return "Conversation('id': {}, 'utterances': {}, 'meta': {})".format(

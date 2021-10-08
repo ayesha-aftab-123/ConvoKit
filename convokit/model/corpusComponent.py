@@ -25,24 +25,11 @@ class CorpusComponent:
             self.storage = StorageManager(storage_type='mem')
             self.storage.setup_collections(None, None, None, None)
 
-        # if id is None:
-        #     if obj_type == 'utterance':
-        #         raise ValueError('utterance with id=None')
-        #     id = 'tmp'
         if from_db:
             return
 
         if id is None and obj_type != 'conversation':
             id = randrange(0, 100)
-
-        # if obj_type == 'utterance':
-        #     # print(
-        #     #     f'id = {id}; self.storage._utterances is {self.storage._utterances.name}'
-        #     # )
-        #     # print('\tid in self.storage._utterances: ', id
-        #     #       in self.storage._utterances)
-        #     if id in self.storage._utterances:
-        #         raise KeyError()
 
         if ((obj_type == 'utterance' and id in self.storage._utterances)
                 or (obj_type == 'speaker' and id in self.storage._speakers)):
@@ -60,17 +47,6 @@ class CorpusComponent:
 
         self.meta: ConvoKitMeta = self.init_meta(meta)
         self.vectors = vectors if vectors is not None else []
-
-    # Defining Properties for abstract storage
-    # @property
-    # def owner(self):
-    #     return self.fields.__getitem__('owner')
-
-    # @owner.setter
-    # def owner(self, new_owner):
-    #     self.fields.__setitem__('owner', new_owner)
-    #     if new_owner is not None and hasattr(self, 'meta'):
-    #         self.meta = self.init_meta(self.meta)
 
     @property
     def meta(self):
@@ -299,14 +275,18 @@ class CorpusComponent:
         except AttributeError:  # for backwards compatibility when corpus objects are saved as binary data, e.g. wikiconv
             return "(" + str(copy) + ")"
 
-    # @classmethod
-    # def from_dbdoc(cls, doc):
-    #     raise NotImplementedError()
-
     @classmethod
-    def from_dbdoc(cls, doc: DBDocumentMapping, storage: StorageManager):
-        # print(f'Initilizing {cls} from dbdoc {doc}')
-        ret = cls(from_db=True, id=doc.id, storage=storage)
+    def from_dbdoc(cls, doc: DBDocumentMapping):
+        """
+        Initilize a corpusComponent object with data contained in the DB document 
+        represented by doc. 
+
+        :param cls: class to initilize: Utterance, Conversation, or Speaker
+        :param doc: DB document to initilize the corpusComponent from
+        :return: the initilized corpusComponent object
+        """
+        ret = cls(from_db=True,
+                  id=doc.id,
+                  storage=doc.collection_mapping.storage)
         ret.fields = doc
-        # print(f'ret.fields.dict() : {ret.fields.dict()}')
         return ret

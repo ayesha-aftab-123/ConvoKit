@@ -172,13 +172,13 @@ class DBStorage(unittest.TestCase):
 
     def test_db_migration(self):
         _storage = StorageManager(storage_type='db',
-                                  corpus_name='not_the_default_corpus')
+                                  corpus_id='not_the_default_corpus')
         _storage.purge_all_collections()
 
         del _storage
 
         outside_storage = StorageManager(storage_type='db',
-                                         corpus_name='not_the_default_corpus')
+                                         corpus_id='not_the_default_corpus')
         outside_storage.setup_collections(Utterance, Conversation, Speaker,
                                           ConvoKitMeta)
 
@@ -226,7 +226,7 @@ class DBStorage(unittest.TestCase):
             corpus.get_speaker('Bob').retrieve_meta('height'), height)
 
     def test_init_corpus_from_db(self):
-        storage = StorageManager(storage_type='db', corpus_name='testo')
+        storage = StorageManager(storage_type='db', corpus_id='testo')
         storage.purge_all_collections()
 
         storage._utterances = storage.CollectionMapping('utterances',
@@ -263,7 +263,7 @@ class DBStorage(unittest.TestCase):
 
         corpus = Corpus(utterances=[u0, u1, u2],
                         storage_type='db',
-                        corpus_name='testo')
+                        corpus_id='testo')
         self.assertEqual(corpus.get_speaker('alice'), s0)
         self.assertEqual(corpus.get_utterance('1').speaker, s1)
 

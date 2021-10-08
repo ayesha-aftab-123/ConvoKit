@@ -1,20 +1,20 @@
 from typing import MutableMapping, Callable
 
 
-class NamedDict(MutableMapping):
+class MemCollectionMapping(MutableMapping):
     def __init__(self, name, item_type=None):
         super().__init__()
         self.name = name
         self.item_type = item_type
         self.data = {}
 
-    def with_connection(connection) -> Callable[[str, type], MutableMapping]:
+    def with_storage(storage) -> Callable[[str, type], MutableMapping]:
         def ret(collection_name, item_type=None):
-            if collection_name not in connection:
-                connection[collection_name] = NamedDict(collection_name,
-                                                        item_type=item_type)
+            if collection_name not in storage.connection:
+                storage.connection[collection_name] = MemCollectionMapping(
+                    collection_name, item_type=item_type)
 
-            return connection[collection_name]
+            return storage.connection[collection_name]
 
         return ret
 
@@ -39,17 +39,19 @@ class NamedDict(MutableMapping):
     def drop_self(self):
         del self.data
 
+    def filter_by(self, condition):
+        self.data = {
+            key: value
+            for key, value in self.data.items() if condition(value)
+        }
 
-class NestedDict(MutableMapping):
+
+class MemDocumentMapping(MutableMapping):
     def __init__(self, collection_mapping, id):
         super().__init__()
         self.id = id
         self.data = {}
         if id in collection_mapping:
-            # if '_' in id:
-            #     print(
-            #         f'found id {id} in parent; initilizing self.__dict__ to ')
-            #     print(parent[id].__dict__)
             self.data = collection_mapping[id].fields.dict()
         self.collection_mapping = collection_mapping
         self.data

@@ -11,7 +11,7 @@ from .convoKitMeta import ConvoKitMeta
 from .convoKitMatrix import ConvoKitMatrix
 import shutil
 
-from convokit.storage import StorageManager
+from convokit.storage import StorageManager, storageManager
 
 from .speaker import Speaker
 from .utterance import Utterance
@@ -53,7 +53,6 @@ class Corpus:
     :ivar corpus_dirpath: path to the directory the corpus was loaded from
     """
     def __init__(self,
-                 filename: Optional[str] = None,
                  corpus_id: Optional[str] = None,
                  utterances: Optional[List[Utterance]] = None,
                  preload_vectors: List[str] = None,
@@ -65,28 +64,23 @@ class Corpus:
                  exclude_speaker_meta: Optional[List[str]] = None,
                  exclude_overall_meta: Optional[List[str]] = None,
                  disable_type_check=False,
-                 storage_type: str = 'db',
+                 storage_type: Optional[str] = None,
                  storage: Optional[StorageManager] = None,
-                 in_place: bool = False):
-
-        if not storage_type in ['mem', 'db']:
-            raise ValueError(
-                f'storage_type must be "mem" or "db"; got "{storage_type} instead"'
-            )
+                 data_dir: Optional[str] = None,
+                 db_host: Optional[str] = None,
+                 in_place: bool = False,
+                 filename: Optional[str] = None,
+                 from_corpus: Optional['Corpus'] = None):
 
         # Setup Storage
         if storage is not None:
             self.storage = storage
         else:
-            if corpus_id is None and filename is not None:
-                corpus_id = filename
-            elif corpus_id is None:
-                corpus_id = safe_corpus_id()
-                print(
-                    f'No filename or corpus name specified; using name {corpus_id}'
-                )
-            self.storage = StorageManager(storage_type=storage_type,
-                                          corpus_id=corpus_id)
+            self.storage = StorageManager(storage_type,
+                                          db_host=db_host,
+                                          data_dir=data_dir,
+                                          corpus_id=corpus_id,
+                                          unique_id=not in_place)
             # Setup Collections
             self.storage.setup_collections(Utterance, Conversation, Speaker,
                                            ConvoKitMeta)
@@ -102,116 +96,122 @@ class Corpus:
         speakers_data = defaultdict(dict)
         convos_data = defaultdict(dict)
 
-        # Loading in preconstruced & Stored corpus
-        if storage_type == 'db':
-            if filename is not None:
-                mem_corpus = Corpus(
-                    filename=filename,
-                    utterances=utterances,
-                    preload_vectors=preload_vectors,
-                    utterance_start_index=utterance_start_index,
-                    utterance_end_index=utterance_end_index,
-                    merge_lines=merge_lines,
-                    exclude_utterance_meta=exclude_utterance_meta,
-                    exclude_conversation_meta=exclude_conversation_meta,
-                    exclude_speaker_meta=exclude_speaker_meta,
-                    exclude_overall_meta=exclude_overall_meta,
-                    disable_type_check=disable_type_check,
-                    storage_type='mem')
-                self.copy_from(mem_corpus.storage, storage_type='db')
+        if from_corpus is not None:
+            assert utterances is None
+            self.copy_from(from_corpus.storage)
 
-            else:
-                assert self.id is not None
-                if f'{self.id}_utterances' in self.storage.db.list_collection_names(
-                ):
-                    print(f'Corpus {self.id} loaded from DB')
-                    utterances = None
-                    if not in_place:
-                        # print('self.storage', repr(self.storage))
-                        self.copy_from(self.storage, storage_type='db')
-                        # print('self.storage', repr(self.storage))
+        else:
+            # Loading in preconstruced & Stored corpus
+            if self.storage.storage_type == 'db':
+                if not in_place:
+                    if self.storage.raw_corpus_id != self.storage.corpus_id:
+                        if utterances is None:
+                            print(
+                                f'Loading a copy of corpus {self.storage.raw_corpus_id} from DB'
+                            )
+                            if not in_place:
+                                tmp_storage = StorageManager(
+                                    storage_type,
+                                    db_host=db_host,
+                                    data_dir=data_dir,
+                                    corpus_id=self.storage.raw_corpus_id,
+                                    unique_id=False)
+                                tmp_storage.setup_collections(
+                                    Utterance, Conversation, Speaker,
+                                    ConvoKitMeta)
+
+                                self.copy_from(tmp_storage)
+                        else:
+                            warn(
+                                f'Corpus {self.storage.raw_corpus_id} found in the DB but utterances != None; ignoring existing data and using given utterances'
+                            )
                 else:
-                    print(
-                        f'Corpus {self.id} not found in DB; building new corpus'
-                    )
+                    assert self.storage.raw_corpus_id == self.storage.corpus_id
+                    if self.id in self.storage.db.list_collections():
+                        print(
+                            f'Connecting to corpus {self.storage.corpus_id} in place in the DB'
+                        )
+                    else:
+                        print(
+                            f'Corpus {self.storage.corpus_id} not found in the DB; building new corpus'
+                        )
 
-        elif storage_type == 'mem':
-            if filename is None:
-                self.corpus_dirpath = None
-            elif os.path.isdir(filename):
-                self.corpus_dirpath = filename
-            else:
-                self.corpus_dirpath = os.path.dirname(filename)
+            elif self.storage.storage_type == 'mem':
+                convos_data = defaultdict(dict)
+                if exclude_utterance_meta is None: exclude_utterance_meta = []
+                if exclude_conversation_meta is None:
+                    exclude_conversation_meta = []
+                if exclude_speaker_meta is None: exclude_speaker_meta = []
+                if exclude_overall_meta is None: exclude_overall_meta = []
 
-            convos_data = defaultdict(dict)
-            if exclude_utterance_meta is None: exclude_utterance_meta = []
-            if exclude_conversation_meta is None:
-                exclude_conversation_meta = []
-            if exclude_speaker_meta is None: exclude_speaker_meta = []
-            if exclude_overall_meta is None: exclude_overall_meta = []
+                # Construct corpus from file or directory
+                print(self.storage.data_dir is not None)
+                if self.storage.raw_corpus_id is not None or filename is not None:
+                    filename = os.path.join(
+                        self.storage.data_dir,
+                        self.id) if filename is None else filename
+                    print(f'Loading corpus {self.id} from disk at {filename}')
+                    if disable_type_check:
+                        self.storage.index.disable_type_check()
+                    if os.path.isdir(filename):  # Load corpus data from dir
+                        assert utterances is None
+                        utterances = load_uttinfo_from_dir(
+                            filename, utterance_start_index,
+                            utterance_end_index, exclude_utterance_meta)
 
-            # Construct corpus from file or directory
-            if filename is not None:
-                if disable_type_check:
-                    self.storage.index.disable_type_check()
-                if os.path.isdir(filename):  # Load corpus data from dir
-                    utterances = load_uttinfo_from_dir(filename,
-                                                       utterance_start_index,
-                                                       utterance_end_index,
-                                                       exclude_utterance_meta)
+                        speakers_data = load_speakers_data_from_dir(
+                            filename, exclude_speaker_meta)
+                        convos_data = load_convos_data_from_dir(
+                            filename, exclude_conversation_meta)
+                        load_corpus_meta_from_dir(filename, self.meta,
+                                                  exclude_overall_meta)
 
-                    speakers_data = load_speakers_data_from_dir(
-                        filename, exclude_speaker_meta)
-                    convos_data = load_convos_data_from_dir(
-                        filename, exclude_conversation_meta)
-                    load_corpus_meta_from_dir(filename, self.meta,
-                                              exclude_overall_meta)
+                        with open(os.path.join(filename, "index.json"),
+                                  "r") as f:
+                            idx_dict = json.load(f)
+                            self.storage.index.update_from_dict(idx_dict)
 
-                    with open(os.path.join(filename, "index.json"), "r") as f:
-                        idx_dict = json.load(f)
-                        self.storage.index.update_from_dict(idx_dict)
+                        # unpack binary data for utterances
+                        unpack_binary_data_for_utts(
+                            utterances, filename,
+                            self.storage.index.utterances_index,
+                            exclude_utterance_meta, KeyMeta)
+                        # unpack binary data for speakers
+                        unpack_binary_data(filename, speakers_data,
+                                           self.storage.index.speakers_index,
+                                           "speaker", exclude_speaker_meta)
 
-                    # unpack binary data for utterances
-                    unpack_binary_data_for_utts(
-                        utterances, filename,
-                        self.storage.index.utterances_index,
-                        exclude_utterance_meta, KeyMeta)
-                    # unpack binary data for speakers
-                    unpack_binary_data(filename, speakers_data,
-                                       self.storage.index.speakers_index,
-                                       "speaker", exclude_speaker_meta)
+                        # unpack binary data for conversations
+                        unpack_binary_data(
+                            filename, convos_data,
+                            self.storage.index.conversations_index, "convo",
+                            exclude_conversation_meta)
 
-                    # unpack binary data for conversations
-                    unpack_binary_data(filename, convos_data,
-                                       self.storage.index.conversations_index,
-                                       "convo", exclude_conversation_meta)
+                        # unpack binary data for overall corpus
+                        unpack_binary_data(filename, self.meta,
+                                           self.storage.index.overall_index,
+                                           "overall", exclude_overall_meta)
 
-                    # unpack binary data for overall corpus
-                    unpack_binary_data(filename, self.meta,
-                                       self.storage.index.overall_index,
-                                       "overall", exclude_overall_meta)
+                    elif os.path.isfile(filename):  # Load utterances from file
+                        assert utterances is None
+                        speakers_data = defaultdict(dict)
+                        convos_data = defaultdict(dict)
+                        utterances = load_from_utterance_file(
+                            filename, utterance_start_index,
+                            utterance_end_index)
 
-                else:  # Load utterances from file
-                    speakers_data = defaultdict(dict)
-                    convos_data = defaultdict(dict)
-                    utterances = load_from_utterance_file(
-                        filename, utterance_start_index, utterance_end_index)
+                    utterances = initialize_speakers_and_utterances_objects(
+                        self, utterances, speakers_data).values()
 
-                initialize_speakers_and_utterances_objects(
-                    self, self.storage._utterances, utterances,
-                    self.storage._speakers, speakers_data)
+                    self.storage.index.enable_type_check()
 
-                self.storage.index.enable_type_check()
-
-                # load preload_vectors
-                if preload_vectors is not None:
-                    for vector_name in preload_vectors:
-                        matrix = ConvoKitMatrix.from_dir(
-                            self.corpus_dirpath, vector_name)
-                        if matrix is not None:
-                            self._vector_matrices[vector_name] = matrix
-
-                utterances = None
+                    # load preload_vectors
+                    if preload_vectors is not None:
+                        for vector_name in preload_vectors:
+                            matrix = ConvoKitMatrix.from_dir(
+                                self.corpus_dirpath, vector_name)
+                            if matrix is not None:
+                                self._vector_matrices[vector_name] = matrix
 
         # Building a new corpus from utterances
         if utterances is not None:  # Construct corpus from utterances list
@@ -257,9 +257,14 @@ class Corpus:
                 "where each string is the name of a vector matrix.")
         self.storage.index.vectors = new_vectors
 
+    def copy_as(self, storage_type, corpus_id=None):
+        return Corpus(corpus_id=corpus_id,
+                      storage_type=storage_type,
+                      from_corpus=self)
+
     def dump(self,
-             name: str,
-             base_path: Optional[str] = None,
+             corpus_id: str,
+             data_dir: Optional[str] = None,
              exclude_vectors: List[str] = None,
              force_version: int = None,
              overwrite_existing_corpus: bool = False,
@@ -268,8 +273,8 @@ class Corpus:
         Dumps the corpus and its metadata to disk. Optionally, set `force_version` to a desired integer version number,
         otherwise the version number is automatically incremented.
 
-        :param name: name of corpus
-        :param base_path: base directory to save corpus in (None to save to a default directory)
+        :param corpus_id: name to identify the corpus
+        :param data_dir: base directory to save corpus in (None to save to a default directory)
         :param exclude_vectors: list of names of vector matrices to exclude from the dumping step. By default; all
             vector matrices that belong to the Corpus (whether loaded or not) are dumped.
         :param force_version: version number to set for the dumped corpus
@@ -278,8 +283,8 @@ class Corpus:
         """
         if fields_to_skip is None:
             fields_to_skip = dict()
-        dir_name = name
-        if base_path is not None and overwrite_existing_corpus:
+        dir_name = corpus_id
+        if data_dir is not None and overwrite_existing_corpus:
             raise ValueError(
                 "Not allowed to specify both base_path and overwrite_existing_corpus!"
             )
@@ -288,19 +293,20 @@ class Corpus:
                 "Cannot use save to existing path on Corpus generated from utterance list!"
             )
         if not overwrite_existing_corpus:
-            if base_path is None:
-                base_path = os.path.expanduser("~/.convokit/")
-                if not os.path.exists(base_path):
-                    os.mkdir(base_path)
-                base_path = os.path.join(base_path, "saved-corpora/")
-                if not os.path.exists(base_path):
-                    os.mkdir(base_path)
-            dir_name = os.path.join(base_path, dir_name)
+            if data_dir is None:
+                data_dir = os.path.expanduser(self.storage.data_dir)
+                if not os.path.exists(data_dir):
+                    os.mkdir(data_dir)
+                # base_path = os.path.join(base_path, "saved-corpora/")
+                # if not os.path.exists(base_path):
+                #     os.mkdir(base_path)
+            dir_name = os.path.join(data_dir, dir_name)
         else:
             dir_name = os.path.join(self.corpus_dirpath)
 
         if not os.path.exists(dir_name):
             os.mkdir(dir_name)
+        print('dump to ', dir_name)
 
         # dump speakers, conversations, utterances
         dump_corpus_component(self, dir_name, "speakers.json", "speaker",
@@ -1008,31 +1014,17 @@ class Corpus:
         new_corpus.update_speakers_data()
         new_corpus.reinitialize_index()
         if modify:
-            self.update_from(new_corpus.storage)
+            self.copy_from(new_corpus.storage)
         return new_corpus
 
-    def copy_from(self, storage: StorageManager, storage_type: str):
-        self.storage = StorageManager(storage_type=storage_type,
-                                      corpus_id=f'{self.id}.1')
-        self.storage.setup_collections(Utterance, Conversation, Speaker,
-                                       ConvoKitMeta)
-        for uid, utt in storage._utterances.items():
+    def copy_from(self, from_storage: StorageManager):
+        for uid, utt in from_storage._utterances.items():
             self.storage._utterances[uid] = utt
 
-        for cid, convo in storage._conversations.items():
+        for cid, convo in from_storage._conversations.items():
             self.storage._conversations[cid] = convo
 
-        for sid, speaker in storage._speakers.items():
-            self.storage._speakers[sid] = speaker
-
-    def update_from(self, storage: StorageManager):
-        for uid, utt in storage._utterances.items():
-            self.storage._utterances[uid] = utt
-
-        for cid, convo in storage._conversations.items():
-            self.storage._conversations[cid] = convo
-
-        for sid, speaker in storage._speakers.items():
+        for sid, speaker in from_storage._speakers.items():
             self.storage._speakers[sid] = speaker
 
     def add_utterances(self,

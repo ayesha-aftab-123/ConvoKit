@@ -7,7 +7,6 @@ import json
 from collections import defaultdict
 from typing import Dict
 import pickle
-from random import randrange
 
 from .speaker import Speaker
 from .utterance import Utterance
@@ -203,11 +202,15 @@ def load_from_utterance_file(filename, utterance_start_index,
     return utterances
 
 
-def initialize_speakers_and_utterances_objects(corpus, utt_dict, utterances,
-                                               speakers_dict, speakers_data):
+def initialize_speakers_and_utterances_objects(corpus, utterances,
+                                               speakers_data):
     """
     Initialize Speaker and Utterance objects
     """
+    utt_dict = {}
+    speakers_dict = {}
+    if utterances is None:
+        return
     if len(
             utterances
     ) > 0:  # utterances might be empty for invalid corpus start/end indices
@@ -254,6 +257,7 @@ def initialize_speakers_and_utterances_objects(corpus, utt_dict, utterances,
                         meta=u[KeyMeta])
         utt.vectors = u.get(KeyVectors, [])
         utt_dict[utt.id] = utt
+    return utt_dict
 
 
 def merge_utterance_lines(utt_dict, data_store):
@@ -422,10 +426,6 @@ def dump_jsonlist_from_dict(entries,
         for k, v in entries.items():
             json.dump({index_key: k, value_key: v}, f)
             f.write('\n')
-
-
-def safe_corpus_id():
-    return str(randrange(2**15, 2**20))
 
 
 def extract_meta_from_df(df):

@@ -22,7 +22,7 @@ class CorpusComponent:
         elif owner is not None:
             self.storage = owner.storage
         else:
-            self.storage = StorageManager(storage_type='mem')
+            self.storage = StorageManager('mem')
             self.storage.setup_collections(None, None, None, None)
 
         if from_db:

@@ -109,7 +109,7 @@ class CorpusIndexMeta(unittest.TestCase):
         # corpus1.get_conversation(None).meta['convo_meta'] = 1 # ToDo: Put back
 
         corpus1.get_speaker("alice").meta['surname'] = 1.0
-        corpus1.dump('test_index_meta_corpus', base_path="./")
+        corpus1.dump('test_index_meta_corpus', data_dir="./")
         corpus2 = Corpus(filename="test_index_meta_corpus")
 
         self.assertEqual(corpus1.storage.index.utterances_index,

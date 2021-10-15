@@ -5,10 +5,18 @@ from .convoKitIndex import ConvoKitIndex
 
 from pymongo import MongoClient
 from pymongo.database import Database
+from random import randrange
+import os
+import yaml
 
 
 class StorageManager:
-    def __init__(self, storage_type: str = 'db', corpus_id='default_corpus'):
+    def __init__(self,
+                 storage_type,
+                 db_host=None,
+                 data_dir=None,
+                 corpus_id=None,
+                 unique_id=False):
         """
         Object to manage data storage. 
 
@@ -24,21 +32,46 @@ class StorageManager:
         :ivar ItemMapping: class constructor to use to store data for items in the collections.
             Either a DBDocumentMapping or MemDocumentMapping
         """
-        if corpus_id is None:
-            corpus_id = 'default_corpus'
+        if not storage_type in ['mem', 'db', None]:
+            raise ValueError(
+                f'storage_type must be "mem", "db" or None; got "{storage_type} instead"'
+            )
+        # Use defaults from config file or specified values if provided
+        with open(os.path.expanduser('~/.convokit/config.yml'), 'r') as f:
+            config = yaml.load(f.read())
+        if storage_type is None:
+            storage_type = config['default_storage_mode']
+        if db_host is None:
+            db_host = config['db_host']
+        if data_dir is None:
+            data_dir = os.path.expanduser(config['data_dir'])
+
+        self.raw_corpus_id = corpus_id
         self.storage_type = storage_type
         self.index = ConvoKitIndex(self)
-        self.corpus_id = corpus_id
+        self.data_dir = data_dir
         if storage_type == 'db':
-            self.client = MongoClient()
-            if not isinstance(corpus_id, str):
-                raise TypeError(f'{corpus_id}: {type(corpus_id)}')
+            self.client = MongoClient(db_host)
             self.db = self.client['convokit']
+            if corpus_id is None:
+                corpus_id = safe_corpus_id()
+                print(
+                    f'No filename or corpus name specified for DB storage; using name {corpus_id}'
+                )
+            if unique_id:
+                collections = self.db.list_collection_names()
+                while f'{corpus_id}_utterances' in collections:
+                    corpus_id = f'{corpus_id}.1'
+            self.corpus_id = corpus_id
             self.CollectionMapping = DBCollectionMapping.with_storage(self)
             self.ItemMapping = DBDocumentMapping
         elif storage_type == 'mem':
-            self.db = None
             self.connection = {}
+            # if unique_id:
+            #     files = os.listdir(data_dir)
+            #     while f'{corpus_id}' in files:
+            #         corpus_id = f'{corpus_id}.1'
+            self.corpus_id = corpus_id
             self.CollectionMapping = MemCollectionMapping.with_storage(self)
             self.ItemMapping = MemDocumentMapping
         else:
@@ -109,3 +142,7 @@ class StorageManager:
 
     def __repr__(self):
         return f'StorageManager(storage_type: {self.storage_type}, corpus_id: {self.corpus_id}'
+
+
+def safe_corpus_id():
+    return str(randrange(2**15, 2**20))

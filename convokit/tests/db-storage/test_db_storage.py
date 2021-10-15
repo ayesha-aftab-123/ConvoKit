@@ -62,7 +62,7 @@ class DBStorage(unittest.TestCase):
         self.assertEqual(len(col1['doc2']), 1)
 
     def test_db_corpusComponent(self):
-        storage = StorageManager(storage_type='db')
+        storage = StorageManager(storage_type='db', corpus_id='direct_storage')
         print(
             f'(test_db_corpusComponent)\tstorage.CollectionMapping: {storage.CollectionMapping}'
         )
@@ -102,7 +102,9 @@ class DBStorage(unittest.TestCase):
         del u0, u1, u0_, u1_, storage, c0
 
         # Test persistent storage
-        storage_ = StorageManager(storage_type='db')
+        storage_ = StorageManager(storage_type='db',
+                                  corpus_id='direct_storage',
+                                  unique_id=False)
         storage_.setup_collections(Utterance, Conversation, Speaker,
                                    ConvoKitMeta)
 

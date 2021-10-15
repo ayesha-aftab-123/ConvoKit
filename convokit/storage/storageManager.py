@@ -102,6 +102,12 @@ class StorageManager:
                     value.drop_collection(collection_name)
 
     @staticmethod
+    def default_storage_mode():
+        with open(os.path.expanduser('~/.convokit/config.yml'), 'r') as f:
+            config = yaml.load(f.read())
+        return config['default_storage_mode']
+
+    @staticmethod
     def purge_db():
         """
         Remove all data in the default database. 

@@ -6,8 +6,15 @@ from convokit import download, StorageManager
 class CorpusFromPandas(unittest.TestCase):
     def setUp(self) -> None:
         StorageManager.purge_db()
-        self.corpus = Corpus(download('subreddit-hey'))
-        print(0, self.corpus.random_conversation().meta)
+        self.memcorpus = Corpus(filename=download('subreddit-hey'),
+                                storage_type='mem')
+        self.dbcorpus = self.memcorpus.copy_as('db', corpus_id='subreddit-hey')
+
+        if StorageManager.default_storage_mode() == 'mem':
+            self.corpus = self.memcorpus
+        else:
+            self.corpus = self.dbcorpus
+
         utt_df = self.corpus.get_utterances_dataframe()
         convo_df = self.corpus.get_conversations_dataframe()
         speaker_df = self.corpus.get_speakers_dataframe()

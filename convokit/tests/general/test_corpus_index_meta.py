@@ -96,11 +96,13 @@ class CorpusIndexMeta(unittest.TestCase):
     def test_corpus_dump(self):
         corpus1 = Corpus(utterances=[
             Utterance(id="0", text="hello world", speaker=Speaker(id="alice")),
-            Utterance(id="1", text="my name is bob", speaker=Speaker(
-                id="bob")),
-            Utterance(
-                id="2", text="this is a test", speaker=Speaker(id="charlie")),
-        ])
+            Utterance(id="1", text="my name is bob",
+                      speaker=Speaker(id="bob")),
+            Utterance(id="2",
+                      text="this is a test",
+                      speaker=Speaker(id="charlie")),
+        ],
+                         storage_type='mem')
 
         corpus1.get_utterance("0").meta['foo'] = 'bar'
         corpus1.get_utterance("1").meta['foo'] = 'bar2'
@@ -110,7 +112,8 @@ class CorpusIndexMeta(unittest.TestCase):
 
         corpus1.get_speaker("alice").meta['surname'] = 1.0
         corpus1.dump('test_index_meta_corpus', data_dir="./")
-        corpus2 = Corpus(filename="test_index_meta_corpus")
+        corpus2 = Corpus(filename="./test_index_meta_corpus",
+                         storage_type='mem')
 
         self.assertEqual(corpus1.storage.index.utterances_index,
                          corpus2.storage.index.utterances_index)

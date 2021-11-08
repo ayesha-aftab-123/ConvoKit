@@ -57,6 +57,7 @@ class TextParser(TextProcessor):
 				elif mode == 'tag':
 					aux_input['spacy_nlp'] = spacy.load('en_core_web_sm', disable=['ner','parser'])
 				elif mode == 'tokenize':
+
                     # also disable lemmatizer otherwise it triggers warning W108 
 					aux_input['spacy_nlp'] = spacy.load('en_core_web_sm', disable=['ner','parser', 'tagger', 'lemmatizer'])
 			except OSError:

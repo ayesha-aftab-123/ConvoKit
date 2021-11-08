@@ -150,10 +150,12 @@ class PolitenessStrategies(Transformer):
 
         if plot:
             plt.figure(dpi=200, figsize=(9, 6))
+
             plt.bar(proportions.index, proportions.values)
             plt.xticks(np.arange(.4, num_strategies+.4), rotation=45, ha="right")
             plt.ylabel("% utterance using strategy", size=20)
             plt.yticks(size=15)
+
             if y_lim != None:
                 plt.ylim(0, y_lim)
             plt.show()

@@ -359,3 +359,9 @@ def dump_jsonlist_from_dict(entries, filename, index_key='id', value_key='value'
         for k, v in entries.items():
             json.dump({index_key: k, value_key: v}, f)
             f.write('\n')
+
+def extract_meta_from_df(df):
+    meta_cols = [col.split(".")[1] for col in df if col.startswith('meta')]
+    return meta_cols
+
+

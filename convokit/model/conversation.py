@@ -45,7 +45,7 @@ class Conversation(CorpusComponent):
 
         self.utterance_ids: List[
             str] = utterances if utterances is not None else []
-        self.speaker_ids = [  # Todo: change speaker.id to speaker_id
+        self.speaker_ids = [
             self.storage._utterances[utt].speaker_id for utt in utterances
         ] if utterances is not None else []
 

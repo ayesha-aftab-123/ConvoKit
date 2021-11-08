@@ -232,13 +232,10 @@ class Corpus:
                 speaker.owner = self
 
         if merge_lines:
-            raise NotImplementedError('merge_lines=True')
-            # ???????
             print('merging lines')
-            self.storage._utterances = merge_utterance_lines(
-                self.storage._utterances,
-                self.storage.CollectionMapping(
-                    'utterances'))  # Todo: Fix for db.
+            merge_utterance_lines(storage)
+            # self.storage._utterances = merge_utterance_lines(
+            #     self.storage._utterances)
 
         if disable_type_check: self.storage.index.disable_type_check()
         initialize_conversations(self, convos_data)

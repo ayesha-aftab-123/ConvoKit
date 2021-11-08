@@ -8,6 +8,9 @@ from collections import defaultdict
 from typing import Dict
 import pickle
 
+from convokit.storage.dbMappings import DBCollectionMapping
+from convokit.storage.memMappings import MemCollectionMapping
+
 from .speaker import Speaker
 from .utterance import Utterance
 from .conversation import Conversation
@@ -260,16 +263,18 @@ def initialize_speakers_and_utterances_objects(corpus, utterances,
     return utt_dict
 
 
-def merge_utterance_lines(utt_dict, data_store):
+def merge_utterance_lines(storage):
     """
     For merging adjacent utterances by the same speaker
     """
-    new_utterances = data_store
+    new_utterances = storage.CollectionMapping(
+        f'{storage._utterances.name}_merged', item_type=Utterance)
+
     merged_with = {}
-    for uid, utt in utt_dict.items():
+    for uid, utt in storage._utterances.items():
         merged = False
         if utt.reply_to is not None and utt.speaker is not None:
-            u0 = utt_dict[utt.reply_to]
+            u0 = storage._utterances[utt.reply_to]
             if u0.conversation_id == utt.conversation_id and u0.speaker == utt.speaker:
                 merge_target = merged_with[
                     u0.id] if u0.id in merged_with else u0.id
@@ -280,7 +285,7 @@ def merge_utterance_lines(utt_dict, data_store):
             if utt.reply_to in merged_with:
                 utt.reply_to = merged_with[utt.reply_to]
             new_utterances[utt.id] = utt
-    return new_utterances
+    storage._utterances = new_utterances
 
 
 def initialize_conversations(corpus, convos_data):

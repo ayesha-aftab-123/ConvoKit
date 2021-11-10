@@ -28,10 +28,10 @@ class DBStorage(unittest.TestCase):
         self.assertDictEqual(col1['doc1'], {
             'name': 'first document',
             'NAME': 'FIRST DOCUMENT',
-            'n': 2
+            'n': 2,
         })
 
-        self.assertDictEqual(doc1.dict(), {
+        self.assertDictEqual(doc1.dict(with_id=False), {
             'name': 'first document',
             'NAME': 'FIRST DOCUMENT',
             'n': 2
@@ -50,11 +50,6 @@ class DBStorage(unittest.TestCase):
         self.assertEqual(
             col1.collection.find_one({'_id': 'doc2'})['I am'], 'the best ever')
         self.assertEqual(col1['doc2']['I am'], 'the best ever')
-
-        # for doc in col1:
-        #     print(doc)
-        #     for field in doc:
-        #         print(field)
 
         # Check lengths
         self.assertEqual(len(col1), 2)

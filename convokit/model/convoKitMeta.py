@@ -39,6 +39,7 @@ class ConvoKitMeta(MutableMapping):
             self.storage.index.update_index(self.obj_type, key,
                                             repr(type(value)))
         # print(f'meta: setting {key} -> {value}')
+        # print(f'meta: setting {type(key)} -> {type(value)}')
         self.fields[key] = value
 
     def __delitem__(self, key):
@@ -69,37 +70,21 @@ class ConvoKitMeta(MutableMapping):
         return self.fields.__dict__
 
     def __eq__(self, o: object) -> bool:
-        # print('meta __eq__')
         if isinstance(o, ConvoKitMeta):
-            # print('\tmeta vs meta')
-            theirs = o.fields.dict()
+            theirs = o.fields.dict(with_id=False)
         elif isinstance(o, dict):
-            # print('\tmeta vs dict')
             theirs = o
         else:
             return False
 
-        mine = self.fields.dict()
-        if len(theirs) == len(mine):
-            # print('\tdirect comparison:')
-            # print('\t', mine)
-            # print('\t', theirs)
-            return theirs == mine
-        elif '_id' in mine and '_id' not in theirs:
-            del mine['_id']
-            # print('\tdirect comparison after removing my id:')
-            # print('\t', mine)
-            # print('\t', theirs)
-            return theirs == mine
-        else:
-            # print('\tSHRUG?')
-            return False
+        mine = self.fields.dict(with_id=False)
+        return theirs == mine
 
     def __repr__(self):
-        return f'{self.fields.collection_mapping.name}.{self.fields.id}: {str(self.fields.dict())}'
+        return f'{self.fields.collection_mapping.name}.{self.fields.id}: {str(self.fields.dict(with_id=False))}'
 
     def __str__(self):
-        return str(self.fields.dict())
+        return str(self.fields.dict(with_id=False))
 
     def update(self, other=(), /, **kwds):
         ''' D.update([E, ]**F) -> None.  Update D from mapping/iterable E and F.
@@ -127,7 +112,9 @@ class ConvoKitMeta(MutableMapping):
         type_id = doc.id.split('_')
         obj_type = type_id[0]
 
-        ret = cls(from_db=True, id=doc.id, obj_type=obj_type, storage=doc.collection_mapping.storage)
+        ret = cls(from_db=True,
+                  id=doc.id,
+                  obj_type=obj_type,
+                  storage=doc.collection_mapping.storage)
         ret.fields = doc
-        # print(f'ret.fields.dict() : {ret.fields.dict()}')
         return ret

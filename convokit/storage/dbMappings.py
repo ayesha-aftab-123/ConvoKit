@@ -26,7 +26,7 @@ class DBCollectionMapping(MutableMapping):
         if self.type is not None:
             return self.type.from_dbdoc(DBDocumentMapping(self, key))
         else:
-            return DBDocumentMapping(self, key).dict()
+            return DBDocumentMapping(self, key).dict(with_id=False)
 
     def __setitem__(self, key: str, value):
         if self.type is None and isinstance(value, dict):
@@ -109,12 +109,17 @@ class DBDocumentMapping(MutableMapping):
                                                       data,
                                                       upsert=True)
 
-    def dict(self):
+    def dict(self, with_id=True):
         data = self.collection_mapping.collection.find_one({'_id': self.id})
         if data is None:
             data = {}
-        if '_id' in data:
+        else:
             del data['_id']
+            if with_id:
+                data['id'] = self.id
+            elif 'id' in data:
+                del data['id']
+
         return data
 
     def __getitem__(self, key):
@@ -144,7 +149,7 @@ class DBDocumentMapping(MutableMapping):
         return self.dict().__iter__()
 
     def __len__(self):
-        return len(self.dict())
+        return len(self.dict(with_id=False))
 
     def __contains__(self, key):
         return key in self.dict()

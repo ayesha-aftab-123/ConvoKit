@@ -19,9 +19,13 @@ class MemCollectionMapping(MutableMapping):
         return ret
 
     def __setitem__(self, key, value):
+        if key is None:
+            key = 'None'
         self.data[key] = value
 
     def __getitem__(self, key):
+        if key is None:
+            key = 'None'
         return self.data[key]
 
     def __delitem__(self, key):
@@ -49,6 +53,8 @@ class MemCollectionMapping(MutableMapping):
 class MemDocumentMapping(MutableMapping):
     def __init__(self, collection_mapping, id):
         super().__init__()
+        if id is None:
+            id = 'None'
         self.id = id
         self.data = {}
         if id in collection_mapping:
@@ -56,8 +62,13 @@ class MemDocumentMapping(MutableMapping):
         self.collection_mapping = collection_mapping
         self.data
 
-    def dict(self):
-        return self.data
+    def dict(self, with_id=True):
+        d = self.data.copy()
+        if with_id:
+            d['id'] = self.id
+        elif 'id' in d:
+            del d['id']
+        return d
 
     def __setitem__(self, key, value):
         self.data[key] = value

@@ -41,7 +41,7 @@ class CorpusComponent:
             if obj_type == 'conversation' else self.storage._utterances, id)
 
         self.obj_type = obj_type  # utterance, speaker, conversation
-        self.id = id
+        self.id = self.fields.id
 
         self.owner = owner
 

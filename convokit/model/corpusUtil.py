@@ -4,6 +4,7 @@ Contains various methods used by Corpus components
 """
 
 import pandas as pd
+from tqdm import tqdm
 
 
 def get_utterances_dataframe(obj,
@@ -20,7 +21,7 @@ def get_utterances_dataframe(obj,
     :return: a pandas DataFrame
     """
     ds = dict()
-    for utt in obj.iter_utterances(selector):
+    for utt in tqdm(obj.iter_utterances(selector)):
         d = utt.fields.dict()
         if not exclude_meta:
             for k, v in utt.meta.items():
@@ -30,13 +31,16 @@ def get_utterances_dataframe(obj,
         ds[utt.id] = d
 
     df = pd.DataFrame(ds).T
-    # df['id'] = df['_id']
-    df = df.set_index('id')
+    try:
+        df = df.set_index('id')
+    except KeyError:
+        raise Exception(f'id not in keys {df.keys()}')
+
     df = df.drop(['obj_type', 'speaker_id'], axis=1)
     # df['speaker'] = df['speaker'].map(lambda spkr: spkr.id)
     meta_columns = [k for k in df.columns if k.startswith('meta.')]
     return df[['timestamp', 'text', 'speaker', 'reply_to', 'conversation_id'] +
-              meta_columns]
+              meta_columns + ['vectors']]
 
 
 def get_conversations_dataframe(obj,
@@ -62,7 +66,6 @@ def get_conversations_dataframe(obj,
         ds[convo.id] = d
 
     df = pd.DataFrame(ds).T
-    # df['id'] = df['_id']
     df = df.set_index('id')
     return df.drop(['obj_type', 'utterance_ids', 'speaker_ids'], axis=1)
 
@@ -89,6 +92,5 @@ def get_speakers_dataframe(obj,
         ds[spkr.id] = d
 
     df = pd.DataFrame(ds).T
-    # df['id'] = df['_id']
     df = df.set_index('id')
     return df.drop(['obj_type', 'utterance_ids', 'conversation_ids'], axis=1)

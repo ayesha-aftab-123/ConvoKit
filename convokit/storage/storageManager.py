@@ -1,32 +1,40 @@
-from .dbMappings import DBCollectionMapping, DBDocumentMapping
-from .memMappings import MemCollectionMapping, MemDocumentMapping
-from convokit.util import warn
-from .convoKitIndex import ConvoKitIndex
-
+from typing import List, Collection, Callable, Set, Generator, Tuple, Optional, ValuesView, Union, MutableMapping
 from pymongo import MongoClient
 from pymongo.database import Database
 from random import randrange
 import os
 import yaml
 
+from .dbMappings import DBCollectionMapping, DBDocumentMapping
+from .memMappings import MemCollectionMapping, MemDocumentMapping
+from convokit.util import warn
+from .convoKitIndex import ConvoKitIndex
+
 
 class StorageManager:
     def __init__(self,
-                 storage_type,
-                 db_host=None,
-                 data_dir=None,
-                 corpus_id=None,
-                 unique_id=False):
+                 storage_type: str,
+                 db_host: Optional[str] = None,
+                 data_dir: Optional[str] = None,
+                 corpus_id: Optional[str] = None,
+                 version: Optional[str] = '0',
+                 in_place: Optional[bool] = True):
         """
         Object to manage data storage. 
 
         :param storage_type: either 'mem' or 'db'
-        :param corpus_id: id of the corpus this StorageManager is connected to.
+        :param db_host: name of the DB host
+        :param data_dir: path to the directory containing Mem Corpora. If left 
+            unspecified, will use the data_dir specified in ~/.convokit/config.yml
+        :param corpus_id: id of the corpus this StorageManager will connect to.
+        :param version: the version to load from e.g. '0' or '1.0.1'
+        :param in_place: whether (if True) to directly connect to the  specified version,
+            or (if False) to increment the version number so that the original copy
+            of the data can be left unmodified. 
         
         :ivar storage_type: either 'mem' or 'db'
         :ivar index: ConvoKitIndex to track types of metadata stored in this StorageManager
         :ivar corpus_id: id of the corpus this StorageManager is connected to.
-        :ivar connection: ????
         :ivar CollectionMapping: class constructor to use to store collections of items.
             Either a DBCollectionMapping or MemCollectionMapping
         :ivar ItemMapping: class constructor to use to store data for items in the collections.
@@ -46,7 +54,6 @@ class StorageManager:
         if data_dir is None:
             data_dir = os.path.expanduser(config['data_dir'])
 
-        self.raw_corpus_id = corpus_id
         self.storage_type = storage_type
         self.index = ConvoKitIndex(self)
         self.data_dir = data_dir
@@ -58,19 +65,11 @@ class StorageManager:
                 print(
                     f'No filename or corpus name specified for DB storage; using name {corpus_id}'
                 )
-            if unique_id:
-                collections = self.db.list_collection_names()
-                while f'{corpus_id}_utterances' in collections:
-                    corpus_id = f'{corpus_id}.1'
             self.corpus_id = corpus_id
             self.CollectionMapping = DBCollectionMapping.with_storage(self)
             self.ItemMapping = DBDocumentMapping
         elif storage_type == 'mem':
             self.connection = {}
-            # if unique_id:
-            #     files = os.listdir(data_dir)
-            #     while f'{corpus_id}' in files:
-            #         corpus_id = f'{corpus_id}.1'
             self.corpus_id = corpus_id
             self.CollectionMapping = MemCollectionMapping.with_storage(self)
             self.ItemMapping = MemDocumentMapping
@@ -78,6 +77,29 @@ class StorageManager:
             raise ValueError(
                 f'Expected storage type to be "mem" or "db"; got {storage_type} instead'
             )
+        # Set the version number
+        self.raw_version = version
+        if storage_type == 'db':
+            collections = self.db.list_collection_names()
+            augment = '_utterances'
+        else:
+            collections = os.listdir(data_dir)
+            augment = ''
+        if not in_place and f'{make_full_name(self.corpus_id, version)}{augment}' in collections:
+            x = 1
+            while True:
+                test_version = f'{version}.{x}'
+                if f'{make_full_name(self.corpus_id, test_version)}{augment}' in collections:
+                    x += 1
+                else:
+                    self.version = test_version
+                    break
+        else:
+            self.version = version
+
+    @property
+    def full_name(self):
+        return make_full_name(self.corpus_id, self.version)
 
     def __del__(self):
         if self.storage_type == 'db':
@@ -144,11 +166,15 @@ class StorageManager:
             return False
         else:
             return self.storage_type == other.storage_type \
-                and self.corpus_id == other.corpus_id
+                and self.full_name == other.full_name
 
     def __repr__(self):
-        return f'StorageManager(storage_type: {self.storage_type}, corpus_id: {self.corpus_id}'
+        return f'<StorageManager: {self.storage_type}-{self.full_name}>'
 
 
 def safe_corpus_id():
     return str(randrange(2**15, 2**20))
+
+
+def make_full_name(corpus_id, version):
+    return f'{corpus_id}_v{version}'

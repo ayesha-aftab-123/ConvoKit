@@ -88,13 +88,13 @@ class DBStorage(unittest.TestCase):
             version_test_corpus1.get_utterance('4').meta['testing'])
 
     def test_connect_by_name_not_in_place(self):
+        print(91)
         version_test_corpus0 = get_version_test_corpus()
+        print(92)
         version_test_corpus1 = Corpus(corpus_id='version_test_corpus',
                                       storage_type='db',
                                       in_place=False)
-        # print('version_test_corpus1.storage',
-        #       repr(version_test_corpus1.storage))
-
+        print(93)
         self.assertNotEqual(version_test_corpus0.storage,
                             version_test_corpus1.storage)
 

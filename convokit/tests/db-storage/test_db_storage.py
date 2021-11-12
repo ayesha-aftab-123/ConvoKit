@@ -99,7 +99,7 @@ class DBStorage(unittest.TestCase):
         # Test persistent storage
         storage_ = StorageManager(storage_type='db',
                                   corpus_id='direct_storage',
-                                  unique_id=False)
+                                  in_place=True)
         storage_.setup_collections(Utterance, Conversation, Speaker,
                                    ConvoKitMeta)
 

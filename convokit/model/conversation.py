@@ -30,8 +30,7 @@ class Conversation(CorpusComponent):
                  meta: Optional[Dict] = None,
                  from_db=False,
                  storage: Optional[StorageManager] = None):
-        # if id is None and utterances is not None:
-        #     id = utterances[0]
+
         super().__init__(obj_type="conversation",
                          owner=owner,
                          id=id,
@@ -41,7 +40,6 @@ class Conversation(CorpusComponent):
         self.tree: Optional[UtteranceNode] = None
         if from_db:
             return
-        # print(f'initilizing conversation {id} with utterances {utterances}')
 
         self.utterance_ids: List[
             str] = utterances if utterances is not None else []
@@ -50,15 +48,6 @@ class Conversation(CorpusComponent):
         ] if utterances is not None else []
 
         self.storage._conversations[id] = self
-
-    # Defining Properties for abstract storage
-    # @property
-    # def tree(self):
-    #     return self.fields.__getitem__('tree')
-
-    # @tree.setter
-    # def tree(self, new_tree):
-    #     self.fields.__setitem__('tree', new_tree)
 
     def _add_utterance(self, utt: Utterance):
         if utt.id not in self.utterance_ids:

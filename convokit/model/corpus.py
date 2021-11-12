@@ -46,6 +46,8 @@ class Corpus:
     :param in_place: when connecting to a Corpus with data already in db storage, whether to load a copy of the Corpus 
         or modify the existing Corpus in place.
         False by default, i.e. Corpus is initilized as a seperate copy.
+    :param from_corpus: if specified, the corpus to make a copy from.
+    :param version: (DB only): What version of the specified corpus to connect to
     
 
     :ivar meta_index: index of Corpus metadata
@@ -70,7 +72,8 @@ class Corpus:
                  db_host: Optional[str] = None,
                  in_place: bool = False,
                  filename: Optional[str] = None,
-                 from_corpus: Optional['Corpus'] = None):
+                 from_corpus: Optional['Corpus'] = None,
+                 version: Optional[int] = 0):
 
         # Setup Storage
         if storage is not None:
@@ -80,7 +83,8 @@ class Corpus:
                                           db_host=db_host,
                                           data_dir=data_dir,
                                           corpus_id=corpus_id,
-                                          unique_id=not in_place)
+                                          in_place=in_place,
+                                          version=version)
             # Setup Collections
             self.storage.setup_collections(Utterance, Conversation, Speaker,
                                            ConvoKitMeta)
@@ -104,36 +108,40 @@ class Corpus:
             # Loading in preconstruced & Stored corpus
             if self.storage.storage_type == 'db':
                 if not in_place:
-                    if self.storage.raw_corpus_id != self.storage.corpus_id:
+                    if self.storage.raw_version != self.storage.version:
                         if utterances is None:
-                            print(
-                                f'Loading a copy of corpus {self.storage.raw_corpus_id} from DB'
-                            )
-                            if not in_place:
-                                tmp_storage = StorageManager(
-                                    storage_type,
-                                    db_host=db_host,
-                                    data_dir=data_dir,
-                                    corpus_id=self.storage.raw_corpus_id,
-                                    unique_id=False)
-                                tmp_storage.setup_collections(
-                                    Utterance, Conversation, Speaker,
-                                    ConvoKitMeta)
+                            tmp_storage = StorageManager(
+                                storage_type,
+                                db_host=db_host,
+                                data_dir=data_dir,
+                                corpus_id=self.id,
+                                version=self.storage.raw_version,
+                                in_place=True)
+                            tmp_storage.setup_collections(
+                                Utterance, Conversation, Speaker, ConvoKitMeta)
 
-                                self.copy_from(tmp_storage)
+                            self.copy_from(tmp_storage)
+                            print(
+                                f'Copying corpus {self.id} v{self.storage.raw_version}'
+                                f'to corpus {self.storage.full_name}')
                         else:
                             warn(
-                                f'Corpus {self.storage.raw_corpus_id} found in the DB but utterances != None; ignoring existing data and using given utterances'
+                                f'Corpus {self.id} v{self.storage.raw_version} found'
+                                'in the DB but utterances != None; ignoring existing data and using given utterances'
                             )
+                    else:
+                        print(
+                            f'Corpus {self.storage.full_name} not found in the DB; building new corpus'
+                        )
                 else:
-                    assert self.storage.raw_corpus_id == self.storage.corpus_id
+                    assert self.storage.raw_version == self.storage.version
                     if self.id in self.storage.db.list_collections():
                         print(
-                            f'Connecting to corpus {self.storage.corpus_id} in place in the DB'
+                            f'Connecting to corpus {self.storage.full_name} in place in the DB'
                         )
                     else:
                         print(
-                            f'Corpus {self.storage.corpus_id} not found in the DB; building new corpus'
+                            f'Corpus {self.storage.full_name} not found in the DB; building new corpus'
                         )
 
             elif self.storage.storage_type == 'mem':
@@ -146,7 +154,7 @@ class Corpus:
 
                 # Construct corpus from file or directory
                 print(self.storage.data_dir is not None)
-                if self.storage.raw_corpus_id is not None or filename is not None:
+                if self.storage.corpus_id is not None or filename is not None:
                     filename = os.path.join(
                         self.storage.data_dir,
                         self.id) if filename is None else filename

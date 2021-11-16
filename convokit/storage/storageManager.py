@@ -79,11 +79,18 @@ class StorageManager:
             )
         # Set the version number
         self.raw_version = version
+        # Need to use var augment to check if this corpus_id exists because
+        # in the database, collections such as (e.g.) [corpus1_utterances,
+        # corpus1_speakers, etc. ..., corpus2_utterances, corpus2_speakers, etc.]
+        # are stored in one name space; where as on disk, collections will just be
+        # the list of top level directories (e.g.) [corpus1, corpus2], with
+        # child collections utterances, speakers, etc. within those directories.
         if storage_type == 'db':
             collections = self.db.list_collection_names()
             augment = '_utterances'
         else:
-            collections = os.listdir(data_dir)
+            collections = os.listdir(data_dir) if os.path.isdir(
+                data_dir) else []
             augment = ''
         if not in_place and f'{make_full_name(self.corpus_id, version)}{augment}' in collections:
             x = 1

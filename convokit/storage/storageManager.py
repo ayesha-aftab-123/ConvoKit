@@ -3,7 +3,7 @@ from pymongo import MongoClient
 from pymongo.database import Database
 from random import randrange
 import os
-import yaml
+from yaml import load, dump, Loader, Dumper
 
 from .dbMappings import DBCollectionMapping, DBDocumentMapping
 from .memMappings import MemCollectionMapping, MemDocumentMapping
@@ -182,14 +182,20 @@ def make_full_name(corpus_id, version):
 
 def read_or_create_config(config_fullpath):
     if not os.path.isfile(config_fullpath):
+        convo_dir = os.path.expanduser('~/.convokit')
+        if not os.path.isdir(convo_dir):
+            os.makedirs(convo_dir)
         with open(config_fullpath, 'w') as f:
             text = ("# Default Storage Parameters\n"
                     "db_host : localhost:27017\n"
                     "data_dir: ~/.convokit/saved-corpora\n"
                     "default_storage_mode: mem")
+            print(
+                f'No configuration file found at {config_fullpath}; writing with contents: \n{text}'
+            )
             f.write(text)
-            config = yaml.load(text)
+            config = load(text, Loader=Loader)
     else:
         with open(config_fullpath, 'r') as f:
-            config = yaml.load(f.read())
+            config = load(f.read(), Loader=Loader)
     return config

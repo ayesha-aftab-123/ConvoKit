@@ -86,7 +86,7 @@ class ConvoKitMeta(MutableMapping):
     def __str__(self):
         return str(self.fields.dict(with_id=False))
 
-    def update(self, other=(), /, **kwds):
+    def update(self, other=(), **kwds):
         ''' D.update([E, ]**F) -> None.  Update D from mapping/iterable E and F.
             If E present and has a .keys() method, does:     for k in E: D[k] = E[k]
             If E present and lacks .keys() method, does:     for (k, v) in E: D[k] = v

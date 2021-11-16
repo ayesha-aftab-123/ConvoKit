@@ -45,8 +45,8 @@ class StorageManager:
                 f'storage_type must be "mem", "db" or None; got "{storage_type} instead"'
             )
         # Use defaults from config file or specified values if provided
-        with open(os.path.expanduser('~/.convokit/config.yml'), 'r') as f:
-            config = yaml.load(f.read())
+        self.config_fullpath = os.path.expanduser('~/.convokit/config.yml')
+        config = read_or_create_config(self.config_fullpath)
         if storage_type is None:
             storage_type = config['default_storage_mode']
         if db_host is None:
@@ -125,8 +125,8 @@ class StorageManager:
 
     @staticmethod
     def default_storage_mode():
-        with open(os.path.expanduser('~/.convokit/config.yml'), 'r') as f:
-            config = yaml.load(f.read())
+        config = read_or_create_config(
+            os.path.expanduser('~/.convokit/config.yml'))
         return config['default_storage_mode']
 
     @staticmethod
@@ -178,3 +178,18 @@ def safe_corpus_id():
 
 def make_full_name(corpus_id, version):
     return f'{corpus_id}_v{version}'
+
+
+def read_or_create_config(config_fullpath):
+    if not os.path.isfile(config_fullpath):
+        with open(config_fullpath, 'w') as f:
+            text = ("# Default Storage Parameters\n"
+                    "db_host : localhost:27017\n"
+                    "data_dir: ~/.convokit/saved-corpora\n"
+                    "default_storage_mode: mem")
+            f.write(text)
+            config = yaml.load(text)
+    else:
+        with open(config_fullpath, 'r') as f:
+            config = yaml.load(f.read())
+    return config

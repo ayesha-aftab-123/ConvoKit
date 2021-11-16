@@ -1,6 +1,6 @@
-from typing import MutableMapping
+from typing import MutableMapping, Callable
+
 from convokit.util import warn
-from collections.abc import Callable
 from bson import Binary
 
 

@@ -47,6 +47,11 @@ class StorageManager:
         # Use defaults from config file or specified values if provided
         self.config_fullpath = os.path.expanduser('~/.convokit/config.yml')
         config = read_or_create_config(self.config_fullpath)
+
+        tmp_mode = os.environ.get('CONVOKIT_STORAGE_MODE')
+        if tmp_mode in ['mem', 'db']:
+            config['default_storage_mode'] = tmp_mode
+
         if storage_type is None:
             storage_type = config['default_storage_mode']
         if db_host is None:
@@ -132,9 +137,13 @@ class StorageManager:
 
     @staticmethod
     def default_storage_mode():
-        config = read_or_create_config(
-            os.path.expanduser('~/.convokit/config.yml'))
-        return config['default_storage_mode']
+        tmp_mode = os.environ.get('CONVOKIT_STORAGE_MODE')
+        if tmp_mode in ['mem', 'db']:
+            return tmp_mode
+        else:
+            config = read_or_create_config(
+                os.path.expanduser('~/.convokit/config.yml'))
+            return config['default_storage_mode']
 
     @staticmethod
     def purge_db():

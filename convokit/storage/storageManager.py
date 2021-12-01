@@ -129,7 +129,7 @@ class StorageManager:
                 value.collection.drop()
             if isinstance(value, Database):
                 warn(f'Dropping db {value.name} (storage.{attr})')
-                for collection_name in value.collection_names():
+                for collection_name in value.list_collection_names():
                     warn(
                         f'\tDropping collection {collection_name} (collection in storage.{attr}))'
                     )
@@ -153,7 +153,7 @@ class StorageManager:
         warn('purging the DB')
         client = MongoClient()
         db = client['convokit']
-        for collection_name in db.collection_names():
+        for collection_name in db.list_collection_names():
             warn(
                 f'\tDropping collection {collection_name} (collection in {db.name}))'
             )

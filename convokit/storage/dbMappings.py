@@ -39,9 +39,9 @@ class DBCollectionMapping(MutableMapping):
                 data = {'_id': key}
                 res = self.collection.find_one(data)
                 if res is None:
-                    self.collection.update(data,
-                                           value.fields.dict(),
-                                           upsert=True)
+                    self.collection.update_one(data,
+                                               {'$set': value.fields.dict()},
+                                               upsert=True)
             else:
                 if hasattr(value, 'meta'):
                     value.meta.fields.transfer_to_dbcoll(
@@ -105,9 +105,9 @@ class DBDocumentMapping(MutableMapping):
                 if isinstance(data[key], bytearray):
                     data[key] = Binary(data[key])
 
-            self.collection_mapping.collection.update({'_id': self.id},
-                                                      data,
-                                                      upsert=True)
+            self.collection_mapping.collection.update_one({'_id': self.id},
+                                                          {'$set': data},
+                                                          upsert=True)
 
     def dict(self, with_id=True):
         data = self.collection_mapping.collection.find_one({'_id': self.id})
@@ -135,15 +135,15 @@ class DBDocumentMapping(MutableMapping):
         if data is None:
             data = {'_id': self.id}
         data[key] = value
-        self.collection_mapping.collection.update({'_id': self.id},
-                                                  data,
-                                                  upsert=True)
+        self.collection_mapping.collection.update_one({'_id': self.id},
+                                                      {'$set': data},
+                                                      upsert=True)
 
     def __delitem__(self, key):
-        self.collection_mapping.collection.update({'_id': self.id},
-                                                  {'$unset': {
-                                                      key: "",
-                                                  }})
+        self.collection_mapping.collection.update_one({'_id': self.id},
+                                                      {'$unset': {
+                                                          key: "",
+                                                      }})
 
     def __iter__(self):
         return self.dict().__iter__()

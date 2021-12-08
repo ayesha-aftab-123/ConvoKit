@@ -19,6 +19,11 @@ Intermediate corpus functionality
 - `Merging two different Corpora (even when there are overlaps or conflicts in Corpus data) <https://github.com/CornellNLP/Cornell-Conversational-Analysis-Toolkit/blob/master/examples/merging/corpus_merge_demo.ipynb>`_
 - `Partially loading utterances from an included dataset <https://github.com/CornellNLP/Cornell-Conversational-Analysis-Toolkit/blob/master/convokit/tests/notebook_testers/test_corpus_partial_load.ipynb>`_
 
+Storage Options
+---------------
+- `Converting between memory and database storage <https://github.com/CornellNLP/Cornell-Conversational-Analysis-Toolkit/blob/master/examples/storage/converting_between_demo.ipynb>`_
+
+
 Classifier
 ------------
 - `Extracting bag-of-Words vectors from utterances and using them in various classification tasks <https://github.com/CornellNLP/Cornell-Conversational-Analysis-Toolkit/blob/master/examples/vectors/bag-of-words-demo.ipynb>`_

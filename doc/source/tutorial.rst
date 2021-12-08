@@ -15,6 +15,13 @@ If you haven't already,
 
 #. Download nltk's punkt tokenizer: ``import nltk; nltk.download('punkt')`` (in a ``python`` interactive session)
 
+If you only want to run ConvoKit in program memory (the standard configuration), 
+the setup is complete. To setup ConvoKit with database storage capabilities, there
+are a few more steps to setup the database. Check out an explination of when you might 
+want to use DB storage here: :doc:`mem_vs_db_usecases`. 
+
+4. (Optional) Follow the instructions at :doc:`db_setup` to setup the a MongoDB server to use with ConvoKit. 
+
 **If you encounter difficulties with installation**, check out our `Troubleshooting Guide <https://convokit.cornell.edu/documentation/troubleshooting.html>`_ for a list of solutions to common issues.
 
 A brief note

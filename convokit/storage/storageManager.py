@@ -40,7 +40,7 @@ class StorageManager:
         :ivar ItemMapping: class constructor to use to store data for items in the collections.
             Either a DBDocumentMapping or MemDocumentMapping
         """
-        if not storage_type in ['mem', 'db', None]:
+        if storage_type not in ['mem', 'db', None]:
             raise ValueError(
                 f'storage_type must be "mem", "db" or None; got "{storage_type} instead"'
             )
@@ -123,16 +123,12 @@ class StorageManager:
         """
         for attr, value in self.__dict__.items():
             if isinstance(value, DBCollectionMapping):
-                warn(
-                    f'Dropping collection {value.collection.name} (storage.{attr})'
-                )
+                warn(f'Dropping collection {value.collection.name} (storage.{attr})')
                 value.collection.drop()
             if isinstance(value, Database):
                 warn(f'Dropping db {value.name} (storage.{attr})')
                 for collection_name in value.list_collection_names():
-                    warn(
-                        f'\tDropping collection {collection_name} (collection in storage.{attr}))'
-                    )
+                    warn(f'\tDropping collection {collection_name} (collection in storage.{attr}))')
                     value.drop_collection(collection_name)
 
     @staticmethod
@@ -165,7 +161,7 @@ class StorageManager:
         """
         Setup instance variables self._utterances, self._conversations, self._speakers & self._metas.
         Should be called as storageManager.setup_collections(Utterance, Conversation, Speaker, ConvoKitMeta)
-        after initilizing the storageManager:StorageManager.
+        after initializing the storageManager:StorageManager.
         Utterance, Conversation, Speaker, ConvoKitMeta cannot be imported in the convokit.storage module due 
         to circular imports, so a call to setup_collections is required to configure a StorageManager with 
         the correct types. 

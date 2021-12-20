@@ -278,12 +278,12 @@ class CorpusComponent:
     @classmethod
     def from_dbdoc(cls, doc: DBDocumentMapping):
         """
-        Initilize a corpusComponent object with data contained in the DB document 
+        initialize a corpusComponent object with data contained in the DB document
         represented by doc. 
 
-        :param cls: class to initilize: Utterance, Conversation, or Speaker
-        :param doc: DB document to initilize the corpusComponent from
-        :return: the initilized corpusComponent object
+        :param cls: class to initialize: Utterance, Conversation, or Speaker
+        :param doc: DB document to initialize the corpusComponent from
+        :return: the initialized corpusComponent object
         """
         ret = cls(from_db=True,
                   id=doc.id,

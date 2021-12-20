@@ -60,7 +60,6 @@ class MemDocumentMapping(MutableMapping):
         if id in collection_mapping:
             self.data = collection_mapping[id].fields.dict()
         self.collection_mapping = collection_mapping
-        self.data
 
     def dict(self, with_id=True):
         d = self.data.copy()

@@ -45,7 +45,7 @@ class Corpus:
     :param storage: optional convokit.storage.StorageManager object to load the Corpus from
     :param in_place: when connecting to a Corpus with data already in db storage, whether to load a copy of the Corpus 
         or modify the existing Corpus in place.
-        False by default, i.e. Corpus is initilized as a seperate copy.
+        False by default, i.e. Corpus is initialized as a seperate copy.
     :param from_corpus: if specified, the corpus to make a copy from.
     :param version: (DB only): What version of the specified corpus to connect to
     

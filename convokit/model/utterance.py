@@ -78,7 +78,7 @@ class Utterance(CorpusComponent):
 
         # if self.conversation_id is None:
         #     raise ValueError(
-        #         f'Initilizing Utterance {self} with conversation_id None')
+        #         f'initializing Utterance {self} with conversation_id None')
 
     # Defining Properties for abstract storage
     @property

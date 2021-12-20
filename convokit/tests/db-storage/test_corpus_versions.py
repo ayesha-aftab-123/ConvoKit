@@ -58,7 +58,7 @@ class DBStorage(unittest.TestCase):
             self.assertEqual(utt0.meta, utt1.meta)
 
         # Changes to utts in version_test_corpus0 should be reflected in
-        # version_test_corpus1 since its initilized with in_place=True
+        # version_test_corpus1 since its initialized with in_place=True
         for utt1 in version_test_corpus1.iter_utterances():
             self.assertEqual(utt1.meta, {'text-len': len(utt1.text)})
 
@@ -112,7 +112,7 @@ class DBStorage(unittest.TestCase):
             self.assertEqual(utt1.meta, {})
 
         # Changes to utts in version_test_corpus0 should not be reflected in
-        # version_test_corpus1 since its initilized with in_place=False
+        # version_test_corpus1 since its initialized with in_place=False
         for utt1 in version_test_corpus1.iter_utterances():
             self.assertEqual(utt1.meta, {})
 

@@ -20,8 +20,7 @@ class DBCollectionMapping(MutableMapping):
             storage,
             item_type=item_type)
 
-    def __getitem__(self,
-                    key):  # -> self.type if self.type is not None else {}
+    def __getitem__(self, key):  # -> self.type if self.type is not None else {}
         if not self.__contains__(key): raise KeyError
         if self.type is not None:
             return self.type.from_dbdoc(DBDocumentMapping(self, key))
@@ -32,16 +31,12 @@ class DBCollectionMapping(MutableMapping):
         if self.type is None and isinstance(value, dict):
             DBDocumentMapping(self, key, data=value)
         elif isinstance(value, self.type):
-
-            if isinstance(
-                    value.fields, DBDocumentMapping
-            ) and value.fields.collection_mapping.name == self.name:
+            if isinstance(value.fields, DBDocumentMapping) and \
+                    value.fields.collection_mapping.name == self.name:
                 data = {'_id': key}
                 res = self.collection.find_one(data)
                 if res is None:
-                    self.collection.update_one(data,
-                                               {'$set': value.fields.dict()},
-                                               upsert=True)
+                    self.collection.update_one(data, {'$set': value.fields.dict()}, upsert=True)
             else:
                 if hasattr(value, 'meta'):
                     value.meta.fields.transfer_to_dbcoll(

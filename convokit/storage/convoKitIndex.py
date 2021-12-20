@@ -207,7 +207,7 @@ class ConvoKitIndex:
         """
         Reinitialize the Corpus Index from scratch.
 
-        :return: The reinitilized index
+        :return: The reinitialized index
         """
         new_index = ConvoKitIndex(corpus)
 
@@ -224,7 +224,6 @@ class ConvoKitIndex:
     def _reinitialize_index_helper(self, corpus, obj_type):
         """
         Helper for reinitializing the index of the different Corpus object types
-        :param new_index: new ConvoKitIndex object
         :param obj_type: utterance, speaker, or conversation
         :return: None (mutates new_index)
         """

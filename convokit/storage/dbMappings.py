@@ -135,10 +135,10 @@ class DBDocumentMapping(MutableMapping):
                                                       upsert=True)
 
     def __delitem__(self, key):
-        self.collection_mapping.collection.update_one({'_id': self.id},
-                                                      {'$unset': {
-                                                          key: "",
-                                                      }})
+        self.collection_mapping.collection.update_one(
+            {'_id': self.id},
+            {'$unset': {key: "",}}
+        )
 
     def __iter__(self):
         return self.dict().__iter__()

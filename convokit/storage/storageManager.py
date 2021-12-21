@@ -28,9 +28,9 @@ class StorageManager:
             unspecified, will use the data_dir specified in ~/.convokit/config.yml
         :param corpus_id: id of the corpus this StorageManager will connect to.
         :param version: the version to load from e.g. '0' or '1.0.1'
-        :param in_place: whether (if True) to directly connect to the  specified version,
-            or (if False) to increment the version number so that the original copy
-            of the data can be left unmodified. 
+        :param in_place: if True, directly connects to the specified version, else
+            this increments the version number so that the original copy
+            of the data is left unmodified.
         
         :ivar storage_type: either 'mem' or 'db'
         :ivar index: ConvoKitIndex to track types of metadata stored in this StorageManager
@@ -67,9 +67,7 @@ class StorageManager:
             self.db = self.client['convokit']
             if corpus_id is None:
                 corpus_id = safe_corpus_id()
-                print(
-                    f'No filename or corpus name specified for DB storage; using name {corpus_id}'
-                )
+                print(f'No filename or corpus name specified for DB storage; using name {corpus_id}')
             self.corpus_id = corpus_id
             self.CollectionMapping = DBCollectionMapping.with_storage(self)
             self.ItemMapping = DBDocumentMapping
@@ -199,7 +197,7 @@ def read_or_create_config(config_fullpath):
             os.makedirs(convo_dir)
         with open(config_fullpath, 'w') as f:
             text = ("# Default Storage Parameters\n"
-                    "db_host : localhost:27017\n"
+                    "db_host: localhost:27017\n"
                     "data_dir: ~/.convokit/saved-corpora\n"
                     "default_storage_mode: mem")
             print(

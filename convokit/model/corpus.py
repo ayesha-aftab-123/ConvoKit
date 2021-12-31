@@ -865,9 +865,6 @@ class Corpus:
                                     "Overwriting with other corpus's Utterance metadata."
                                     .format(repr(utt.id), repr(key)))
                         prev_utt.meta[key] = val
-                        print(
-                            f'\t(merge) writing utt {utt.id}.meta[{key}] = {val}'
-                        )
                 else:
                     if warnings:
                         warn(
@@ -1012,6 +1009,7 @@ class Corpus:
         new_corpus.reinitialize_index()
         if modify:
             self.copy_from(new_corpus.storage)
+
         return new_corpus
 
     def copy_from(self, from_storage: StorageManager):

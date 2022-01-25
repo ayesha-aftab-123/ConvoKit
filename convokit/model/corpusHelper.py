@@ -178,8 +178,7 @@ def unpack_binary_data(filename, objs_data, object_index, obj_type,
         del object_index[field]
 
 
-def load_from_utterance_file(filename, utterance_start_index,
-                             utterance_end_index):
+def load_from_utterance_file(filename, utterance_start_index, utterance_end_index):
     """
     where filename is "utterances.json" or "utterances.jsonl" for example
     """
@@ -205,8 +204,7 @@ def load_from_utterance_file(filename, utterance_start_index,
     return utterances
 
 
-def initialize_speakers_and_utterances_objects(corpus, utterances,
-                                               speakers_data):
+def initialize_speakers_and_utterances_objects(corpus, utterances, speakers_data):
     """
     Initialize Speaker and Utterance objects
     """
@@ -319,9 +317,7 @@ def initialize_conversations(corpus, convos_data):
         #     raise ValueError(f'convo_id={convo_id}; convo.id={convo.id}')
 
 
-def dump_helper_bin(d: ConvoKitMeta,
-                    d_bin: Dict,
-                    fields_to_skip=None) -> Dict:  # object_idx
+def dump_helper_bin(d: ConvoKitMeta, d_bin: Dict, fields_to_skip=None) -> Dict:  # object_idx
     """
 
     :param d: The ConvoKitMeta to encode
@@ -348,8 +344,7 @@ def dump_helper_bin(d: ConvoKitMeta,
     return d_out
 
 
-def dump_corpus_component(corpus, dir_name, filename, obj_type, bin_name,
-                          exclude_vectors, fields_to_skip):
+def dump_corpus_component(corpus, dir_name, filename, obj_type, bin_name, exclude_vectors, fields_to_skip):
     with open(os.path.join(dir_name, filename), "w") as f:
         d_bin = defaultdict(list)
         objs = defaultdict(dict)
@@ -376,24 +371,14 @@ def dump_utterances(corpus, dir_name, exclude_vectors, fields_to_skip):
 
         for ut in corpus.iter_utterances():
             ut_obj = {
-                KeyId:
-                ut.id,
-                KeyConvoId:
-                ut.conversation_id,
-                KeyText:
-                ut.text,
-                KeySpeaker:
-                ut.speaker.id,
-                KeyMeta:
-                dump_helper_bin(ut.meta, d_bin,
-                                fields_to_skip.get('utterance', [])),
-                KeyReplyTo:
-                ut.reply_to,
-                KeyTimestamp:
-                ut.timestamp,
-                KeyVectors:
-                ut.vectors if exclude_vectors is None else
-                list(set(ut.vectors) - set(exclude_vectors))
+                KeyId: ut.id,
+                KeyConvoId: ut.conversation_id,
+                KeyText: ut.text,
+                KeySpeaker: ut.speaker.id,
+                KeyMeta: dump_helper_bin(ut.meta, d_bin, fields_to_skip.get('utterance', [])),
+                KeyReplyTo: ut.reply_to,
+                KeyTimestamp: ut.timestamp,
+                KeyVectors: ut.vectors if exclude_vectors is None else list(set(ut.vectors) - set(exclude_vectors))
             }
             json.dump(ut_obj, f)
             f.write("\n")
@@ -412,10 +397,7 @@ def load_jsonlist_to_dict(filename, index_key='id', value_key='value'):
     return entries
 
 
-def dump_jsonlist_from_dict(entries,
-                            filename,
-                            index_key='id',
-                            value_key='value'):
+def dump_jsonlist_from_dict(entries, filename, index_key='id', value_key='value'):
     with open(filename, 'w') as f:
         for k, v in entries.items():
             json.dump({index_key: k, value_key: v}, f)

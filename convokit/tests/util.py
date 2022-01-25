@@ -20,29 +20,21 @@ def en_vocab():
 
 def fox_doc():
     return Doc(vocab=en_vocab(),
-               words=[
-                   'A', 'quick', 'brown', 'fox', 'jumps', 'over', 'the',
-                   'lazy', 'dog'
-               ],
+               words=['A', 'quick', 'brown', 'fox',
+                      'jumps', 'over', 'the', 'lazy', 'dog'],
                heads=[4, 4, 4, 4, 4, 4, 8, 8, 5],
-               deps=[
-                   'det', 'amod', 'amod', 'NN', 'ROOT', 'prep', 'det', 'amod',
-                   'pobj'
-               ],
+               deps=['det', 'amod', 'amod', 'NN', 'ROOT',
+                     'prep', 'det', 'amod', 'pobj'],
                tags=['DT', 'JJ', 'JJ', 'NN', 'NNS', 'IN', 'DT', 'JJ', 'NN'])
 
 
 def buffalo_doc():
     return Doc(vocab=en_vocab(),
-               words=[
-                   'Buffalo', 'buffalo', 'Buffalo', 'buffalo', 'buffalo',
-                   'buffalo', 'Buffalo', 'buffalo'
-               ],
+               words=['Buffalo', 'buffalo', 'Buffalo', 'buffalo',
+                      'buffalo', 'buffalo', 'Buffalo', 'buffalo'],
                heads=[1, 1, 3, 4, 5, 5, 7, 7],
-               deps=[
-                   'compound', 'ROOT', 'compound', 'compound', 'nsubj', 'ROOT',
-                   'compound', 'ROOT'
-               ],
+               deps=['compound', 'ROOT', 'compound', 'compound',
+                     'nsubj', 'ROOT', 'compound', 'ROOT'],
                tags=['NNP', 'NNP', 'NNP', 'NNP', 'NNP', 'NNP', 'NNP', 'NNP'])
 
 
@@ -79,125 +71,37 @@ def burr_sir_corpus(storage_type='mem'):
 
 def parsed_burr_sir_corpus():
     corpus = burr_sir_corpus()
-    utterance_infos = [{
-        'parsed': [{
-            'rt':
-            0,
-            'toks': [{
-                'tok': 'Pardon',
-                'tag': 'VB',
-                'dep': 'ROOT',
-                'dn': [1, 2]
-            }, {
-                'tok': 'me',
-                'tag': 'PRP',
-                'dep': 'dobj',
-                'up': 0,
-                'dn': []
-            }, {
-                'tok': '.',
-                'tag': '.',
-                'dep': 'punct',
-                'up': 0,
-                'dn': []
+    utterance_infos = [
+        {'parsed': [
+            {'rt': 0,
+             'toks': [{'tok': 'Pardon', 'tag': 'VB', 'dep': 'ROOT', 'dn': [1, 2]},
+                {'tok': 'me', 'tag': 'PRP', 'dep': 'dobj', 'up': 0, 'dn': []},
+                {'tok': '.', 'tag': '.', 'dep': 'punct', 'up': 0, 'dn': []}]
+            },
+            {'rt': 0,
+             'toks': [{'tok': 'Are', 'tag': 'VBP', 'dep': 'ROOT', 'dn': [1, 3, 4, 5, 6]},
+                {'tok': 'you', 'tag': 'PRP', 'dep': 'nsubj', 'up': 0, 'dn': []},
+                {'tok': 'Aaron', 'tag': 'NNP', 'dep': 'compound', 'up': 3, 'dn': []},
+                {'tok': 'Burr', 'tag': 'NNP', 'dep': 'attr', 'up': 0, 'dn': [2]},
+                {'tok': ',', 'tag': ',', 'dep': 'punct', 'up': 0, 'dn': []},
+                {'tok': 'sir', 'tag': 'NN', 'dep': 'npadvmod', 'up': 0, 'dn': []},
+                {'tok': '?', 'tag': '.', 'dep': 'punct', 'up': 0, 'dn': []}]
             }]
-        }, {
-            'rt':
-            0,
-            'toks': [{
-                'tok': 'Are',
-                'tag': 'VBP',
-                'dep': 'ROOT',
-                'dn': [1, 3, 4, 5, 6]
-            }, {
-                'tok': 'you',
-                'tag': 'PRP',
-                'dep': 'nsubj',
-                'up': 0,
-                'dn': []
-            }, {
-                'tok': 'Aaron',
-                'tag': 'NNP',
-                'dep': 'compound',
-                'up': 3,
-                'dn': []
-            }, {
-                'tok': 'Burr',
-                'tag': 'NNP',
-                'dep': 'attr',
-                'up': 0,
-                'dn': [2]
-            }, {
-                'tok': ',',
-                'tag': ',',
-                'dep': 'punct',
-                'up': 0,
-                'dn': []
-            }, {
-                'tok': 'sir',
-                'tag': 'NN',
-                'dep': 'npadvmod',
-                'up': 0,
-                'dn': []
-            }, {
-                'tok': '?',
-                'tag': '.',
-                'dep': 'punct',
-                'up': 0,
-                'dn': []
+        },
+        {'parsed': [
+            {'rt': 1,
+             'toks': [{'tok': 'That', 'tag': 'DT', 'dep': 'nsubj', 'up': 1, 'dn': []},
+                {'tok': 'depends', 'tag': 'VBZ', 'dep': 'ROOT', 'dn': [0, 2] },
+                {'tok': '.', 'tag': '.', 'dep': 'punct', 'up': 1, 'dn': []}]
+            },
+            {'rt': 2,
+             'toks': [{'tok': 'Who', 'tag': 'WP', 'dep': 'nsubj', 'up': 2, 'dn': []},
+                {'tok': "'s", 'tag': 'VBZ', 'dep': 'aux', 'up': 2, 'dn': []},
+                {'tok': 'asking', 'tag': 'VBG', 'dep': 'ROOT', 'dn': [0, 1, 3]},
+                {'tok': '?', 'tag': '.', 'dep': 'punct', 'up': 2, 'dn': []}]
             }]
-        }]
-    }, {
-        'parsed': [{
-            'rt':
-            1,
-            'toks': [{
-                'tok': 'That',
-                'tag': 'DT',
-                'dep': 'nsubj',
-                'up': 1,
-                'dn': []
-            }, {
-                'tok': 'depends',
-                'tag': 'VBZ',
-                'dep': 'ROOT',
-                'dn': [0, 2]
-            }, {
-                'tok': '.',
-                'tag': '.',
-                'dep': 'punct',
-                'up': 1,
-                'dn': []
-            }]
-        }, {
-            'rt':
-            2,
-            'toks': [{
-                'tok': 'Who',
-                'tag': 'WP',
-                'dep': 'nsubj',
-                'up': 2,
-                'dn': []
-            }, {
-                'tok': "'s",
-                'tag': 'VBZ',
-                'dep': 'aux',
-                'up': 2,
-                'dn': []
-            }, {
-                'tok': 'asking',
-                'tag': 'VBG',
-                'dep': 'ROOT',
-                'dn': [0, 1, 3]
-            }, {
-                'tok': '?',
-                'tag': '.',
-                'dep': 'punct',
-                'up': 2,
-                'dn': []
-            }]
-        }]
-    }]
+        }
+    ]
 
     for info_dict, utterance in zip(utterance_infos, corpus.iter_utterances()):
         utterance.meta = info_dict
@@ -213,14 +117,9 @@ def parsed_burr_sir_corpus():
 def burr_sir_doc_1():
     return Doc(
         vocab=en_vocab(),
-        words=[
-            'Pardon', 'me', '.', 'Are', 'you', 'Aaron', 'Burr', ',', 'sir', '?'
-        ],
+        words=['Pardon', 'me', '.', 'Are', 'you', 'Aaron', 'Burr', ',', 'sir', '?'],
         heads=[0, 0, 0, 3, 3, 6, 3, 3, 3, 3],
-        deps=[
-            'ROOT', 'dobj', 'punct', 'ROOT', 'nsubj', 'compound', 'attr',
-            'punct', 'npadvmod', 'punct'
-        ],
+        deps=['ROOT', 'dobj', 'punct', 'ROOT', 'nsubj', 'compound', 'attr', 'punct', 'npadvmod', 'punct'],
         tags=['VB', 'PRP', '.', 'VBP', 'PRP', 'NNP', 'NNP', ',', 'NN', '.'])
 
 
@@ -245,11 +144,8 @@ def burr_sir_sentence_doc_2():
     return Doc(vocab=en_vocab(),
                words=['Are', 'you', 'Aaron', 'Burr', ',', 'sir', '?'],
                heads=[0, 0, 3, 0, 0, 0, 0],
-               deps=[
-                   'ROOT', 'nsubj', 'compound', 'attr', 'punct', 'npadvmod',
-                   'punct'
-               ],
-               tags=['VBP', 'PRP', 'NNP', 'NNP', ',', 'NN', '.'])
+               deps=['ROOT', 'nsubj', 'compound', 'attr', 'punct', 'npadvmod', 'punct'],
+        tags=['VBP', 'PRP', 'NNP', 'NNP', ',', 'NN', '.'])
 
 
 def burr_sir_sentence_doc_3():

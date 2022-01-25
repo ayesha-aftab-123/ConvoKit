@@ -205,7 +205,7 @@ Each database collection contains a database document for each item of the type
 suggested by the collection name. These database documents store all the data for 
 the cooresponding ConvoKit object. Each time an object is requested from a Corpus, e.g.
 ``utt = corpus.get_utterance('0')``, a new ConvoKit object of the desired type is 
-initilized with a connection to the cooresponding database document. When data is accessed
+initialized with a connection to the cooresponding database document. When data is accessed
 from the object, e.g. ``txt = utt.text`` the live data is pulled from the database, ensuring 
 the most recent and currently accurate version of any attribute is always returned. 
 Moreover, when an attribute is modified, e.g. ``utt.text = 'I actually said *this*'``,

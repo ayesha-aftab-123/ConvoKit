@@ -10,16 +10,13 @@ class CorpusMerge(unittest.TestCase):
         StorageManager.purge_db()
         corpus1 = Corpus(utterances=[
             Utterance(id="0", text="hello world", speaker=Speaker(id="alice")),
-            Utterance(id="1", text="my name is bob", speaker=Speaker(
-                id="bob")),
-            Utterance(
-                id="2", text="this is a test", speaker=Speaker(id="charlie")),
+            Utterance(id="1", text="my name is bob", speaker=Speaker(id="bob")),
+            Utterance(id="2", text="this is a test", speaker=Speaker(id="charlie")),
         ])
 
         corpus2 = Corpus(utterances=[
             Utterance(id="3", text="i like pie", speaker=Speaker(id="delta")),
-            Utterance(
-                id="4", text="this is a sentence", speaker=Speaker(id="echo")),
+            Utterance(id="4", text="this is a sentence", speaker=Speaker(id="echo")),
             Utterance(id="5", text="goodbye", speaker=Speaker(id="foxtrot")),
         ])
 
@@ -36,17 +33,13 @@ class CorpusMerge(unittest.TestCase):
         StorageManager.purge_db()
         corpus1 = Corpus(utterances=[
             Utterance(id="0", text="hello world", speaker=Speaker(id="alice")),
-            Utterance(id="1", text="my name is bob", speaker=Speaker(
-                id="bob")),
-            Utterance(
-                id="2", text="this is a test", speaker=Speaker(id="charlie")),
+            Utterance(id="1", text="my name is bob", speaker=Speaker(id="bob")),
+            Utterance(id="2", text="this is a test", speaker=Speaker(id="charlie")),
         ])
 
         corpus2 = Corpus(utterances=[
-            Utterance(
-                id="2", text="this is a test", speaker=Speaker(id="charlie")),
-            Utterance(
-                id="4", text="this is a sentence", speaker=Speaker(id="echo")),
+            Utterance(id="2", text="this is a test", speaker=Speaker(id="charlie")),
+            Utterance(id="4", text="this is a sentence", speaker=Speaker(id="echo")),
             Utterance(id="5", text="goodbye", speaker=Speaker(id="foxtrot")),
         ])
 
@@ -65,17 +58,13 @@ class CorpusMerge(unittest.TestCase):
         StorageManager.purge_db()
         corpus1 = Corpus(utterances=[
             Utterance(id="0", text="hello world", speaker=Speaker(id="alice")),
-            Utterance(id="1", text="my name is bob", speaker=Speaker(
-                id="bob")),
-            Utterance(
-                id="2", text="this is a test", speaker=Speaker(id="charlie")),
+            Utterance(id="1", text="my name is bob", speaker=Speaker(id="bob")),
+            Utterance(id="2", text="this is a test", speaker=Speaker(id="charlie")),
         ])
 
         corpus2 = Corpus(utterances=[
-            Utterance(
-                id="2", text="this is a test2", speaker=Speaker(id="candace")),
-            Utterance(
-                id="4", text="this is a sentence", speaker=Speaker(id="echo")),
+            Utterance(id="2", text="this is a test2", speaker=Speaker(id="candace")),
+            Utterance(id="4", text="this is a sentence", speaker=Speaker(id="echo")),
             Utterance(id="5", text="goodbye", speaker=Speaker(id="foxtrot")),
         ])
 
@@ -86,8 +75,7 @@ class CorpusMerge(unittest.TestCase):
         self.assertEqual(len(list(corpus2.iter_utterances())), 3)
 
         self.assertEqual(merged.get_utterance("2").text, "this is a test")
-        self.assertEqual(
-            merged.get_utterance("2").speaker, Speaker(id="charlie"))
+        self.assertEqual(merged.get_utterance("2").speaker, Speaker(id="charlie"))
 
     def test_overlap_diff_metadata(self):
         """
@@ -98,11 +86,8 @@ class CorpusMerge(unittest.TestCase):
         StorageManager.purge_db()
         corpus1 = Corpus(utterances=[
             Utterance(id="0", text="hello world", speaker=Speaker(id="alice")),
-            Utterance(id="1", text="my name is bob", speaker=Speaker(
-                id="bob")),
-            Utterance(id="2",
-                      text="this is a test",
-                      speaker=Speaker(id="charlie"),
+            Utterance(id="1", text="my name is bob", speaker=Speaker(id="bob")),
+            Utterance(id="2", text="this is a test", speaker=Speaker(id="charlie"),
                       meta={
                           'hey': 'jude',
                           'the': 'beatles'
@@ -110,16 +95,13 @@ class CorpusMerge(unittest.TestCase):
         ])
 
         corpus2 = Corpus(utterances=[
-            Utterance(id="2",
-                      text="this is a test",
-                      speaker=Speaker(id="charlie"),
+            Utterance(id="2", text="this is a test", speaker=Speaker(id="charlie"),
                       meta={
                           'hey': 'jude',
                           'the': 'ringo',
                           'let it': 'be'
                       }),
-            Utterance(
-                id="4", text="this is a sentence", speaker=Speaker(id="echo")),
+            Utterance(id="4", text="this is a sentence", speaker=Speaker(id="echo")),
             Utterance(id="5", text="goodbye", speaker=Speaker(id="foxtrot")),
         ])
 
@@ -144,33 +126,15 @@ class CorpusMerge(unittest.TestCase):
         """
         StorageManager.purge_db()
         corpus1 = Corpus(utterances=[
-            Utterance(id="0",
-                      conversation_id='convo1',
-                      text="hello world",
-                      speaker=Speaker(id="alice")),
-            Utterance(id="1",
-                      conversation_id='convo1',
-                      text="my name is bob",
-                      speaker=Speaker(id="bob")),
-            Utterance(id="2",
-                      conversation_id='convo1',
-                      text="this is a test",
-                      speaker=Speaker(id="charlie")),
+            Utterance(id="0", conversation_id='convo1', text="hello world", speaker=Speaker(id="alice")),
+            Utterance(id="1", conversation_id='convo1', text="my name is bob", speaker=Speaker(id="bob")),
+            Utterance(id="2", conversation_id='convo1', text="this is a test", speaker=Speaker(id="charlie")),
         ])
 
         corpus2 = Corpus(utterances=[
-            Utterance(id="2",
-                      conversation_id='convo1',
-                      text="this is a test",
-                      speaker=Speaker(id="charlie")),
-            Utterance(id="4",
-                      conversation_id='convo1',
-                      text="this is a sentence",
-                      speaker=Speaker(id="echo")),
-            Utterance(id="5",
-                      conversation_id='convo1',
-                      text="goodbye",
-                      speaker=Speaker(id="foxtrot")),
+            Utterance(id="2", conversation_id='convo1', text="this is a test", speaker=Speaker(id="charlie")),
+            Utterance(id="4", conversation_id='convo1', text="this is a sentence", speaker=Speaker(id="echo")),
+            Utterance(id="5", conversation_id='convo1', text="goodbye", speaker=Speaker(id="foxtrot")),
         ])
 
         corpus1.get_conversation('convo1').add_meta('hey', 'jude')
@@ -194,16 +158,13 @@ class CorpusMerge(unittest.TestCase):
         StorageManager.purge_db()
         corpus1 = Corpus(utterances=[
             Utterance(id="0", text="hello world", speaker=Speaker(id="alice")),
-            Utterance(id="1", text="my name is bob", speaker=Speaker(
-                id="bob")),
-            Utterance(
-                id="2", text="this is a test", speaker=Speaker(id="charlie")),
+            Utterance(id="1", text="my name is bob", speaker=Speaker(id="bob")),
+            Utterance(id="2", text="this is a test", speaker=Speaker(id="charlie")),
         ])
 
         corpus2 = Corpus(utterances=[
             Utterance(id="3", text="i like pie", speaker=Speaker(id="delta")),
-            Utterance(
-                id="4", text="this is a sentence", speaker=Speaker(id="echo")),
+            Utterance(id="4", text="this is a sentence", speaker=Speaker(id="echo")),
             Utterance(id="5", text="goodbye", speaker=Speaker(id="foxtrot")),
         ])
 
@@ -221,11 +182,8 @@ class CorpusMerge(unittest.TestCase):
         StorageManager.purge_db()
         corpus1 = Corpus(utterances=[
             Utterance(id="0", text="hello world", speaker=Speaker(id="alice")),
-            Utterance(id="1", text="my name is bob", speaker=Speaker(
-                id="bob")),
-            Utterance(id="2",
-                      text="this is a test",
-                      speaker=Speaker(id="charlie"),
+            Utterance(id="1", text="my name is bob", speaker=Speaker(id="bob")),
+            Utterance(id="2", text="this is a test", speaker=Speaker(id="charlie"),
                       meta={
                           'hey': 'jude',
                           'hello': 'world'
@@ -237,9 +195,7 @@ class CorpusMerge(unittest.TestCase):
 
         utts = [
             Utterance(id="1", text="i like pie", speaker=Speaker(id="delta")),
-            Utterance(id="2",
-                      text="this is a test",
-                      speaker=Speaker(id="charlie"),
+            Utterance(id="2", text="this is a test", speaker=Speaker(id="charlie"),
                       meta={
                           'hello': 'food',
                           'what': 'a mood'

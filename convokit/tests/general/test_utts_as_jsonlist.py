@@ -16,26 +16,14 @@ class CorpusMerge(unittest.TestCase):
         utt_byte_arr2 = bytearray([110, 200, 220, 28])
 
         corpus1 = Corpus(utterances=[
-            Utterance(id="0",
-                      text="hello world",
-                      speaker=Speaker(id="alice",
-                                      meta={
-                                          'speaker_binary_data':
-                                          speaker_byte_arr1,
-                                          'index': 99
-                                      }),
+            Utterance(id="0", text="hello world", 
+                      speaker=Speaker(id="alice",meta={'speaker_binary_data': speaker_byte_arr1, 'index': 99}),
                       meta={'utt_binary_data': utt_byte_arr1}),
-            Utterance(id="1",
-                      text="my name is bob",
-                      speaker=Speaker(
-                          id="bob",
-                          meta={'speaker_binary_data': speaker_byte_arr2}),
+            Utterance(id="1",text="my name is bob",
+                      speaker=Speaker(id="bob", meta={'speaker_binary_data': speaker_byte_arr2}),
                       meta={'utt_binary_data': utt_byte_arr2}),
-            Utterance(id="2",
-                      text="this is a test",
-                      speaker=Speaker(id="charlie")),
-        ],
-                         storage_type='mem')
+            Utterance(id="2", text="this is a test", speaker=Speaker(id="charlie")),
+        ], storage_type='mem')
 
         alice = corpus1.get_speaker("alice")
         bob = corpus1.get_speaker("bob")
@@ -47,13 +35,9 @@ class CorpusMerge(unittest.TestCase):
         bob2 = corpus2.get_speaker("bob")
 
         self.assertEqual(alice.meta, alice2.meta)
-        self.assertEqual(
-            corpus1.get_utterance('0').meta,
-            corpus2.get_utterance('0').meta)
+        self.assertEqual(corpus1.get_utterance('0').meta, corpus2.get_utterance('0').meta)
         self.assertEqual(bob.meta, bob2.meta)
-        self.assertEqual(
-            corpus1.get_utterance('1').meta,
-            corpus2.get_utterance('1').meta)
+        self.assertEqual(corpus1.get_utterance('1').meta, corpus2.get_utterance('1').meta)
 
     def test_partial_loading(self):
         speaker_byte_arr1 = bytearray([120, 3, 255, 0, 100])
@@ -62,36 +46,22 @@ class CorpusMerge(unittest.TestCase):
         utt_byte_arr2 = bytearray([110, 200, 220, 28])
 
         corpus1 = Corpus(utterances=[
-            Utterance(id="0",
-                      text="hello world",
-                      speaker=Speaker(
-                          id="alice",
-                          meta={'speaker_binary_data': speaker_byte_arr1}),
+            Utterance(id="0", text="hello world",
+                      speaker=Speaker(id="alice", meta={'speaker_binary_data': speaker_byte_arr1}),
                       meta={'utt_binary_data': utt_byte_arr1}),
-            Utterance(id="1",
-                      text="my name is bob",
-                      speaker=Speaker(
-                          id="bob",
-                          meta={'speaker_binary_data': speaker_byte_arr2}),
+            Utterance(id="1", text="my name is bob",
+                      speaker=Speaker(id="bob", meta={'speaker_binary_data': speaker_byte_arr2}),
                       meta={'utt_binary_data': utt_byte_arr2}),
-            Utterance(id="2",
-                      text="this is a test",
-                      speaker=Speaker(id="charlie")),
-        ],
-                         storage_type='mem')
+            Utterance(id="2", text="this is a test", speaker=Speaker(id="charlie")),
+        ], storage_type='mem')
 
         corpus1.dump('test_corpus', './')
 
-        corpus2 = Corpus(filename="./test_corpus",
-                         storage_type='mem',
-                         utterance_start_index=0,
-                         utterance_end_index=1)
+        corpus2 = Corpus(filename="./test_corpus", storage_type='mem', utterance_start_index=0, utterance_end_index=1)
 
         self.assertEqual(len(list(corpus2.iter_utterances())), 2)
-        self.assertEqual(corpus1.get_utterance("0"),
-                         corpus2.get_utterance("0"))
-        self.assertEqual(corpus1.get_utterance("1"),
-                         corpus2.get_utterance("1"))
+        self.assertEqual(corpus1.get_utterance("0"), corpus2.get_utterance("0"))
+        self.assertEqual(corpus1.get_utterance("1"), corpus2.get_utterance("1"))
 
     def test_partial_load_start_idx_specified_only(self):
         StorageManager.purge_db()
@@ -101,35 +71,22 @@ class CorpusMerge(unittest.TestCase):
         utt_byte_arr2 = bytearray([110, 200, 220, 28])
 
         corpus1 = Corpus(utterances=[
-            Utterance(id="0",
-                      text="hello world",
-                      speaker=Speaker(
-                          id="alice",
-                          meta={'speaker_binary_data': speaker_byte_arr1}),
+            Utterance(id="0", text="hello world",
+                      speaker=Speaker(id="alice", meta={'speaker_binary_data': speaker_byte_arr1}),
                       meta={'utt_binary_data': utt_byte_arr1}),
-            Utterance(id="1",
-                      text="my name is bob",
-                      speaker=Speaker(
-                          id="bob",
-                          meta={'speaker_binary_data': speaker_byte_arr2}),
+            Utterance(id="1", text="my name is bob",
+                      speaker=Speaker(id="bob", meta={'speaker_binary_data': speaker_byte_arr2}),
                       meta={'utt_binary_data': utt_byte_arr2}),
-            Utterance(id="2",
-                      text="this is a test",
-                      speaker=Speaker(id="charlie")),
-        ],
-                         storage_type='mem')
+            Utterance(id="2", text="this is a test", speaker=Speaker(id="charlie")),
+        ], storage_type='mem')
 
         corpus1.dump('test_corpus', './')
 
-        corpus2 = Corpus(filename="./test_corpus",
-                         storage_type='mem',
-                         utterance_start_index=1)
+        corpus2 = Corpus(filename="./test_corpus", storage_type='mem', utterance_start_index=1)
 
         self.assertEqual(len(list(corpus2.iter_utterances())), 2)
-        self.assertEqual(corpus1.get_utterance("1"),
-                         corpus2.get_utterance("1"))
-        self.assertEqual(corpus1.get_utterance("2"),
-                         corpus2.get_utterance("2"))
+        self.assertEqual(corpus1.get_utterance("1"), corpus2.get_utterance("1"))
+        self.assertEqual(corpus1.get_utterance("2"), corpus2.get_utterance("2"))
 
     def test_partial_load_end_idx_specified_only(self):
         speaker_byte_arr1 = bytearray([120, 3, 255, 0, 100])
@@ -138,35 +95,24 @@ class CorpusMerge(unittest.TestCase):
         utt_byte_arr2 = bytearray([110, 200, 220, 28])
 
         corpus1 = Corpus(utterances=[
-            Utterance(id="0",
-                      text="hello world",
-                      speaker=Speaker(
-                          id="alice",
-                          meta={'speaker_binary_data': speaker_byte_arr1}),
+            Utterance(id="0", text="hello world",
+                      speaker=Speaker(id="alice", meta={'speaker_binary_data': speaker_byte_arr1}),
                       meta={'utt_binary_data': utt_byte_arr1}),
-            Utterance(id="1",
-                      text="my name is bob",
-                      speaker=Speaker(
-                          id="bob",
-                          meta={'speaker_binary_data': speaker_byte_arr2}),
+            Utterance(id="1", text="my name is bob",
+                      speaker=Speaker(id="bob", meta={'speaker_binary_data': speaker_byte_arr2}),
                       meta={'utt_binary_data': utt_byte_arr2}),
-            Utterance(id="2",
-                      text="this is a test",
-                      speaker=Speaker(id="charlie")),
-        ],
-                         storage_type='mem')
+            Utterance(id="2", text="this is a test", speaker=Speaker(id="charlie")),
+        ], storage_type='mem')
+        
         self.assertEqual(corpus1.get_utterance('0').text, 'hello world')
 
         corpus1.dump('test_corpus', './')
 
-        corpus2 = Corpus(filename="./test_corpus",
-                         utterance_end_index=0,
-                         storage_type='mem')
+        corpus2 = Corpus(filename="./test_corpus", utterance_end_index=0, storage_type='mem')
 
         self.assertEqual(corpus1.get_utterance('0').text, 'hello world')
         self.assertEqual(len(list(corpus2.iter_utterances())), 1)
-        self.assertEqual(corpus1.get_utterance("0"),
-                         corpus2.get_utterance("0"))
+        self.assertEqual(corpus1.get_utterance("0"), corpus2.get_utterance("0"))
 
     def test_partial_load_invalid_start_index(self):
         speaker_byte_arr1 = bytearray([120, 3, 255, 0, 100])
@@ -175,29 +121,18 @@ class CorpusMerge(unittest.TestCase):
         utt_byte_arr2 = bytearray([110, 200, 220, 28])
 
         corpus1 = Corpus(utterances=[
-            Utterance(id="0",
-                      text="hello world",
-                      speaker=Speaker(
-                          id="alice",
-                          meta={'speaker_binary_data': speaker_byte_arr1}),
+            Utterance(id="0", text="hello world",
+                      speaker=Speaker(id="alice", meta={'speaker_binary_data': speaker_byte_arr1}),
                       meta={'utt_binary_data': utt_byte_arr1}),
-            Utterance(id="1",
-                      text="my name is bob",
-                      speaker=Speaker(
-                          id="bob",
-                          meta={'speaker_binary_data': speaker_byte_arr2}),
+            Utterance(id="1", text="my name is bob",
+                      speaker=Speaker(id="bob", meta={'speaker_binary_data': speaker_byte_arr2}),
                       meta={'utt_binary_data': utt_byte_arr2}),
-            Utterance(id="2",
-                      text="this is a test",
-                      speaker=Speaker(id="charlie")),
-        ],
-                         storage_type='mem')
+            Utterance(id="2", text="this is a test", speaker=Speaker(id="charlie")),
+        ], storage_type='mem')
 
         corpus1.dump('test_corpus', './')
 
-        corpus2 = Corpus(filename="./test_corpus",
-                         storage_type='mem',
-                         utterance_start_index=99)
+        corpus2 = Corpus(filename="./test_corpus", storage_type='mem', utterance_start_index=99)
 
         self.assertEqual(len(list(corpus2.iter_utterances())), 0)
 
@@ -208,29 +143,18 @@ class CorpusMerge(unittest.TestCase):
         utt_byte_arr2 = bytearray([110, 200, 220, 28])
 
         corpus1 = Corpus(utterances=[
-            Utterance(id="0",
-                      text="hello world",
-                      speaker=Speaker(
-                          id="alice",
-                          meta={'speaker_binary_data': speaker_byte_arr1}),
+            Utterance(id="0", text="hello world",
+                      speaker=Speaker(id="alice", meta={'speaker_binary_data': speaker_byte_arr1}),
                       meta={'utt_binary_data': utt_byte_arr1}),
-            Utterance(id="1",
-                      text="my name is bob",
-                      speaker=Speaker(
-                          id="bob",
-                          meta={'speaker_binary_data': speaker_byte_arr2}),
+            Utterance(id="1", text="my name is bob",
+                      speaker=Speaker(id="bob", meta={'speaker_binary_data': speaker_byte_arr2}),
                       meta={'utt_binary_data': utt_byte_arr2}),
-            Utterance(id="2",
-                      text="this is a test",
-                      speaker=Speaker(id="charlie")),
-        ],
-                         storage_type='mem')
+            Utterance(id="2", text="this is a test", speaker=Speaker(id="charlie")),
+        ], storage_type='mem')
 
         corpus1.dump('test_corpus', './')
 
-        corpus2 = Corpus(filename="./test_corpus",
-                         storage_type='mem',
-                         utterance_end_index=-1)
+        corpus2 = Corpus(filename="./test_corpus", storage_type='mem', utterance_end_index=-1)
 
         self.assertEqual(len(list(corpus2.iter_utterances())), 0)
 

@@ -102,7 +102,7 @@ class ConvoKitMeta(MutableMapping):
     @classmethod
     def from_dbdoc(cls, doc: DBDocumentMapping):
         """
-        initialize a corpusComponent object with data contained in the DB document
+        Initialize a corpusComponent object with data contained in the DB document
         represented by doc. 
 
         :param cls: class to initialize: Utterance, Conversation, or Speaker

@@ -8,6 +8,7 @@ class MemCollectionMapping(MutableMapping):
         self.item_type = item_type
         self.data = {}
 
+    @staticmethod
     def with_storage(storage) -> Callable[[str, type], MutableMapping]:
         def ret(collection_name, item_type=None):
             if collection_name not in storage.connection:

@@ -13,6 +13,7 @@ class DBCollectionMapping(MutableMapping):
         self.type = item_type
         self.name = collection_name
 
+    @staticmethod
     def with_storage(storage) -> Callable[[str, type], MutableMapping]:
         return lambda collection_name, item_type=None: DBCollectionMapping(
             storage.db,

@@ -963,6 +963,7 @@ class Corpus:
         utts1 = list(self.iter_utterances())
         utts2 = list(other_corpus.iter_utterances())
         combined_utts = self._merge_utterances(utts1, utts2, warnings=warnings)
+        #TODO: New Corpus is made. Fix new name issue.
         new_corpus = Corpus(utterances=list(combined_utts),
                             storage_type=self.storage.storage_type)
         # Note that we collect Speakers from the utt sets directly instead of the combined utts, otherwise

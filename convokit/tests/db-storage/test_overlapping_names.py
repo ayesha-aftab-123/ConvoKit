@@ -6,6 +6,7 @@ from convokit import Utterance, Conversation, Speaker, Corpus, ConvoKitMeta, Sto
 BOBS_TEXT = "Hi, I'm Bob."
 JIMS_TEXT = "Hi Bob, I'm Jim!"
 
+#same ID different corpora, avoid putting into DB just by ID, no chance to overwrite
 
 class DBStorage(unittest.TestCase):
     def test_insert_and_modify(self):

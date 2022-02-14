@@ -33,7 +33,7 @@ Running MongoDB with Conda
 
 :: 
 
- $ mongod --fork --logpath <path for DB logs> --dbdir <path for DB storage>
+ $ mongod --fork --logpath <path for DB logs> --dbpath <path for DB storage>
 
 5. Use the MongoDB server for ConvoKit!
 6. To stop the MongoDB server, on Linux or MacOS, use the ``htop`` command to find the mongod process ID and run:

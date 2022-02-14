@@ -963,9 +963,15 @@ class Corpus:
         utts1 = list(self.iter_utterances())
         utts2 = list(other_corpus.iter_utterances())
         combined_utts = self._merge_utterances(utts1, utts2, warnings=warnings)
-        #TODO: New Corpus is made. Fix new name issue.
+        # New Corpus is made. Need to specify a name for the corpus. 
+        # Name: "corpusA_merge_corpusB"
+        # corpus_A_id = str(self.id)
+        # corpus_B_id = str(other_corpus.id)
+        # new_corpus_id = corpus_A_id+"_merge_"+corpus_B_id
+        # new_corpus = Corpus(corpus_id= new_corpus_id, utterances=list(combined_utts),
         new_corpus = Corpus(utterances=list(combined_utts),
                             storage_type=self.storage.storage_type)
+        warn(str(new_corpus.id))
         # Note that we collect Speakers from the utt sets directly instead of the combined utts, otherwise
         # differences in Speaker meta will not be registered for duplicate Utterances (because utts would be discarded
         # during merging)

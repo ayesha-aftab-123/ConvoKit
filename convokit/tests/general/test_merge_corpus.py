@@ -25,7 +25,7 @@ class CorpusMerge(unittest.TestCase):
         self.assertEqual(len(list(merged.iter_speakers())), 6)
         self.assertEqual(len(list(corpus1.iter_utterances())), 3)
         self.assertEqual(len(list(corpus2.iter_utterances())), 3)
-
+        
     def test_with_overlap(self):
         """
         Basic merge: with overlap in utterance id (but utterance has same data & metadata)

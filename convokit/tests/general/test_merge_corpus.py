@@ -20,7 +20,7 @@ class CorpusMerge(unittest.TestCase):
             Utterance(id="5", text="goodbye", speaker=Speaker(id="foxtrot")),
         ])
 
-        merged = corpus1.merge(corpus2, modify=False)
+        merged = corpus1.merge(corpus2)
         self.assertEqual(len(list(merged.iter_utterances())), 6)
         self.assertEqual(len(list(merged.iter_speakers())), 6)
         self.assertEqual(len(list(corpus1.iter_utterances())), 3)

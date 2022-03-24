@@ -1036,9 +1036,10 @@ class Corpus:
         if modify:
             print("Modified")
             self.copy_from(new_corpus.storage)
-            return self
-        else:
-            return new_corpus
+            if self.storage.storage_type == 'db':
+                return self
+        
+        return new_corpus
 
     def copy_from(self, from_storage: StorageManager):
         for uid, utt in from_storage._utterances.items():

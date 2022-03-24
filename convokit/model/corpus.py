@@ -108,6 +108,8 @@ class Corpus:
             # Loading in preconstruced & Stored corpus
             if self.storage.storage_type == 'db':
                 if not in_place:
+                    print(f'Raw Version: {self.storage.raw_version}')
+                    print(f'Version: {self.storage.version}')
                     if self.storage.raw_version != self.storage.version:
                         if utterances is None:
                             tmp_storage = StorageManager(
@@ -122,26 +124,30 @@ class Corpus:
 
                             self.copy_from(tmp_storage)
                             print(
-                                f'Copying corpus {self.id} v{self.storage.raw_version}'
+                                f'Copying corpus {self.id}_v{self.storage.raw_version} '
                                 f'to corpus {self.storage.full_name}')
+                            
                         else:
                             warn(
-                                f'Corpus {self.id} v{self.storage.raw_version} found'
+                                f'Corpus {self.id}_v{self.storage.raw_version} found '
                                 'in the DB but utterances != None; ignoring existing data and using given utterances'
                             )
                     else:
                         print(
-                            f'Corpus {self.storage.full_name} not found in the DB; building new corpus'
+                            f'Corpus {self.storage.full_name} not found in the DB; building new corpus, initially was not in place'
                         )
                 else:
                     assert self.storage.raw_version == self.storage.version
-                    if self.id in self.storage.db.list_collections():
+                    # print(f"{list(self.storage.db.list_collections())[0]}")
+                    #NEW: Another fix
+                    # if self.id in self.storage.db.list_collections():
+                    if any([self.id in k for k in [x["name"] for x in list(self.storage.db.list_collections())]]):
                         print(
                             f'Connecting to corpus {self.storage.full_name} in place in the DB'
                         )
                     else:
                         print(
-                            f'Corpus {self.storage.full_name} not found in the DB; building new corpus'
+                            f'Corpus {self.storage.full_name} not found in the DB; building new corpus, already in place'
                         )
 
             elif self.storage.storage_type == 'mem':
@@ -223,6 +229,7 @@ class Corpus:
 
         # Building a new corpus from utterances
         if utterances is not None:  # Construct corpus from utterances list
+            print("Building new corpus")
             for u in tqdm(utterances):
                 self.storage._speakers[u.speaker_id] = u.speaker
                 self.storage._utterances[u.id] = u
@@ -236,6 +243,7 @@ class Corpus:
             merge_utterance_lines(storage)
 
         if disable_type_check: self.storage.index.disable_type_check()
+        print("Doing init finalization")
         initialize_conversations(self, convos_data)
         self.update_speakers_data()
         self.reinitialize_index()
@@ -940,9 +948,20 @@ class Corpus:
         :return: None (sets the .storage.index of Corpus and of the corpus component objects)
         """
         self.storage.index = self.storage.index.reinitialize_for(self)
-
-    def merge(self, other_corpus, warnings: bool = True, modify=False):
+        
+    
+    def merge(self, other_corpus, warnings: bool = True):
         """
+        Public Function for merging. Modify will always be false
+        """
+        print(f"Self ID inside merge function: {self.id}")
+        return self.merge_helper(other_corpus=other_corpus, warnings=warnings)
+
+    def merge_helper(self, other_corpus, warnings: bool = True, modify=False):
+        """
+        "Private" function for merge where modify is normally false which returns the modified item. 
+        Main use for modify=True is for add_utterances to keep track of self corpus and ID
+
         Merges this corpus with another corpus.
 
         Utterances with the same id must share the same data, otherwise the other corpus utterance data & metadata
@@ -960,18 +979,18 @@ class Corpus:
         :param warnings: print warnings when data conflicts are encountered
         :return: new Corpus constructed from combined lists of utterances
         """
+        
+        print(f"Self ID inside merge helper function: {self.id}")
         utts1 = list(self.iter_utterances())
         utts2 = list(other_corpus.iter_utterances())
         combined_utts = self._merge_utterances(utts1, utts2, warnings=warnings)
-        # New Corpus is made. Need to specify a name for the corpus. 
-        # Name: "corpusA_merge_corpusB"
-        # corpus_A_id = str(self.id)
-        # corpus_B_id = str(other_corpus.id)
-        # new_corpus_id = corpus_A_id+"_merge_"+corpus_B_id
-        # new_corpus = Corpus(corpus_id= new_corpus_id, utterances=list(combined_utts),
-        new_corpus = Corpus(utterances=list(combined_utts),
+        if self.storage.storage_type == 'db':
+            new_corpus = Corpus(utterances=list(combined_utts),
+                                storage_type=self.storage.storage_type)
+        else:
+            new_corpus = Corpus(utterances=list(combined_utts),
                             storage_type=self.storage.storage_type)
-        warn(str(new_corpus.id))
+        print(f"New Corpus ID: {new_corpus.id}")
         # Note that we collect Speakers from the utt sets directly instead of the combined utts, otherwise
         # differences in Speaker meta will not be registered for duplicate Utterances (because utts would be discarded
         # during merging)
@@ -1015,9 +1034,11 @@ class Corpus:
         new_corpus.update_speakers_data()
         new_corpus.reinitialize_index()
         if modify:
+            print("Modified")
             self.copy_from(new_corpus.storage)
-
-        return new_corpus
+            return self
+        else:
+            return new_corpus
 
     def copy_from(self, from_storage: StorageManager):
         for uid, utt in from_storage._utterances.items():
@@ -1048,11 +1069,14 @@ class Corpus:
         :return: a Corpus with the utterances from this Corpus and the input utterances combined
         """
         if with_checks:
+            print("Before Helper Corpus")
             helper_corpus = Corpus(utterances=utterances,
                                    storage_type=self.storage.storage_type)
-            return self.merge(
-                helper_corpus, warnings=warnings, modify=True) if len(
-                    list(self.iter_utterances())) > 0 else helper_corpus
+            print(f"After Helper Corpus: {helper_corpus.id}")
+            print(f"Self ID: {self.id}")
+            print(f"Length of iter_utterances: {len(list(self.iter_utterances()))}" )
+            return self.merge_helper(helper_corpus, warnings=warnings, modify=True) #if len(
+                    #list(self.iter_utterances())) > 0 else helper_corpus
         else:
             new_speakers = {u.speaker_id: u.speaker for u in utterances}
             new_utterances = {u.id: u for u in utterances}

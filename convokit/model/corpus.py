@@ -45,7 +45,7 @@ class Corpus:
     :param storage: optional convokit.storage.StorageManager object to load the Corpus from
     :param in_place: when connecting to a Corpus with data already in db storage, whether to load a copy of the Corpus 
         or modify the existing Corpus in place.
-        False by default, i.e. Corpus is initialized as a seperate copy.
+        True by default, i.e. Corpus is not initialized as a seperate copy.
     :param from_corpus: if specified, the corpus to make a copy from.
     :param version: (DB only): What version of the specified corpus to connect to
     
@@ -70,7 +70,7 @@ class Corpus:
                  storage: Optional[StorageManager] = None,
                  data_dir: Optional[str] = None,
                  db_host: Optional[str] = None,
-                 in_place: bool = False,
+                 in_place: bool = True,
                  filename: Optional[str] = None,
                  from_corpus: Optional['Corpus'] = None,
                  version: Optional[int] = 0):
@@ -147,7 +147,7 @@ class Corpus:
                         )
                     else:
                         print(
-                            f'Corpus {self.storage.full_name} not found in the DB; building new corpus, already in place'
+                            f'Corpus {self.storage.full_name} not found in the DB; building new corpus.'
                         )
 
             elif self.storage.storage_type == 'mem':
@@ -984,12 +984,8 @@ class Corpus:
         utts1 = list(self.iter_utterances())
         utts2 = list(other_corpus.iter_utterances())
         combined_utts = self._merge_utterances(utts1, utts2, warnings=warnings)
-        if self.storage.storage_type == 'db':
-            new_corpus = Corpus(utterances=list(combined_utts),
-                                storage_type=self.storage.storage_type)
-        else:
-            new_corpus = Corpus(utterances=list(combined_utts),
-                            storage_type=self.storage.storage_type)
+        new_corpus = Corpus(utterances=list(combined_utts), storage_type=self.storage.storage_type)
+    
         print(f"New Corpus ID: {new_corpus.id}")
         # Note that we collect Speakers from the utt sets directly instead of the combined utts, otherwise
         # differences in Speaker meta will not be registered for duplicate Utterances (because utts would be discarded

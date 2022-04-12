@@ -147,7 +147,7 @@ class Corpus:
                         )
                     else:
                         print(
-                            f'Corpus {self.storage.full_name} not found in the DB; building new corpus.'
+                            f'Corpus {self.storage.full_name} not found in the DB; building new corpus, in place.'
                         )
 
             elif self.storage.storage_type == 'mem':

@@ -4,7 +4,7 @@ from typing import Callable, Optional
 from cleantext import clean
 
 
-clean_str = lambda s: clean.clean(s,
+clean_str = lambda s: clean(s,
                             fix_unicode=True,               # fix various unicode errors
                             to_ascii=True,                  # transliterate to closest ASCII representation
                             lower=True,                     # lowercase text

@@ -82,7 +82,7 @@ class StorageManager:
             )
         # Set the version number
         self.raw_version = version
-        # print(f'Storage Manager Version: {self.raw_version}')
+
         # Need to use var augment to check if this corpus_id exists because
         # in the database, collections such as (e.g.) [corpus1_utterances,
         # corpus1_speakers, etc. ..., corpus2_utterances, corpus2_speakers, etc.]

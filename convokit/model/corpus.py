@@ -108,8 +108,6 @@ class Corpus:
             # Loading in preconstruced & Stored corpus
             if self.storage.storage_type == 'db':
                 if not in_place:
-                    # print(f'Raw Version: {self.storage.raw_version}')
-                    # print(f'Version: {self.storage.version}')
                     if self.storage.raw_version != self.storage.version:
                         if utterances is None:
                             tmp_storage = StorageManager(
@@ -138,8 +136,6 @@ class Corpus:
                         )
                 else:
                     assert self.storage.raw_version == self.storage.version
-                    # print(f"{list(self.storage.db.list_collections())[0]}")
-                    #NEW: Another fix
                     # if self.id in self.storage.db.list_collections():
                     if any([self.id in k for k in [x["name"] for x in list(self.storage.db.list_collections())]]):
                         print(
@@ -229,7 +225,6 @@ class Corpus:
 
         # Building a new corpus from utterances
         if utterances is not None:  # Construct corpus from utterances list
-            # print("Building new corpus")
             for u in tqdm(utterances):
                 self.storage._speakers[u.speaker_id] = u.speaker
                 self.storage._utterances[u.id] = u
@@ -239,11 +234,9 @@ class Corpus:
                 speaker.owner = self
 
         if merge_lines:
-            # print('merging lines')
             merge_utterance_lines(storage)
 
         if disable_type_check: self.storage.index.disable_type_check()
-        # print("Doing init finalization")
         initialize_conversations(self, convos_data)
         self.update_speakers_data()
         self.reinitialize_index()
@@ -954,7 +947,6 @@ class Corpus:
         """
         Public Function for merging. Modify will always be false
         """
-        # print(f"Self ID inside merge function: {self.id}")
         return self.merge_helper(other_corpus=other_corpus, warnings=warnings)
 
     def merge_helper(self, other_corpus, warnings: bool = True, modify=False):
@@ -980,13 +972,11 @@ class Corpus:
         :return: new Corpus constructed from combined lists of utterances
         """
         
-        # print(f"Self ID inside merge helper function: {self.id}")
         utts1 = list(self.iter_utterances())
         utts2 = list(other_corpus.iter_utterances())
         combined_utts = self._merge_utterances(utts1, utts2, warnings=warnings)
         new_corpus = Corpus(utterances=list(combined_utts), storage_type=self.storage.storage_type)
     
-        # print(f"New Corpus ID: {new_corpus.id}")
         # Note that we collect Speakers from the utt sets directly instead of the combined utts, otherwise
         # differences in Speaker meta will not be registered for duplicate Utterances (because utts would be discarded
         # during merging)
@@ -1030,7 +1020,6 @@ class Corpus:
         new_corpus.update_speakers_data()
         new_corpus.reinitialize_index()
         if modify:
-            # print("Modified")
             self.copy_from(new_corpus.storage)
             if self.storage.storage_type == 'db':
                 return self
@@ -1066,12 +1055,8 @@ class Corpus:
         :return: a Corpus with the utterances from this Corpus and the input utterances combined
         """
         if with_checks:
-            # print("Before Helper Corpus")
             helper_corpus = Corpus(utterances=utterances,
                                    storage_type=self.storage.storage_type)
-            # print(f"After Helper Corpus: {helper_corpus.id}")
-            # print(f"Self ID: {self.id}")
-            # print(f"Length of iter_utterances: {len(list(self.iter_utterances()))}" )
             return self.merge_helper(helper_corpus, warnings=warnings, modify=True) #if len(
                     #list(self.iter_utterances())) > 0 else helper_corpus
         else:

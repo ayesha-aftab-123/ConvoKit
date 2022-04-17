@@ -70,7 +70,7 @@ class Corpus:
                  storage: Optional[StorageManager] = None,
                  data_dir: Optional[str] = None,
                  db_host: Optional[str] = None,
-                 in_place: bool = False,
+                 in_place: bool = True,
                  filename: Optional[str] = None,
                  from_corpus: Optional['Corpus'] = None,
                  version: Optional[int] = 0):

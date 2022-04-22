@@ -29,6 +29,19 @@ Running MongoDB with Conda
 
  $ conda install mongodb
 
+Check to see if version is at least 5.0. 
+
+::
+
+ $ mongod --version
+
+If not, utilize:
+
+::
+ 
+ $ conda install -c conda-forge mongodb=5.0
+
+
 4. Start the MongoDB server as a daemon process.
 
 :: 

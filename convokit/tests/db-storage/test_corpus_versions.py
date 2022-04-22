@@ -5,6 +5,8 @@ from convokit import Utterance, Conversation, Speaker, Corpus, ConvoKitMeta, Sto
 jim = Speaker(id='Jim')
 bill = Speaker(id='Bill')
 
+#Is this file necessary now that default is in_place = True?
+
 
 def get_version_test_corpus():
     StorageManager.purge_db()

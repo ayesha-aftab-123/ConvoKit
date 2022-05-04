@@ -136,8 +136,8 @@ class Corpus:
                         )
                 else:
                     assert self.storage.raw_version == self.storage.version
-                    # if self.id in self.storage.db.list_collections():
-                    if any([self.id in k for k in [x["name"] for x in list(self.storage.db.list_collections())]]):
+                    if self.id in self.storage.db.list_collections():
+                    # if any([self.id in k for k in [x["name"] for x in list(self.storage.db.list_collections())]]):
                         print(
                             f'Connecting to corpus {self.storage.full_name} in place in the DB'
                         )

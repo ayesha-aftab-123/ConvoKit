@@ -55,8 +55,8 @@ class PolitenessStrategies(Transformer):
         :param selector: a (lambda) function that takes an Utterance and returns a bool indicating whether the utterance should be included in this annotation step.
         :param markers: whether or not to add politeness occurrence markers
         """
-    
-        total_utts = len(corpus.utterances)
+        total_utts = len(list(corpus.iter_utterances()))
+        # total_utts = len(corpus.utterances)
         
         for idx, utt in enumerate(corpus.iter_utterances()):
             

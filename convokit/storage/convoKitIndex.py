@@ -119,8 +119,10 @@ class ConvoKitIndex:
         :param class_type: class type
         :return: None
         """
-        assert type(key) == str
-        assert 'class' in class_type or class_type == 'bin'
+        if type(key) != str:
+            raise TypeError(f'key must be a string (got {type(key)} instead)')
+        if not('class' in class_type or class_type == 'bin'):
+            raise TypeError(f'class_type incorrect (got {class_type} instead)')
         if key not in self.indices[obj_type]:
             self.indices[obj_type][key] = []
         if class_type not in self.indices[obj_type][key]:
@@ -135,15 +137,18 @@ class ConvoKitIndex:
         :param class_type: class type
         :return: None
         """
-        assert type(key) == str
-        assert 'class' in class_type or class_type == 'bin'
+        if type(key) != str:
+            raise TypeError(f'key must be a string (got {type(key)} instead)')
+        if not('class' in class_type or class_type == 'bin'):
+            raise TypeError(f'class_type incorrect (got {class_type} instead)')
         self.indices[obj_type][key] = [class_type]
 
     def get_index(self, obj_type: str):
         return self.indices[obj_type]
 
     def del_from_index(self, obj_type: str, key: str):
-        assert type(key) == str
+        if type(key) != str:
+            raise TypeError(f'key must be a string (got {type(key)} instead)')
         if key not in self.indices[obj_type]: return
         del self.indices[obj_type][key]
         #

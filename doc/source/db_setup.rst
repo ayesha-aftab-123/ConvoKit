@@ -6,7 +6,7 @@ guide on installing and running a MongoDB server. Here, we provide a simplified
 guide to getting MongoDB setup to use with ConvoKit's DB Storage mode, in a handful
 of settings. 
 
-Running MongoDB with Conda 
+Running MongoDB with Conda
 --------------------------
 
 0. Install conda if needed, following `these instructions <https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html#regular-installation>`_ for your system.
@@ -60,6 +60,9 @@ If not, utilize:
 :: 
 
  $ mongod --shutdown  
+
+
+Sometimes, the above process doesn't work for MacOS. However, there is another solution for MacOS users below.
 
 
 Running MongoDB on MacOS with Homebrew

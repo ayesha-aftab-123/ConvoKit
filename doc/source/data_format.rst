@@ -1,7 +1,7 @@
 Data Format
 =================
 
-Primary Data Format
+File Structure
 -------------------
 
 ConvoKit expects and saves each corpus with the following basic structure, which mirrors closely with the intuitions behind the design of Corpus (see :doc:`architecture`). 

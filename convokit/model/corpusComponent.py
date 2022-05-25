@@ -34,11 +34,14 @@ class CorpusComponent:
         if ((obj_type == 'utterance' and id in self.storage._utterances)
                 or (obj_type == 'speaker' and id in self.storage._speakers)):
             id = f'{id}.1'
-
-        self.fields = self.storage.ItemMapping(
-            self.storage._speakers
-            if obj_type == 'speaker' else self.storage._conversations
-            if obj_type == 'conversation' else self.storage._utterances, id)
+            
+        if obj_type == 'speaker':
+            mapped_item = self.storage._speakers
+        elif obj_type == 'conversation':
+            mapped_item = self.storage._conversations
+        else:
+            mapped_item = self.storage._utterances
+        self.fields = self.storage.ItemMapping(mapped_item, id)
 
         self.obj_type = obj_type  # utterance, speaker, conversation
         self.id = self.fields.id

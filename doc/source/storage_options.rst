@@ -1,13 +1,13 @@
 Storage Options
 =================
 
-Convokit naturally uses in-memory storage. However, we provide an alternative to using a database for storage instead.
+Convokit by default uses in-memory storage. However, we provide an alternative option of using a database for storage instead.
 
 Alternative Storage Option: Database Storage
 --------------------------------------------
 
-ConvoKit uses the Primary Data Format described above for distributing datasets. 
-The Primary Data Format is also the best choice for long term storage of static 
+ConvoKit datasets are distributed in the JSON-based format described in :doc:`data_format`. 
+This format is also the best choice for long term storage of static 
 datasets, which can be loaded into memory for active computation. 
 On the other hand, Convokit provides an alternative storage option designed to 
 support datasets that require both persistant storage and active computation 
@@ -38,10 +38,11 @@ intilize an empty corpus, which will be stored accross these database collection
 ::
 
 To connect directly to an existing version of a corpus (or create an 
-empty corpus if there is no existing version), ``in_place=True`` is by default:  
+empty corpus if there is no existing version), use the parameter ``in_place=True``, which is already set by default:  
 
 ::
-
+ # these two lines are equivalent:
+ corpus = Corpus(corpus_id='example_id', storage_type='db', in_place=True)
  corpus = Corpus(corpus_id='example_id', storage_type='db')
 ::
 

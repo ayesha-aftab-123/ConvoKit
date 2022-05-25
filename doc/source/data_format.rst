@@ -128,3 +128,7 @@ As an example, the corpus-level metadata for the Reddit corpus (small) is shown 
  
 
 While not necessary, speakers experienced with handling json files can choose to convert their custom datasets directly based on the expected data format specifications.
+
+Storage Options
+----------------
+ConvoKit offers storage options of corpora both in memory and on a database. For more information, please look at :doc:`storage_options`.

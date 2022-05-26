@@ -290,7 +290,7 @@ def get_subreddit_info(subreddit_name: str) -> str:
 
     for group in groups:
         if subreddit_in_grouping(subreddit_name, group):
-            # return os.path.join(data_dir, group, subreddit_name + ".corpus.zip")
+            # return os.path.join(data_directory, group, subreddit_name + ".corpus.zip")
             return data_dir + group + "/" + subreddit_name + ".corpus.zip"
 
     print("The subreddit requested is not available.")

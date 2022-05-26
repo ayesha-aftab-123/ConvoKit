@@ -68,7 +68,7 @@ class Corpus:
                  disable_type_check=False,
                  storage_type: Optional[str] = None,
                  storage: Optional[StorageManager] = None,
-                 data_dir: Optional[str] = None,
+                 data_directory: Optional[str] = None,
                  db_host: Optional[str] = None,
                  in_place: bool = True,
                  filename: Optional[str] = None,
@@ -81,7 +81,7 @@ class Corpus:
         else:
             self.storage = StorageManager(storage_type,
                                           db_host=db_host,
-                                          data_dir=data_dir,
+                                          data_directory=data_directory,
                                           corpus_id=corpus_id,
                                           in_place=in_place,
                                           version=version)
@@ -113,7 +113,7 @@ class Corpus:
                             tmp_storage = StorageManager(
                                 storage_type,
                                 db_host=db_host,
-                                data_dir=data_dir,
+                                data_directory=data_directory,
                                 corpus_id=self.id,
                                 version=self.storage.raw_version,
                                 in_place=True)
@@ -155,10 +155,10 @@ class Corpus:
                 if exclude_overall_meta is None: exclude_overall_meta = []
 
                 # Construct corpus from file or directory
-                print(self.storage.data_dir is not None)
+                print(self.storage.data_directory is not None)
                 if self.storage.corpus_id is not None or filename is not None:
                     filename = os.path.join(
-                        self.storage.data_dir,
+                        self.storage.data_directory,
                         self.id) if filename is None else filename
                     print(f'Loading corpus {self.id} from disk at {filename}')
                     if disable_type_check:
@@ -291,7 +291,7 @@ class Corpus:
             )
         if not overwrite_existing_corpus:
             if data_dir is None:
-                data_dir = os.path.expanduser(self.storage.data_dir)
+                data_dir = os.path.expanduser(self.storage.data_directory)
                 if not os.path.exists(data_dir):
                     os.mkdir(data_dir)
                 # base_path = os.path.join(base_path, "saved-corpora/")

@@ -13,14 +13,14 @@ from .convoKitIndex import ConvoKitIndex
 
 TEXT = ("# Default Storage Parameters\n"
         "db_host: localhost:27017\n"
-        "data_dir: ~/.convokit/saved-corpora\n"
+        "data_directory: ~/.convokit/saved-corpora\n"
         "default_storage_mode: mem")
 
 class StorageManager:
     def __init__(self,
                  storage_type: str,
                  db_host: Optional[str] = None,
-                 data_dir: Optional[str] = None,
+                 data_directory: Optional[str] = None,
                  corpus_id: Optional[str] = None,
                  version: Optional[str] = '0',
                  in_place: Optional[bool] = True):
@@ -29,8 +29,8 @@ class StorageManager:
 
         :param storage_type: either 'mem' or 'db'
         :param db_host: name of the DB host
-        :param data_dir: path to the directory containing Mem Corpora. If left 
-            unspecified, will use the data_dir specified in ~/.convokit/config.yml
+        :param data_directory: path to the directory containing Mem Corpora. If left 
+            unspecified, will use the data_directory specified in ~/.convokit/config.yml
         :param corpus_id: id of the corpus this StorageManager will connect to.
         :param version: the version to load from e.g. '0' or '1.0.1'
         :param in_place: if True, directly connects to the specified version, else
@@ -61,12 +61,12 @@ class StorageManager:
             storage_type = config['default_storage_mode']
         if db_host is None:
             db_host = config['db_host']
-        if data_dir is None:
-            data_dir = os.path.expanduser(config['data_dir'])
+        if data_directory is None:
+            data_directory = os.path.expanduser(config['data_directory'])
 
         self.storage_type = storage_type
         self.index = ConvoKitIndex(self)
-        self.data_dir = data_dir
+        self.data_directory = data_directory
         if storage_type == 'db':
             self.client = MongoClient(db_host)
             self.db = self.client['convokit']
@@ -98,8 +98,8 @@ class StorageManager:
             collections = self.db.list_collection_names()
             augment = '_utterances'
         else:
-            collections = os.listdir(data_dir) if os.path.isdir(
-                data_dir) else []
+            collections = os.listdir(data_directory) if os.path.isdir(
+                data_directory) else []
             augment = ''
         if not in_place and f'{make_full_name(self.corpus_id, version)}{augment}' in collections:
             x = 1

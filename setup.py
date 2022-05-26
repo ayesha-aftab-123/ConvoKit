@@ -30,7 +30,8 @@ setup(
                 "convokit.speaker_convo_helpers",
                 "convokit.speakerConvoDiversity",
                 "convokit.expected_context_framework",
-                "convokit.surprise"
+                "convokit.surprise",
+                "convokit.storage"
               ],
     package_data={"convokit": ["data/*.txt", 
                                "politeness_collections/politeness_local/lexicons/*.json",  

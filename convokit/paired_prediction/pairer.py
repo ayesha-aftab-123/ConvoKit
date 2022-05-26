@@ -162,13 +162,13 @@ class Pairer(Transformer):
         :param selector: a (lambda) function that takes a Corpus object and returns a bool (True = include)
         :param attributes: a parameter to provide meta attributes to be considered for summarization. By default (None) all valid attributes are compared;
         alternatively, desired attributes can be supplied in a list format (attribute names) or a dictionary format (where each attribute name is mapped
-        to either 'categorocial' or 'numerical' string).
-        :param uniqueness_threshold: a parameter to determine whether attribute values are treated as categorical or numerical. If the ratio
+        to either 'categorical' or 'numerical' string).
+        :param uniqueness_threshold: a parameter to determine whether attribute values are treated for categorical or numerical analyses. If the ratio
         (# unique values)/(# all values) of a metadata attribute is less than uniqueness_threshold, then categorical comparison is chosen.
         :param categorical_minperc: a threshold parameter to determine whether rare values of a metadata attribute are included in a categorical plot.
 
-        :return: a schema with information on which meta attributes were analyzed, what types of data these attribute takes,
-        and whether a categorical or numercial plot was used for this attribute.
+        :return: a schema with information on which meta attributes were analyzed, what types of data these attributes take,
+        and whether a categorical or numercial plot was used for each attribute.
         """
 
         #summarize function intends to give a quick overview

@@ -245,13 +245,7 @@ def _download_helper(dataset_path: str, url: str, verbose: bool, name: str,
             length = str(round(length / 1e6, 1)) + "MB" \
                 if length > 1e6 else \
                 str(round(length / 1e3, 1)) + "KB"
-            print("Downloading",
-                  name,
-                  "from",
-                  url,
-                  "(" + length + ")...",
-                  end=" ",
-                  flush=True)
+            print(f"Downloading {name} from {url} ({length})...", end= " ", flush=True)
         shutil.copyfileobj(response, out_file)
 
     # post-process (extract) corpora
@@ -272,9 +266,7 @@ def _download_helper(dataset_path: str, url: str, verbose: bool, name: str,
     with open(downloadeds_path, "a") as f:
         fn = os.path.join(os.path.dirname(dataset_path),
                           name)  #os.path.join(os.path.dirname(data), name)
-        f.write("{}$#${}$#${}\n".format(
-            name, os.path.realpath(os.path.dirname(dataset_path) + "/"),
-            corpus_version(fn)))
+        f.write(f"{name}$#${os.path.realpath(os.path.dirname(dataset_path) + '/')}$#${corpus_version(fn)}\n")
         #f.write(name + "\n")
 
 
@@ -363,16 +355,14 @@ def _deprecation_format(message,
                         lineno,
                         file=None,
                         line=None):
-    return '{}:{}: {}: {}\n'.format(filename, lineno, category.__name__,
-                                    message)
+    return f'{filename}:{lineno}: {category.__name__}: {message}\n'
 
 
 def deprecation(prev_name: str, new_name: str, stacklevel: int = 3):
     """
-    Suppressable deprecation warning.
+    Suppressible deprecation warning.
     """
     warnings.formatwarning = _deprecation_format
-    warnings.warn("{} is deprecated and will be removed in a future release. "
-                  "Use {} instead.".format(prev_name, new_name),
+    warnings.warn(f"{prev_name} is deprecated and will be removed in a future release. Use {new_name} instead.",
                   category=FutureWarning,
                   stacklevel=stacklevel)

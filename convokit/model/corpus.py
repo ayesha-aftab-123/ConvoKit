@@ -1037,7 +1037,7 @@ class Corpus:
             self.storage._speakers[sid] = speaker
 
     def add_utterances(self,
-                       utterances=List[Utterance],
+                       utterances: List[Utterance],
                        warnings: bool = False,
                        with_checks=True):
         """

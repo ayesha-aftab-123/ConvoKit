@@ -15,19 +15,19 @@ If you haven't already,
 
 #. Download nltk's punkt tokenizer: ``import nltk; nltk.download('punkt')`` (in a ``python`` interactive session)
 
-If you only want to run ConvoKit in program memory (the standard configuration), 
-the setup is complete. To setup ConvoKit with database storage capabilities, there
-are a few more steps to setup the database. Check out an explination of when you might 
-want to use DB storage here: :doc:`mem_vs_db_usecases`. 
+If you only want to use ConvoKit with data loaded into program memory (aka RAM), then setup is complete.
+To setup ConvoKit to be backed by a proper database, there are several more steps.
+You might want to use DB storage based on these considerations: :doc:`mem_vs_db_usecases`.
 
-4. (Optional) Follow the instructions at :doc:`db_setup` to setup the a MongoDB server to use with ConvoKit. 
+4. (Optional) Follow the instructions at :doc:`db_setup` to setup a MongoDB server to use with ConvoKit.
 
 **If you encounter difficulties with installation**, check out our `Troubleshooting Guide <https://convokit.cornell.edu/documentation/troubleshooting.html>`_ for a list of solutions to common issues.
 
 A brief note
 ============
 
-This is a practical hands-on introduction ConvoKit. Read our description of ConvoKit's :doc:`architecture </architecture>` for an understanding of the higher-level design decisions for this package.
+This is a practical hands-on introduction ConvoKit.
+Read our description of ConvoKit's :doc:`architecture </architecture>` for an understanding of the higher-level design decisions for this package.
 
 We **recommend** following our `interactive Colab notebook <https://colab.research.google.com/github/CornellNLP/Cornell-Conversational-Analysis-Toolkit/blob/master/examples/Introduction_to_ConvoKit.ipynb>`_, which contains the same steps as this tutorial, but allows for the full range of outputs (e.g. graphs, tables) to be displayed.
 

@@ -76,6 +76,13 @@ class Corpus:
                  from_corpus: Optional['Corpus'] = None,
                  version: Optional[int] = 0):
 
+        if filename is None:
+            self.filename = None
+        elif os.path.isdir(filename):
+            self.filename = filename
+        else:
+            warn(f'filename directory is not a path, got {filename} instead')
+
         # Setup Storage
         if storage is not None:
             self.storage = storage

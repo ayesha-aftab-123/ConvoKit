@@ -155,7 +155,6 @@ class Corpus:
                 if exclude_overall_meta is None: exclude_overall_meta = []
 
                 # Construct corpus from file or directory
-                print(self.storage.data_directory is not None)
                 if self.storage.corpus_id is not None or filename is not None:
                     filename = os.path.join(
                         self.storage.data_directory,
@@ -302,7 +301,6 @@ class Corpus:
 
         if not os.path.exists(directory_name):
             os.mkdir(directory_name)
-        print('dump to ', directory_name)
 
         # dump speakers, conversations, utterances
         dump_corpus_component(self, directory_name, "speakers.json", "speaker",
@@ -751,8 +749,6 @@ class Corpus:
                 set(new_convo_roots) - set(new_corpus.get_conversation_ids()))
             if len(missing_convo_roots) > 0:
                 warn("Failed to find some of the specified new convo roots:\n")
-                print(missing_convo_roots)
-                print(f"(new_convo_roots is {new_convo_roots})")
 
         return new_corpus
 
@@ -842,7 +838,6 @@ class Corpus:
         :param warnings: whether to print warnings when conflicting data is found.
         :return: ValuesView for merged set of utterances
         """
-        print('running _merge_utterances')
         seen_utts = dict()
 
         # Merge UTTERANCE metadata
@@ -854,7 +849,6 @@ class Corpus:
         for utt in utts2:
             if utt.id in seen_utts:
                 prev_utt = seen_utts[utt.id]
-                print(f'prev_utt {utt.id} has meta {prev_utt.meta}')
                 if prev_utt == utt:  # Todo: Better fix
                     # other utterance metadata is ignored if data is not matched
                     for key, val in utt.meta.items():

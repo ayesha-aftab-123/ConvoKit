@@ -150,7 +150,8 @@ class ConvoKitIndex:
         #         del corpus_obj.meta[key]
 
     def add_vector(self, vector_name):
-        self.vectors.append(vector_name)
+        if vector_name not in self.vectors:
+            self.vectors.append(vector_name)
 
     def del_vector(self, vector_name):
         self.vectors.remove(vector_name)

@@ -1324,45 +1324,6 @@ class Corpus:
             dump_jsonlist_from_dict(
                 entries, os.path.join(dir_name, 'info.%s.jsonl' % field))
 
-    # def load_vector_reprs(self, field, dir_name=None):
-    #     """
-    #     reads vector representations of Corpus objects from disk.
-    #
-    #     Will read matrices from a file called vect_info.<field>.npy and corresponding object IDs from a file called vect_info.<field>.keys,
-    #
-    #     :param field: the name of the representation
-    #     :param dir_name: the directory to read from; by default, or if set to None, will read from the directory that the Corpus was loaded from.
-    #     :return: None
-    #     """
-    #
-    #     if (self.filename is None) and (dir_name is None):
-    #         raise ValueError('must specify a directory to read from')
-    #     if dir_name is None:
-    #         dir_name = self.filename
-    #
-    #     self._vector_matrices[field] = self._load_vectors(
-    #         os.path.join(dir_name, 'vect_info.' + field)
-    #     )
-    #
-    # def dump_vector_reprs(self, field, dir_name=None):
-    #     """
-    #     writes vector representations of Corpus objects to disk.
-    #
-    #     Will write matrices to a file called vect_info.<field>.npy and corresponding object IDs to a file called vect_info.<field>.keys,
-    #
-    #     :param field: the name of the representation to write to disk
-    #     :param dir_name: the directory to write to. by default, or if set to None, will read from the directory that the Corpus was loaded from.
-    #     :return: None
-    #     """
-    #
-    #     if (self.filename is None) and (dir_name is None):
-    #         raise ValueError('must specify a directory to write to')
-    #
-    #     if dir_name is None:
-    #         dir_name = self.filename
-    #
-    #     self._dump_vectors(self._vector_matrices[field], os.path.join(dir_name, 'vect_info.' + field))
-
     def get_attribute_table(self, obj_type, attrs):
         """
         returns a DataFrame, indexed by the IDs of objects of `obj_type`, containing attributes of these objects.

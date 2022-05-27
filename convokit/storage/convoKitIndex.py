@@ -14,7 +14,7 @@ class ConvoKitIndex:
                  version: Optional[int] = 0):
 
         self.storage = storage
-        self.fields = defaultdict(dict)
+        self.fields = {}
         self.utterances_index = utterances_index if utterances_index is not None else {}
         self.speakers_index = speakers_index if speakers_index is not None else {}
         self.conversations_index = conversations_index if conversations_index is not None else {}
@@ -34,15 +34,7 @@ class ConvoKitIndex:
             'speaker': True
         }
 
-    # # Defining Properties for abstract storage
-    # @property
-    # def owner(self):
-    #     return self.fields.__getitem__('owner')
-
-    # @owner.setter
-    # def owner(self, new_owner):
-    #     self.fields.__setitem__('owner', new_owner)
-
+    # Defining Properties for abstract storage
     @property
     def utterances_index(self):
         return self.fields.__getitem__('utterances_index')

@@ -104,18 +104,18 @@ class DBStorage(unittest.TestCase):
                                    ConvoKitMeta)
 
         # Test persistent storage
-        self.assertEqual(storage_._speakers['Bob'].utterances['0'],
-                         storage_._utterances['0'])
-        self.assertEqual(storage_._utterances['1'].speaker,
-                         storage_._speakers['Jim'])
+        self.assertEqual(storage_.speakers['Bob'].utterances['0'],
+                         storage_.utterances['0'])
+        self.assertEqual(storage_.utterances['1'].speaker,
+                         storage_.speakers['Jim'])
 
-        self.assertEqual(storage_._speakers['Bob'].utterances['0'].text,
+        self.assertEqual(storage_.speakers['Bob'].utterances['0'].text,
                          BOBS_TEXT)
-        self.assertEqual(storage_._utterances['1'].speaker.id, 'Jim')
-        self.assertEqual(storage_._conversations[None].speaker_ids,
+        self.assertEqual(storage_.utterances['1'].speaker.id, 'Jim')
+        self.assertEqual(storage_.conversations[None].speaker_ids,
                          ['Bob', 'Jim'])
 
-        self.assertEqual(storage_._conversations[None].get_utterance_ids(),
+        self.assertEqual(storage_.conversations[None].get_utterance_ids(),
                          ['0', '1'])
 
     def test_mem_corpusComponent(self):
@@ -163,9 +163,9 @@ class DBStorage(unittest.TestCase):
                                    ConvoKitMeta)
 
         with self.assertRaises(KeyError):
-            storage_._speakers['Bob']
+            storage_.speakers['Bob']
         with self.assertRaises(KeyError):
-            storage_._utterances['1']
+            storage_.utterances['1']
 
     def test_db_migration(self):
         _storage = StorageManager(storage_type='db',

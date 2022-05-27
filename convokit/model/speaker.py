@@ -52,16 +52,16 @@ class Speaker(CorpusComponent):
             for c_id, convo in convos:
                 self.conversations[c_id] = convo
 
-        self.storage._speakers[id] = self
+        self.storage.speakers[id] = self
 
     # Properties for get-only access
     @property
     def utterances(self) -> MutableMapping:
-        return self.storage._utterances
+        return self.storage.utterances
 
     @property
     def conversations(self) -> MutableMapping:
-        return self.storage._conversations
+        return self.storage.conversations
 
     # Properties for backwards compatability
     @property

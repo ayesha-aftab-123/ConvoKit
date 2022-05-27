@@ -1,7 +1,6 @@
 from typing import List, Collection, Callable, Set, Generator, Tuple, Optional, ValuesView, Union, MutableMapping
 from pymongo import MongoClient
 from pymongo.database import Database
-from random import randrange
 import os
 import uuid
 from yaml import load, dump, Loader, Dumper
@@ -27,7 +26,7 @@ class StorageManager:
         """
         Object to manage data storage. 
 
-        :param storage_type: either 'mem' or 'db'
+        :param storage_type: either 'mem' or 'db' or None
         :param db_host: name of the DB host
         :param data_directory: path to the directory containing Mem Corpora. If left 
             unspecified, will use the data_directory specified in ~/.convokit/config.yml
@@ -37,7 +36,7 @@ class StorageManager:
             this increments the version number so that the original copy
             of the data is left unmodified.
         
-        :ivar storage_type: either 'mem' or 'db'
+        :ivar storage_type: either 'mem' or 'db' or None
         :ivar index: ConvoKitIndex to track types of metadata stored in this StorageManager
         :ivar corpus_id: id of the corpus this StorageManager is connected to.
         :ivar CollectionMapping: class constructor to use to store collections of items.
@@ -170,12 +169,12 @@ class StorageManager:
         to circular imports, so a call to setup_collections is required to configure a StorageManager with 
         the correct types. 
         """
-        self._utterances = self.CollectionMapping('utterances',
+        self.utterances = self.CollectionMapping('utterances',
                                                   item_type=utterance)
-        self._conversations = self.CollectionMapping('conversations',
+        self.conversations = self.CollectionMapping('conversations',
                                                      item_type=conversation)
-        self._speakers = self.CollectionMapping('speakers', item_type=speaker)
-        self._metas = self.CollectionMapping('metas', item_type=convokitmeta)
+        self.speakers = self.CollectionMapping('speakers', item_type=speaker)
+        self.metas = self.CollectionMapping('metas', item_type=convokitmeta)
 
     def __eq__(self, other):
         if not isinstance(other, StorageManager):
@@ -190,7 +189,6 @@ class StorageManager:
 
 def safe_corpus_id():
     return str(uuid.uuid4())
-    # return str(randrange(2**15, 2**20))
 
 
 def make_full_name(corpus_id, version):

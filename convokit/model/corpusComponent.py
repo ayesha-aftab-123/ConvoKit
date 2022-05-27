@@ -3,6 +3,7 @@ from random import randrange
 from .convoKitMeta import ConvoKitMeta
 from convokit.util import warn, deprecation
 from typing import List, Optional, Type
+import uuid
 
 from convokit.storage import DBDocumentMapping, StorageManager
 
@@ -29,18 +30,18 @@ class CorpusComponent:
             return
 
         if id is None and obj_type != 'conversation':
-            id = randrange(0, 100)
+            id = uuid.uuid4()
 
-        if ((obj_type == 'utterance' and id in self.storage._utterances)
-                or (obj_type == 'speaker' and id in self.storage._speakers)):
+        if ((obj_type == 'utterance' and id in self.storage.utterances)
+                or (obj_type == 'speaker' and id in self.storage.speakers)):
             id = f'{id}.1'
             
         if obj_type == 'speaker':
-            mapped_item = self.storage._speakers
+            mapped_item = self.storage.speakers
         elif obj_type == 'conversation':
-            mapped_item = self.storage._conversations
+            mapped_item = self.storage.conversations
         else:
-            mapped_item = self.storage._utterances
+            mapped_item = self.storage.utterances
         self.fields = self.storage.ItemMapping(mapped_item, id)
 
         self.obj_type = obj_type  # utterance, speaker, conversation
@@ -53,11 +54,11 @@ class CorpusComponent:
 
     @property
     def meta(self):
-        return self.storage._metas[self._meta_id()]
+        return self.storage.metas[self._meta_id()]
 
     @meta.setter
     def meta(self, new_meta):
-        self.storage._metas[self._meta_id()] = self.init_meta(new_meta)
+        self.storage.metas[self._meta_id()] = self.init_meta(new_meta)
 
     @property
     def utterance_ids(self):

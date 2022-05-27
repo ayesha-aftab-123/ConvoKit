@@ -44,10 +44,10 @@ class Conversation(CorpusComponent):
         self.utterance_ids: List[
             str] = utterances if utterances is not None else []
         self.speaker_ids = [
-            self.storage._utterances[utt].speaker_id for utt in utterances
+            self.storage.utterances[utt].speaker_id for utt in utterances
         ] if utterances is not None else []
 
-        self.storage._conversations[id] = self
+        self.storage.conversations[id] = self
 
     def _add_utterance(self, utt: Utterance):
         if utt.id not in self.utterance_ids:
@@ -80,7 +80,7 @@ class Conversation(CorpusComponent):
         # delegate to the owner Corpus since Conversation does not itself own
         # any Utterances
         if ut_id not in self.utterance_ids: raise KeyError()
-        return self.storage._utterances[ut_id]
+        return self.storage.utterances[ut_id]
 
     def iter_utterances(self, selector: Callable[[Utterance], bool] = lambda utt: True) -> \
             Generator[Utterance, None, None]:
@@ -92,7 +92,7 @@ class Conversation(CorpusComponent):
 		:return: a generator of Utterances
         """
         for ut_id in self.utterance_ids:
-            utt = self.storage._utterances[ut_id]
+            utt = self.storage.utterances[ut_id]
             if selector(utt):
                 yield utt
 

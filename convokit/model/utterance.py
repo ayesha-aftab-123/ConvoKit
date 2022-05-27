@@ -74,7 +74,7 @@ class Utterance(CorpusComponent):
             text = '' if text is None else str(text)
         self.text = text
 
-        self.storage._utterances[self.id] = self
+        self.storage.utterances[self.id] = self
 
         # if self.conversation_id is None:
         #     raise ValueError(
@@ -91,16 +91,16 @@ class Utterance(CorpusComponent):
 
     @property
     def conversation(self):
-        return self.storage._conversations[self.conversation_id]
+        return self.storage.conversations[self.conversation_id]
 
     @conversation.setter
     def conversation(self, new_conversation):
         self.conversation_id = new_conversation.id
-        self.storage._conversations[self.conversation_id] = new_conversation
+        self.storage.conversations[self.conversation_id] = new_conversation
 
     @property
     def speaker(self):
-        return self.storage._speakers[self.speaker_id]
+        return self.storage.speakers[self.speaker_id]
 
     @speaker.setter
     def speaker(self, new_speaker):
@@ -108,7 +108,7 @@ class Utterance(CorpusComponent):
         # if self.storage.storage_type == 'db':
         #     print(f'\tUtterance {self.id} - {self.storage.db.name}: '
         #           f'Set self.speaker_id to {self.speaker_id }')
-        self.storage._speakers[self.speaker_id] = new_speaker
+        self.storage.speakers[self.speaker_id] = new_speaker
 
     @property
     def speaker_id(self):
@@ -171,7 +171,7 @@ class Utterance(CorpusComponent):
 
         :return: a Conversation object
         """
-        return self.storage._conversations[self.conversation_id]
+        return self.storage.conversations[self.conversation_id]
 
     def get_speaker(self):
         """
@@ -179,7 +179,7 @@ class Utterance(CorpusComponent):
 
         :return: a Speaker object
         """
-        return self.storage._speakers[self.speaker_id]
+        return self.storage.speakers[self.speaker_id]
 
     def __hash__(self):
         return super().__hash__()
@@ -189,13 +189,6 @@ class Utterance(CorpusComponent):
         if not isinstance(other, Utterance):
             return False
         try:
-            # print('\ttrying comparison of fields')
-            mine = (self.id, self.conversation_id, self.reply_to, self.speaker,
-                    self.timestamp, self.text)
-            theirs = (other.id, other.conversation_id, other.reply_to,
-                      other.speaker, other.timestamp, other.text)
-            # print('\t', mine)
-            # print('\t', theirs)
             return self.id == other.id and self.conversation_id == other.conversation_id and self.reply_to == other.reply_to and \
                    self.speaker == other.speaker and self.timestamp == other.timestamp and self.text == other.text
         except AttributeError as e:  # for backwards compatibility with wikiconv

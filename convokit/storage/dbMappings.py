@@ -41,7 +41,7 @@ class DBCollectionMapping(MutableMapping):
             else:
                 if hasattr(value, 'meta'):
                     value.meta.fields.transfer_to_dbcoll(
-                        self.storage._metas, DBDocumentMapping)
+                        self.storage.metas, DBDocumentMapping)
 
                 value.fields.transfer_to_dbcoll(self, DBDocumentMapping)
 

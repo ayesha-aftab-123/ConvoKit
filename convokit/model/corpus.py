@@ -41,14 +41,16 @@ class Corpus:
         Type-checking ensures that the ConvoKitIndex is initialized correctly. However, it may be unnecessary if the
         index.json is already accurate and disabling it will allow for a faster corpus load. This parameter is set to
         True by default, i.e. type-checking is not carried out.
-    :param storage_type: either 'mem' or 'db'
+    :param storage_type: optionally either 'mem' or 'db', default None
     :param storage: optional convokit.storage.StorageManager object to load the Corpus from
     :param in_place: when connecting to a Corpus with data already in db storage, whether to load a copy of the Corpus 
         or modify the existing Corpus in place.
         True by default, i.e. Corpus is not initialized as a seperate copy.
     :param from_corpus: if specified, the corpus to make a copy from.
-    :param version: (DB only): What version of the specified corpus to connect to
-    
+    :param version: if `storage_type` is 'db', this specifies the version of the corpus to connect to
+    :param db_host: name of the DB host
+    :param data_dir: path to the directory containing Mem Corpora. If left 
+        unspecified, will use the data_dir specified in ~/.convokit/config.yml
 
     :ivar meta_index: index of Corpus metadata
     :ivar vectors: the vectors stored in the Corpus
@@ -101,7 +103,6 @@ class Corpus:
         convos_data = defaultdict(dict)
 
         if from_corpus is not None:
-            assert utterances is None
             self.copy_from(from_corpus.storage)
 
         else:
@@ -226,11 +227,11 @@ class Corpus:
         # Building a new corpus from utterances
         if utterances is not None:  # Construct corpus from utterances list
             for u in tqdm(utterances):
-                self.storage._speakers[u.speaker_id] = u.speaker
-                self.storage._utterances[u.id] = u
+                self.storage.speakers[u.speaker_id] = u.speaker
+                self.storage.utterances[u.id] = u
                 u.owner = self
 
-            for _, speaker in self.storage._speakers.items():
+            for _, speaker in self.storage.speakers.items():
                 speaker.owner = self
 
         if merge_lines:
@@ -254,7 +255,6 @@ class Corpus:
         self.storage.index.vectors = new_vectors
 
     def copy_as(self, storage_type, corpus_id=None):
-        print('copy as ', corpus_id)
         return Corpus(corpus_id=corpus_id,
                       storage_type=storage_type,
                       from_corpus=self)
@@ -355,7 +355,7 @@ class Corpus:
         :param utt_id: id of Utterance
         :return: Utterance
         """
-        return self.storage._utterances[utt_id]
+        return self.storage.utterances[utt_id]
 
     def get_conversation(self, convo_id: str) -> Conversation:
         """
@@ -364,7 +364,7 @@ class Corpus:
         :param convo_id: id of Conversation
         :return: Conversation
         """
-        return self.storage._conversations[convo_id]
+        return self.storage.conversations[convo_id]
 
     def get_speaker(self, speaker_id: str) -> Speaker:
         """
@@ -373,7 +373,7 @@ class Corpus:
         :param speaker_id: id of Speaker
         :return: Speaker
         """
-        return self.storage._speakers[speaker_id]
+        return self.storage.speakers[speaker_id]
 
     def get_user(self, user_id: str) -> Speaker:
         deprecation("get_user()", "get_speaker()")
@@ -402,7 +402,7 @@ class Corpus:
         :param utt_id: id of Utterance
         :return: True if Utterance of specified id is present, False otherwise
         """
-        return utt_id in self.storage._utterances
+        return utt_id in self.storage.utterances
 
     def has_conversation(self, convo_id: str) -> bool:
         """
@@ -411,7 +411,7 @@ class Corpus:
         :param convo_id: id of Conversation
         :return: True if Conversation of specified id is present, False otherwise
         """
-        return convo_id in self.storage._conversations
+        return convo_id in self.storage.conversations
 
     def has_speaker(self, speaker_id: str) -> bool:
         """
@@ -420,7 +420,7 @@ class Corpus:
         :param speaker_id: id of Speaker
         :return: True if Speaker of specified id is present, False otherwise
         """
-        return speaker_id in self.storage._speakers
+        return speaker_id in self.storage.speakers
 
     def has_user(self, speaker_id):
         deprecation("has_user()", "has_speaker()")
@@ -432,7 +432,7 @@ class Corpus:
 
         :return: a random Utterance
         """
-        return random.choice(list(self.storage._utterances.values()))
+        return random.choice(list(self.storage.utterances.values()))
 
     def random_conversation(self) -> Conversation:
         """
@@ -440,7 +440,7 @@ class Corpus:
 
         :return: a random Conversation
         """
-        return random.choice(list(self.storage._conversations.values()))
+        return random.choice(list(self.storage.conversations.values()))
 
     def random_speaker(self) -> Speaker:
         """
@@ -448,7 +448,7 @@ class Corpus:
 
         :return: a random Speaker
         """
-        return random.choice(list(self.storage._speakers.values()))
+        return random.choice(list(self.storage.speakers.values()))
 
     def random_user(self) -> Speaker:
         deprecation("random_user()", "random_speaker()")
@@ -463,7 +463,7 @@ class Corpus:
             By default, the selector includes all Utterances in the Corpus.
         :return: a generator of Utterances
         """
-        for v in self.storage._utterances.values():
+        for v in self.storage.utterances.values():
             if selector(v):
                 yield v
 
@@ -493,7 +493,7 @@ class Corpus:
             By default, the selector includes all Conversations in the Corpus.
         :return: a generator of Conversations
         """
-        for v in self.storage._conversations.values():
+        for v in self.storage.conversations.values():
             if selector(v):
                 yield v
 
@@ -523,7 +523,7 @@ class Corpus:
         :return: a generator of Speakers
         """
 
-        for speaker in self.storage._speakers.values():
+        for speaker in self.storage.speakers.values():
             if selector(speaker):
                 yield speaker
 
@@ -652,15 +652,15 @@ class Corpus:
         :return: the mutated Corpus
         """
 
-        self.storage._conversations.filter_by(selector)
+        self.storage.conversations.filter_by(selector)
         utt_ids = set([
-            utt for convo in self.storage._conversations.values()
+            utt for convo in self.storage.conversations.values()
             for utt in convo.get_utterance_ids()
         ])
-        self.storage._utterances.filter_by(lambda utt: utt.id in utt_ids)
+        self.storage.utterances.filter_by(lambda utt: utt.id in utt_ids)
         speaker_ids = set(
-            [utt.speaker_id for utt in self.storage._utterances.values()])
-        self.storage._speakers.filter_by(
+            [utt.speaker_id for utt in self.storage.utterances.values()])
+        self.storage.speakers.filter_by(
             lambda speaker: speaker.id in speaker_ids)
 
         self.update_speakers_data()
@@ -1028,13 +1028,13 @@ class Corpus:
 
     def copy_from(self, from_storage: StorageManager):
         for uid, utt in from_storage._utterances.items():
-            self.storage._utterances[uid] = utt
+            self.storage.utterances[uid] = utt
 
         for cid, convo in from_storage._conversations.items():
-            self.storage._conversations[cid] = convo
+            self.storage.conversations[cid] = convo
 
         for sid, speaker in from_storage._speakers.items():
-            self.storage._speakers[sid] = speaker
+            self.storage.speakers[sid] = speaker
 
     def add_utterances(self,
                        utterances: List[Utterance],
@@ -1069,23 +1069,23 @@ class Corpus:
 
             # update corpus speakers
             for new_speaker_id, new_speaker in new_speakers.items():
-                if new_speaker_id not in self.storage._speakers:
-                    self.storage._speakers[new_speaker_id] = new_speaker
-                    # self.storage._metas[new_speaker._meta_id()] = new_speaker.meta
+                if new_speaker_id not in self.storage.speakers:
+                    self.storage.speakers[new_speaker_id] = new_speaker
+                    # self.storage.metas[new_speaker._meta_id()] = new_speaker.meta
 
             # update corpus utterances + (link speaker -> utt)
             for new_utt_id, new_utt in new_utterances.items():
-                if new_utt_id not in self.storage._utterances:
-                    self.storage._utterances[new_utt_id] = new_utt
-                    self.storage._speakers[new_utt.speaker_id]._add_utterance(
+                if new_utt_id not in self.storage.utterances:
+                    self.storage.utterances[new_utt_id] = new_utt
+                    self.storage.speakers[new_utt.speaker_id]._add_utterance(
                         new_utt)
-                    # self.storage._metas[new_utt._meta_id()] = new_utt.meta
+                    # self.storage.metas[new_utt._meta_id()] = new_utt.meta
 
             # update corpus conversations + (link convo <-> utt)
             new_convos = defaultdict(list)
             for utt in new_utterances.values():
-                if utt.conversation_id in self.storage._conversations:
-                    self.storage._conversations[
+                if utt.conversation_id in self.storage.conversations:
+                    self.storage.conversations[
                         utt.conversation_id]._add_utterance(utt)
                 else:
                     new_convos[utt.conversation_id].append(utt.id)
@@ -1095,9 +1095,9 @@ class Corpus:
                                          id=convo_id,
                                          utterances=convo_utts,
                                          meta=None)
-                self.storage._conversations[convo_id] = new_convo
+                self.storage.conversations[convo_id] = new_convo
                 # (link speaker -> convo)
-                new_convo_speaker = self.storage._speakers[
+                new_convo_speaker = self.storage.speakers[
                     new_convo.get_utterance(convo_id).speaker_id]
                 new_convo_speaker._add_conversation(new_convo)
 
@@ -1134,10 +1134,10 @@ class Corpus:
 
         :return: None
         """
-        print("Number of Speakers: {}".format(len(self.storage._speakers)))
-        print("Number of Utterances: {}".format(len(self.storage._utterances)))
+        print("Number of Speakers: {}".format(len(self.storage.speakers)))
+        print("Number of Utterances: {}".format(len(self.storage.utterances)))
         print("Number of Conversations: {}".format(
-            len(self.storage._conversations)))
+            len(self.storage.conversations)))
 
     def delete_metadata(self, obj_type: str, attribute: str):
         """

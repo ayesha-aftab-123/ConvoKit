@@ -16,7 +16,7 @@ if __name__ == '__main__':
 
     print('downloading corpus')
     corpus_id = sys.argv[1]
-    filename = download(corpus_id, data_dir=ROOT_DIR)
+    filename = download(corpus_id, data_directory=ROOT_DIR)
 
     print('purging parses')
     with open(os.path.join(filename, 'index.json')) as f:

@@ -11,7 +11,7 @@ import warnings
 # returns a path to the dataset file
 def download(name: str,
              verbose: bool = True,
-             data_dir: str = None,
+             data_directory: str = None,
              use_newest_version: bool = True,
              use_local: bool = False) -> str:
     """Use this to download (or use saved) convokit data by name.
@@ -67,7 +67,7 @@ def download(name: str,
         -  "stack-exchange-politeness-corpus": Stack Exchange Politeness Corpus
             A corpus of politeness annotations on requests from stack exchange.
     :param verbose: Print checkpoint statements for download
-    :param data_dir: Output path of downloaded file (default: ~/.convokit)
+    :param data_directory: Output path of downloaded file (default: ~/.convokit)
     :param use_newest_version: Re-download if new version is found
     :param use_local: if True, use the local version of corpus if it exists
         (regardless of whether a newer version exists)
@@ -75,7 +75,7 @@ def download(name: str,
     :return: The path to the downloaded item.
     """
     if use_local:
-        return download_local(name, data_dir)
+        return download_local(name, data_directory)
 
     dataset_config = requests.get(
         'https://zissou.infosci.cornell.edu/convokit/datasets/download_config.json'
@@ -101,20 +101,20 @@ def download(name: str,
     else:
         name = name.lower()
 
-    custom_data_dir = data_dir
+    custom_data_directory = data_directory
 
-    data_dir = os.path.expanduser("~/.convokit/")
+    data_directory = os.path.expanduser("~/.convokit/")
 
     #pkg_resources.resource_filename("convokit", "")
-    if not os.path.exists(data_dir):
-        os.mkdir(data_dir)
-    if not os.path.exists(os.path.join(data_dir, "downloads")):
-        os.mkdir(os.path.join(data_dir, "downloads"))
+    if not os.path.exists(data_directory):
+        os.mkdir(data_directory)
+    if not os.path.exists(os.path.join(data_directory, "downloads")):
+        os.mkdir(os.path.join(data_directory, "downloads"))
 
-    dataset_path = os.path.join(data_dir, "downloads", name)
+    dataset_path = os.path.join(data_directory, "downloads", name)
 
-    if custom_data_dir is not None:
-        dataset_path = os.path.join(custom_data_dir, name)
+    if custom_data_directory is not None:
+        dataset_path = os.path.join(custom_data_directory, name)
 
     if not os.path.exists(os.path.dirname(dataset_path)):
         os.makedirs(os.path.dirname(dataset_path))
@@ -122,7 +122,7 @@ def download(name: str,
     dataset_path = os.path.realpath(dataset_path)
 
     needs_download = False
-    downloadeds_path = os.path.join(data_dir, "downloads", "downloaded.txt")
+    downloadeds_path = os.path.join(data_directory, "downloads", "downloaded.txt")
     if not os.path.isfile(downloadeds_path):
         open(downloadeds_path, "w").close()
     with open(downloadeds_path, "r") as f:
@@ -135,7 +135,7 @@ def download(name: str,
             if dname not in downloaded or downloaded[dname] < version:
                 downloaded[dname, path] = version
                 downloaded_paths[dname] = path
-                if custom_data_dir is None and name == dname:
+                if custom_data_directory is None and name == dname:
                     dataset_path = os.path.join(path, name)
 
         # print(list(downloaded.keys()))
@@ -173,38 +173,38 @@ def download(name: str,
     return dataset_path
 
 
-def download_local(name: str, data_dir: str):
+def download_local(name: str, data_directory: str):
     """
     Get path to a previously-downloaded local version of the corpus (which may be an older version).
     
     :param name: name of Corpus
     :return: string path to local Corpus
     """
-    custom_data_dir = data_dir
-    data_dir = os.path.expanduser("~/.convokit/")
+    custom_data_directory = data_directory
+    data_directory = os.path.expanduser("~/.convokit/")
 
     #pkg_resources.resource_filename("convokit", "")
-    if not os.path.exists(data_dir):
+    if not os.path.exists(data_directory):
         raise FileNotFoundError(
             "No convokit data directory found. No local corpus version available."
         )
 
-    if not os.path.exists(os.path.join(data_dir, "downloads")):
+    if not os.path.exists(os.path.join(data_directory, "downloads")):
         raise FileNotFoundError(
             "Local convokit data directory found, but no downloads folder exists. No local corpus version available."
         )
 
-    dataset_path = os.path.join(data_dir, "downloads", name)
+    dataset_path = os.path.join(data_directory, "downloads", name)
 
-    if custom_data_dir is not None:
-        dataset_path = os.path.join(custom_data_dir, name)
+    if custom_data_directory is not None:
+        dataset_path = os.path.join(custom_data_directory, name)
 
     if not os.path.exists(os.path.dirname(dataset_path)):
         os.makedirs(os.path.dirname(dataset_path))
 
     dataset_path = os.path.realpath(dataset_path)
 
-    downloadeds_path = os.path.join(data_dir, "downloads", "downloaded.txt")
+    downloadeds_path = os.path.join(data_directory, "downloads", "downloaded.txt")
     if not os.path.isfile(downloadeds_path):
         raise FileNotFoundError("downloaded.txt is missing.")
     with open(downloadeds_path, "r") as f:
@@ -217,7 +217,7 @@ def download_local(name: str, data_dir: str):
             if dname not in downloaded or downloaded[dname] < version:
                 downloaded[dname, path] = version
                 downloaded_paths[dname] = path
-                if custom_data_dir is None and name == dname:
+                if custom_data_directory is None and name == dname:
                     dataset_path = os.path.join(path, name)
 
         # print(list(downloaded.keys()))
@@ -281,7 +281,7 @@ def get_subreddit_info(subreddit_name: str) -> str:
 
     # base directory of subreddit corpuses
     subreddit_base = "http://zissou.infosci.cornell.edu/convokit/datasets/subreddit-corpus/"
-    data_dir = subreddit_base + "corpus-zipped/"
+    data_directory = subreddit_base + "corpus-zipped/"
 
     groupings_url = subreddit_base + "subreddit-groupings.txt"
     groups_fetched = urllib.request.urlopen(groupings_url)
@@ -291,7 +291,7 @@ def get_subreddit_info(subreddit_name: str) -> str:
     for group in groups:
         if subreddit_in_grouping(subreddit_name, group):
             # return os.path.join(data_directory, group, subreddit_name + ".corpus.zip")
-            return data_dir + group + "/" + subreddit_name + ".corpus.zip"
+            return data_directory + group + "/" + subreddit_name + ".corpus.zip"
 
     print("The subreddit requested is not available.")
 
@@ -315,9 +315,9 @@ def _get_wikiconv_year_info(year: str) -> str:
 
     # base directory of wikicon corpuses
     wikiconv_base = "http://zissou.infosci.cornell.edu/convokit/datasets/wikiconv-corpus/"
-    data_dir = wikiconv_base + "corpus-zipped/"
+    data_directory = wikiconv_base + "corpus-zipped/"
 
-    return data_dir + year + "/full.corpus.zip"
+    return data_directory + year + "/full.corpus.zip"
 
 
 def _get_supreme_info(year: str) -> str:

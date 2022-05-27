@@ -49,8 +49,8 @@ class Corpus:
     :param from_corpus: if specified, the corpus to make a copy from.
     :param version: if `storage_type` is 'db', this specifies the version of the corpus to connect to
     :param db_host: name of the DB host
-    :param data_dir: path to the directory containing Mem Corpora. If left 
-        unspecified, will use the data_dir specified in ~/.convokit/config.yml
+    :param data_directory: path to the directory containing Mem Corpora. If left
+        unspecified, will use the data_directory specified in ~/.convokit/config.yml
 
     :ivar vectors: the vectors stored in the Corpus
     """

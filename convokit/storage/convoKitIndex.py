@@ -25,7 +25,7 @@ class ConvoKitIndex:
             'speaker': self.speakers_index,
             'corpus': self.overall_index
         }
-        self.vectors = set(vectors) if vectors is not None else set()
+        self.vectors = list(vectors) if vectors is not None else []
         self.version = version
         self.type_check = True  # toggle-able to enable/disable type checks on metadata additions
         self.lock_metadata_deletion = {
@@ -69,11 +69,11 @@ class ConvoKitIndex:
 
     @property
     def vectors(self):
-        return set(self.fields.__getitem__('vectors'))
+        return self.fields.__getitem__('vectors')
 
     @vectors.setter
     def vectors(self, new_vectors):
-        self.fields.__setitem__('vectors', list(new_vectors))
+        self.fields.__setitem__('vectors', new_vectors)
 
     @property
     def version(self):
@@ -150,7 +150,7 @@ class ConvoKitIndex:
         #         del corpus_obj.meta[key]
 
     def add_vector(self, vector_name):
-        self.vectors.add(vector_name)
+        self.vectors.append(vector_name)
 
     def del_vector(self, vector_name):
         self.vectors.remove(vector_name)
@@ -161,7 +161,7 @@ class ConvoKitIndex:
         speaker_index = "speakers-index" if "speakers-index" in meta_index else "users-index"
         self.speakers_index.update(meta_index[speaker_index])
         self.overall_index.update(meta_index["overall-index"])
-        self.vectors = set(meta_index.get('vectors', set()))
+        self.vectors = list(meta_index.get('vectors', []))
         for index in self.indices.values():
             for k, v in index.items():
                 if isinstance(v, str):
@@ -182,7 +182,7 @@ class ConvoKitIndex:
             retval['version'] = force_version
 
         if exclude_vectors is not None:
-            retval['vectors'] = list(self.vectors - set(exclude_vectors))
+            retval['vectors'] = list(set(self.vectors) - set(exclude_vectors))
         else:
             retval['vectors'] = list(self.vectors)
 

@@ -52,10 +52,9 @@ class Corpus:
     :param data_dir: path to the directory containing Mem Corpora. If left 
         unspecified, will use the data_dir specified in ~/.convokit/config.yml
 
-    :ivar meta_index: index of Corpus metadata
     :ivar vectors: the vectors stored in the Corpus
-    :ivar corpus_dirpath: path to the directory the corpus was loaded from
     """
+    
     def __init__(self,
                  corpus_id: Optional[str] = None,
                  utterances: Optional[List[Utterance]] = None,
@@ -220,7 +219,7 @@ class Corpus:
                     if preload_vectors is not None:
                         for vector_name in preload_vectors:
                             matrix = ConvoKitMatrix.from_dir(
-                                self.corpus_dirpath, vector_name)
+                                self.filename, vector_name)
                             if matrix is not None:
                                 self._vector_matrices[vector_name] = matrix
 
@@ -285,7 +284,7 @@ class Corpus:
             raise ValueError(
                 "Not allowed to specify both base_path and overwrite_existing_corpus!"
             )
-        if overwrite_existing_corpus and self.corpus_dirpath is None:
+        if overwrite_existing_corpus and self.filename is None:
             raise ValueError(
                 "Cannot use save to existing path on Corpus generated from utterance list!"
             )
@@ -299,7 +298,7 @@ class Corpus:
                 #     os.mkdir(base_path)
             dir_name = os.path.join(data_dir, dir_name)
         else:
-            dir_name = os.path.join(self.corpus_dirpath)
+            dir_name = os.path.join(self.filename)
 
         if not os.path.exists(dir_name):
             os.mkdir(dir_name)
@@ -342,7 +341,7 @@ class Corpus:
             if vector_name in self._vector_matrices:
                 self._vector_matrices[vector_name].dump(dir_name)
             else:
-                src = os.path.join(self.corpus_dirpath,
+                src = os.path.join(self.filename,
                                    'vectors.{}.p'.format(vector_name))
                 dest = os.path.join(dir_name,
                                     'vectors.{}.p'.format(vector_name))
@@ -1027,13 +1026,13 @@ class Corpus:
         return new_corpus
 
     def copy_from(self, from_storage: StorageManager):
-        for uid, utt in from_storage._utterances.items():
+        for uid, utt in from_storage.utterances.items():
             self.storage.utterances[uid] = utt
 
-        for cid, convo in from_storage._conversations.items():
+        for cid, convo in from_storage.conversations.items():
             self.storage.conversations[cid] = convo
 
-        for sid, speaker in from_storage._speakers.items():
+        for sid, speaker in from_storage.speakers.items():
             self.storage.speakers[sid] = speaker
 
     def add_utterances(self,
@@ -1210,7 +1209,7 @@ class Corpus:
         """
         # This is the lazy load step
         if name in self.vectors and name not in self._vector_matrices:
-            matrix = ConvoKitMatrix.from_dir(self.corpus_dirpath, name)
+            matrix = ConvoKitMatrix.from_dir(self.filename, name)
             if matrix is not None:
                 self._vector_matrices[name] = matrix
         return self._vector_matrices[name]
@@ -1246,10 +1245,10 @@ class Corpus:
 
     def dump_vectors(self, name, dir_name=None):
 
-        if (self.corpus_dirpath is None) and (dir_name is None):
+        if (self.filename is None) and (dir_name is None):
             raise ValueError('Must specify a directory to read from.')
         if dir_name is None:
-            dir_name = self.corpus_dirpath
+            dir_name = self.filename
 
         self.get_vector_matrix(name).dump(dir_name)
 
@@ -1271,10 +1270,10 @@ class Corpus:
         if fields is None:
             fields = []
 
-        if (self.corpus_dirpath is None) and (dir_name is None):
+        if (self.filename is None) and (dir_name is None):
             raise ValueError('Must specify a directory to read from.')
         if dir_name is None:
-            dir_name = self.corpus_dirpath
+            dir_name = self.filename
 
         if len(fields) == 0:
             fields = [
@@ -1308,11 +1307,11 @@ class Corpus:
         :return: None
         """
 
-        if (self.corpus_dirpath is None) and (dir_name is None):
+        if (self.filename is None) and (dir_name is None):
             raise ValueError('must specify a directory to write to')
 
         if dir_name is None:
-            dir_name = self.corpus_dirpath
+            dir_name = self.filename
         # if len(fields) == 0:
         #     fields = self.aux_info.keys()
         for field in fields:
@@ -1336,10 +1335,10 @@ class Corpus:
     #     :return: None
     #     """
     #
-    #     if (self.corpus_dirpath is None) and (dir_name is None):
+    #     if (self.filename is None) and (dir_name is None):
     #         raise ValueError('must specify a directory to read from')
     #     if dir_name is None:
-    #         dir_name = self.corpus_dirpath
+    #         dir_name = self.filename
     #
     #     self._vector_matrices[field] = self._load_vectors(
     #         os.path.join(dir_name, 'vect_info.' + field)
@@ -1356,11 +1355,11 @@ class Corpus:
     #     :return: None
     #     """
     #
-    #     if (self.corpus_dirpath is None) and (dir_name is None):
+    #     if (self.filename is None) and (dir_name is None):
     #         raise ValueError('must specify a directory to write to')
     #
     #     if dir_name is None:
-    #         dir_name = self.corpus_dirpath
+    #         dir_name = self.filename
     #
     #     self._dump_vectors(self._vector_matrices[field], os.path.join(dir_name, 'vect_info.' + field))
 

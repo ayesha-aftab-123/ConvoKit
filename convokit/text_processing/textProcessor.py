@@ -49,7 +49,7 @@ class TextProcessor(Transformer):
             :return: the corpus
         """
 
-        total_utts = len(corpus.storage._utterances)
+        total_utts = len(corpus.storage.utterances)
 
         for idx, utterance in enumerate(corpus.iter_utterances()):
 

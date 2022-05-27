@@ -1,5 +1,3 @@
-from random import randrange
-
 from .convoKitMeta import ConvoKitMeta
 from convokit.util import warn, deprecation
 from typing import List, Optional, Type

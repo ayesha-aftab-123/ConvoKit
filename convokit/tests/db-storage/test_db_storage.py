@@ -82,8 +82,8 @@ class DBStorage(unittest.TestCase):
         c0._add_utterance(u0)
         c0._add_utterance(u1)
 
-        u0_ = storage._utterances['0']
-        u1_ = storage._utterances['1']
+        u0_ = storage.utterances['0']
+        u1_ = storage.utterances['1']
 
         self.assertEqual(u0, u0_)
         self.assertEqual(u1, u1_)
@@ -143,8 +143,8 @@ class DBStorage(unittest.TestCase):
         c0._add_utterance(u0)
         c0._add_utterance(u1)
 
-        u0_ = storage._utterances['0']
-        u1_ = storage._utterances['1']
+        u0_ = storage.utterances['0']
+        u1_ = storage.utterances['1']
 
         self.assertEqual(u0, u0_)
         self.assertEqual(u1, u1_)
@@ -210,7 +210,7 @@ class DBStorage(unittest.TestCase):
         self.assertEqual(u.retrieve_meta('text-len'), text_len)
         self.assertEqual(u.speaker.retrieve_meta('height'), height)
 
-        self.assertEqual(outside_storage._metas['utterance_0'],
+        self.assertEqual(outside_storage.metas['utterance_0'],
                          {'text-len': text_len})
 
         self.assertEqual(
@@ -226,17 +226,17 @@ class DBStorage(unittest.TestCase):
         storage = StorageManager(storage_type='db', corpus_id='testo')
         storage.purge_all_collections()
 
-        storage._utterances = storage.CollectionMapping('utterances',
+        storage.utterances = storage.CollectionMapping('utterances',
                                                         item_type=Utterance)
-        storage._conversations = storage.CollectionMapping(
+        storage.conversations = storage.CollectionMapping(
             'conversations', item_type=Conversation)
-        storage._speakers = storage.CollectionMapping('speakers',
+        storage.speakers = storage.CollectionMapping('speakers',
                                                       item_type=Speaker)
-        storage._metas = storage.CollectionMapping('metas',
+        storage.metas = storage.CollectionMapping('metas',
                                                    item_type=ConvoKitMeta)
 
         s0 = Speaker(id="alice", storage=storage)
-        self.assertEqual(storage._speakers['alice'], s0)
+        self.assertEqual(storage.speakers['alice'], s0)
         self.assertEqual(s0.id, 'alice')
 
         s1 = Speaker(id="bob", storage=storage)

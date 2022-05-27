@@ -266,13 +266,13 @@ def merge_utterance_lines(storage):
     For merging adjacent utterances by the same speaker
     """
     new_utterances = storage.CollectionMapping(
-        f'{storage._utterances.name}_merged', item_type=Utterance)
+        f'{storage.utterances.name}_merged', item_type=Utterance)
 
     merged_with = {}
-    for uid, utt in storage._utterances.items():
+    for uid, utt in storage.utterances.items():
         merged = False
         if utt.reply_to is not None and utt.speaker is not None:
-            u0 = storage._utterances[utt.reply_to]
+            u0 = storage.utterances[utt.reply_to]
             if u0.conversation_id == utt.conversation_id and u0.speaker == utt.speaker:
                 merge_target = merged_with[
                     u0.id] if u0.id in merged_with else u0.id
@@ -283,7 +283,7 @@ def merge_utterance_lines(storage):
             if utt.reply_to in merged_with:
                 utt.reply_to = merged_with[utt.reply_to]
             new_utterances[utt.id] = utt
-    storage._utterances = new_utterances
+    storage.utterances = new_utterances
 
 
 def initialize_conversations(corpus, convos_data):
@@ -293,7 +293,7 @@ def initialize_conversations(corpus, convos_data):
     # organize utterances by conversation
     convo_to_utts = defaultdict(
         list)  # temp container identifying utterances by conversation
-    for u in corpus.storage._utterances.values():
+    for u in corpus.storage.utterances.values():
         convo_key = u.conversation_id  # each conversation_id is considered a separate conversation
         convo_to_utts[convo_key].append(u.id)
     for convo_id in convo_to_utts:

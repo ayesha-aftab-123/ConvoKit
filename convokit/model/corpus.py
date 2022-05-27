@@ -260,7 +260,7 @@ class Corpus:
 
     def dump(self,
              corpus_id: str,
-             data_dir: Optional[str] = None,
+             data_directory: Optional[str] = None,
              exclude_vectors: List[str] = None,
              force_version: int = None,
              overwrite_existing_corpus: bool = False,
@@ -270,7 +270,7 @@ class Corpus:
         otherwise the version number is automatically incremented.
 
         :param corpus_id: name to identify the corpus
-        :param data_dir: base directory to save corpus in (None to save to a default directory)
+        :param data_directory: base directory to save corpus in (None to save to a default directory)
         :param exclude_vectors: list of names of vector matrices to exclude from the dumping step. By default; all
             vector matrices that belong to the Corpus (whether loaded or not) are dumped.
         :param force_version: version number to set for the dumped corpus
@@ -279,8 +279,8 @@ class Corpus:
         """
         if fields_to_skip is None:
             fields_to_skip = dict()
-        dir_name = corpus_id
-        if data_dir is not None and overwrite_existing_corpus:
+        directory_name = corpus_id
+        if data_directory is not None and overwrite_existing_corpus:
             raise ValueError(
                 "Not allowed to specify both base_path and overwrite_existing_corpus!"
             )
@@ -289,43 +289,43 @@ class Corpus:
                 "Cannot use save to existing path on Corpus generated from utterance list!"
             )
         if not overwrite_existing_corpus:
-            if data_dir is None:
-                data_dir = os.path.expanduser(self.storage.data_directory)
-                if not os.path.exists(data_dir):
-                    os.mkdir(data_dir)
+            if data_directory is None:
+                data_directory = os.path.expanduser(self.storage.data_directory)
+                if not os.path.exists(data_directory):
+                    os.mkdir(data_directory)
                 # base_path = os.path.join(base_path, "saved-corpora/")
                 # if not os.path.exists(base_path):
                 #     os.mkdir(base_path)
-            dir_name = os.path.join(data_dir, dir_name)
+            directory_name = os.path.join(data_directory, directory_name)
         else:
-            dir_name = os.path.join(self.filename)
+            directory_name = os.path.join(self.filename)
 
-        if not os.path.exists(dir_name):
-            os.mkdir(dir_name)
-        print('dump to ', dir_name)
+        if not os.path.exists(directory_name):
+            os.mkdir(directory_name)
+        print('dump to ', directory_name)
 
         # dump speakers, conversations, utterances
-        dump_corpus_component(self, dir_name, "speakers.json", "speaker",
+        dump_corpus_component(self, directory_name, "speakers.json", "speaker",
                               "speaker", exclude_vectors, fields_to_skip)
-        dump_corpus_component(self, dir_name, "conversations.json",
+        dump_corpus_component(self, directory_name, "conversations.json",
                               "conversation", "convo", exclude_vectors,
                               fields_to_skip)
-        dump_utterances(self, dir_name, exclude_vectors, fields_to_skip)
+        dump_utterances(self, directory_name, exclude_vectors, fields_to_skip)
 
         # dump corpus
-        with open(os.path.join(dir_name, "corpus.json"), "w") as f:
+        with open(os.path.join(directory_name, "corpus.json"), "w") as f:
             d_bin = defaultdict(list)
             meta_up = dump_helper_bin(self.meta, d_bin,
                                       fields_to_skip.get('corpus', None))
 
             json.dump(meta_up, f)
             for name, l_bin in d_bin.items():
-                with open(os.path.join(dir_name, name + "-overall-bin.p"),
+                with open(os.path.join(directory_name, name + "-overall-bin.p"),
                           "wb") as f_pk:
                     pickle.dump(l_bin, f_pk)
 
         # dump index
-        with open(os.path.join(dir_name, "index.json"), "w") as f:
+        with open(os.path.join(directory_name, "index.json"), "w") as f:
             json.dump(
                 self.storage.index.to_dict(exclude_vectors=exclude_vectors,
                                            force_version=force_version), f)
@@ -339,11 +339,11 @@ class Corpus:
             vectors_to_dump = self.vectors
         for vector_name in vectors_to_dump:
             if vector_name in self._vector_matrices:
-                self._vector_matrices[vector_name].dump(dir_name)
+                self._vector_matrices[vector_name].dump(directory_name)
             else:
                 src = os.path.join(self.filename,
                                    'vectors.{}.p'.format(vector_name))
-                dest = os.path.join(dir_name,
+                dest = os.path.join(directory_name,
                                     'vectors.{}.p'.format(vector_name))
                 shutil.copy(src, dest)
 

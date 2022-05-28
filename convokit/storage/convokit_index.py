@@ -1,6 +1,5 @@
-from collections import defaultdict
-from typing import Optional, Dict, List
 import json
+from typing import Optional, Dict, List
 
 
 class ConvoKitIndex:
@@ -252,12 +251,7 @@ class ConvoKitIndex:
                             self.update_index(obj_type, key, new_type)
 
 
-_basic_types = {
-    type(0),
-    type(1.0),
-    type("str"),
-    type(True),
-}  # cannot include lists or dicts
+_basic_types = {type(0), type(1.0), type("str"), type(True)}  # cannot include lists or dicts
 
 
 def _optimized_type_check(val):

@@ -212,7 +212,9 @@ class FightingWords(Transformer):
         if len(class2) == 0:
             raise ValueError(f"class2_func returned 0 valid {self.obj_type}s.")
 
-        print(f"class1_func returned {len(class1)} valid {self.obj_type}s. class2_func returned {len(class2)} valid {self.obj_type}s.")
+        print(
+            f"class1_func returned {len(class1)} valid {self.obj_type}s. class2_func returned {len(class2)} valid {self.obj_type}s."
+        )
 
         self.ngram_zscores = self._bayes_compare_language(class1, class2)
         print("ngram zscores computed.")

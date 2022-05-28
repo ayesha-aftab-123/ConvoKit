@@ -97,7 +97,7 @@ class CorpusComponent:
         if not isinstance(new_id, str) and new_id is not None:
             self.fields.__setitem__("id", str(new_id))
             warn(
-                "{} id must be a string. ID input has been casted to a string.".format(
+                "{} id must be a string. ID input has been cast to a string.".format(
                     self.obj_type
                 )
             )

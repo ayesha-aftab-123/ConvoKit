@@ -1,11 +1,12 @@
 from typing import Dict, Optional
+
+from convokit.storage import StorageManager
 from convokit.util import deprecation, warn
 from .corpusComponent import CorpusComponent
 from .speaker import Speaker
 
-# from .conversation import Conversation
 
-from convokit.storage import StorageManager
+# from .conversation import Conversation
 
 
 class Utterance(CorpusComponent):
@@ -30,19 +31,19 @@ class Utterance(CorpusComponent):
     """
 
     def __init__(
-        self,
-        owner=None,
-        id: Optional[str] = None,
-        speaker: Optional[Speaker] = None,
-        user: Optional[Speaker] = None,
-        conversation_id: Optional[str] = None,
-        root: Optional[str] = None,
-        reply_to: Optional[str] = None,
-        timestamp: Optional[int] = None,
-        text: str = "",
-        meta: Optional[Dict] = None,
-        from_db=False,
-        storage: Optional[StorageManager] = None,
+            self,
+            owner=None,
+            id: Optional[str] = None,
+            speaker: Optional[Speaker] = None,
+            user: Optional[Speaker] = None,
+            conversation_id: Optional[str] = None,
+            root: Optional[str] = None,
+            reply_to: Optional[str] = None,
+            timestamp: Optional[int] = None,
+            text: str = "",
+            meta: Optional[Dict] = None,
+            from_db=False,
+            storage: Optional[StorageManager] = None,
     ):
         super().__init__(
             obj_type="utterance",
@@ -63,7 +64,7 @@ class Utterance(CorpusComponent):
         if conversation_id is not None and not isinstance(conversation_id, str):
             warn(
                 "Utterance conversation_id must be a string: conversation_id of utterance with ID: {} "
-                "has been casted to a string.".format(self.id)
+                "has been cast to a string.".format(self.id)
             )
             conversation_id = str(self.conversation_id)
         # elif conversation_id is None:
@@ -74,7 +75,7 @@ class Utterance(CorpusComponent):
         if not isinstance(text, str):
             warn(
                 "Utterance text must be a string: text of utterance with ID: {} "
-                "has been casted to a string.".format(self.id)
+                "has been cast to a string.".format(self.id)
             )
             text = "" if text is None else str(text)
         self.text = text
@@ -195,12 +196,12 @@ class Utterance(CorpusComponent):
             return False
         try:
             return (
-                self.id == other.id
-                and self.conversation_id == other.conversation_id
-                and self.reply_to == other.reply_to
-                and self.speaker == other.speaker
-                and self.timestamp == other.timestamp
-                and self.text == other.text
+                    self.id == other.id
+                    and self.conversation_id == other.conversation_id
+                    and self.reply_to == other.reply_to
+                    and self.speaker == other.speaker
+                    and self.timestamp == other.timestamp
+                    and self.text == other.text
             )
         except AttributeError as e:  # for backwards compatibility with wikiconv
             # print(f'\tUsing direct __dict__ comparison because of error {e}')

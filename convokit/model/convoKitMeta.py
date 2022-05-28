@@ -2,8 +2,9 @@ try:
     from collections.abc import MutableMapping
 except:
     from collections import MutableMapping
+from convokit.storage import DBDocumentMapping
 from convokit.util import warn
-from convokit.storage import DBDocumentMapping, StorageManager
+
 
 # See reference: https://stackoverflow.com/questions/7760916/correct-usage-of-a-getter-setter-for-dictionary-values
 
@@ -31,7 +32,7 @@ class ConvoKitMeta(MutableMapping):
     def __setitem__(self, key, value):
         # print(f'META: Setting meta[{key}] to {value}')
         if not isinstance(key, str):
-            warn("Metadata attribute keys must be strings. Input key has been casted to a string.")
+            warn("Metadata attribute keys must be strings. Input key has been cast to a string.")
             key = str(key)
 
         if value is not None:

@@ -2,17 +2,20 @@
 Contains functions that help with the construction / dumping of a Corpus
 """
 
-import json
 import os
-import pickle
+import json
 from collections import defaultdict
 from typing import Dict
+import pickle
 
-from convokit.util import warn
-from .conversation import Conversation
-from .convoKitMeta import ConvoKitMeta
+from convokit.storage.dbMappings import DBCollectionMapping
+from convokit.storage.memMappings import MemCollectionMapping
+
 from .speaker import Speaker
 from .utterance import Utterance
+from .conversation import Conversation
+from .convoKitMeta import ConvoKitMeta
+from convokit.util import warn
 
 BIN_DELIM_L, BIN_DELIM_R = "<##bin{", "}&&@**>"
 KeyId = "id"
@@ -271,7 +274,7 @@ def merge_utterance_lines(storage):
     """
     For merging adjacent utterances by the same speaker
     """
-    new_utterances = storage.collection_mapping(
+    new_utterances = storage.CollectionMapping(
         f"{storage.utterances.name}_merged", item_type=Utterance
     )
 

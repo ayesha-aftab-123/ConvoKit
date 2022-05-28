@@ -1,8 +1,7 @@
 from typing import MutableMapping, Callable
 
-from bson import Binary
-
 from convokit.util import warn
+from bson import Binary
 
 
 class DBCollectionMapping(MutableMapping):
@@ -27,7 +26,7 @@ class DBCollectionMapping(MutableMapping):
         if not self.__contains__(key):
             raise KeyError
         if self.type is not None:
-            return self.type.from_db_document(DBDocumentMapping(self, key))
+            return self.type.from_dbdoc(DBDocumentMapping(self, key))
         else:
             return DBDocumentMapping(self, key).dict(with_id=False)
 

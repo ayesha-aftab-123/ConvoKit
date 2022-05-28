@@ -21,7 +21,7 @@ class ConvoKitMeta(MutableMapping):
 
         if from_db:
             return
-        self.fields = self.storage.item_mapping(self.storage.metas, id)
+        self.fields = self.storage.ItemMapping(self.storage.metas, id)
 
     def __getitem__(self, item):
         if item in self.fields:

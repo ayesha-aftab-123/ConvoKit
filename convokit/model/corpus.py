@@ -1,5 +1,3 @@
-import random
-import shutil
 from typing import (
     List,
     Collection,
@@ -10,17 +8,25 @@ from typing import (
     Optional,
     ValuesView,
     Union,
+    MutableMapping,
 )
-
+from tqdm import tqdm
 from pandas import DataFrame
 
-from convokit.storage import StorageManager
-from convokit.util import deprecation
-from .convoKitMatrix import ConvoKitMatrix
+from convokit import storage
 from .corpusHelper import *
+from convokit.util import deprecation, warn
 from .corpusUtil import *
+import random
+from .convoKitMeta import ConvoKitMeta
+from .convoKitMatrix import ConvoKitMatrix
+import shutil
+
+from convokit.storage import StorageManager, storageManager
+
 from .speaker import Speaker
 from .utterance import Utterance
+from .conversation import Conversation
 
 
 class Corpus:
@@ -753,7 +759,7 @@ class Corpus:
                 if verbose:
                     warn(str(e))
 
-        new_corpus_utts = self.storage.collection_mapping("new_corpus_utts", Utterance)
+        new_corpus_utts = self.storage.CollectionMapping("new_corpus_utts", Utterance)
         original_utt_to_convo_id = dict()
 
         for utt_id in new_convo_roots:

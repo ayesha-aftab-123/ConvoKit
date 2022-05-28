@@ -27,7 +27,7 @@ class TestQuestionSentences(unittest.TestCase):
 
         expected_sentences_list = [[], ["Who's asking?"]]
         for utterance, expected_sentences in zip(
-                transformed_corpus.iter_utterances(), expected_sentences_list
+            transformed_corpus.iter_utterances(), expected_sentences_list
         ):
             self.assertListEqual(expected_sentences, utterance.get_info("questions"))
 
@@ -40,6 +40,6 @@ class TestQuestionSentences(unittest.TestCase):
 
         expected_sentences_list = [["Are you Aaron Burr, sir?"], ["Who's asking?"]]
         for utterance, expected_sentences in zip(
-                transformed_corpus.iter_utterances(), expected_sentences_list
+            transformed_corpus.iter_utterances(), expected_sentences_list
         ):
             self.assertListEqual(expected_sentences, utterance.get_info("questions"))

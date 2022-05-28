@@ -121,7 +121,9 @@ class DBStorage(unittest.TestCase):
 
     def test_mem_corpusComponent(self):
         storage = StorageManager(storage_type="mem")
-        print(f"(test_mem_corpusComponent)\tstorage.CollectionMapping: {storage.collection_mapping}")
+        print(
+            f"(test_mem_corpusComponent)\tstorage.CollectionMapping: {storage.collection_mapping}"
+        )
         print("purging mem storage (no-op)")
         storage.purge_all_collections()
 

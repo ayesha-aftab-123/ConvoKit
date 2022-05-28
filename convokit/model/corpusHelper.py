@@ -27,7 +27,7 @@ KeyVectors = "vectors"
 
 
 def load_utterances_data_from_directory(
-        dirname, utterance_start_index, utterance_end_index, exclude_utterance_meta
+    dirname, utterance_start_index, utterance_end_index, exclude_utterance_meta
 ):
     assert dirname is not None
     assert os.path.isdir(dirname)
@@ -64,9 +64,9 @@ def load_speakers_data_from_dir(filename, exclude_speaker_meta):
         id_to_speaker_data = json.load(f)
 
         if (
-                len(id_to_speaker_data) > 0
-                and len(next(iter(id_to_speaker_data.values())))
-                and "vectors" in id_to_speaker_data == 2
+            len(id_to_speaker_data) > 0
+            and len(next(iter(id_to_speaker_data.values())))
+            and "vectors" in id_to_speaker_data == 2
         ):
             # has vectors data
             for _, speaker_data in id_to_speaker_data.items():
@@ -92,9 +92,9 @@ def load_conversations_data_from_directory(filename, exclude_conversation_meta):
         id_to_convo_data = json.load(f)
 
         if (
-                len(id_to_convo_data) > 0
-                and len(next(iter(id_to_convo_data.values())))
-                and "vectors" in id_to_convo_data == 2
+            len(id_to_convo_data) > 0
+            and len(next(iter(id_to_convo_data.values())))
+            and "vectors" in id_to_convo_data == 2
         ):
             # has vectors data
             for _, convo_data in id_to_convo_data.items():
@@ -137,12 +137,12 @@ def unpack_binary_data_for_utterances(utterances, filename, utterance_index, exc
             for i, ut in enumerate(utterances):
                 for k, v in ut[KeyMeta].items():
                     if (
-                            k == field
-                            and type(v) == str
-                            and v.startswith(BIN_DELIM_L)
-                            and v.endswith(BIN_DELIM_R)
+                        k == field
+                        and type(v) == str
+                        and v.startswith(BIN_DELIM_L)
+                        and v.endswith(BIN_DELIM_R)
                     ):
-                        idx = int(v[len(BIN_DELIM_L): -len(BIN_DELIM_R)])
+                        idx = int(v[len(BIN_DELIM_L) : -len(BIN_DELIM_R)])
                         utterances[i][KeyMeta][k] = l_bin[idx]
     for field in exclude_meta:
         del utterance_index[field]
@@ -173,12 +173,12 @@ def unpack_binary_data(filename, objs_data, object_index, obj_type, exclude_meta
                 metadata = data["meta"] if len(data) == 2 and "vectors" in data else data
                 for k, v in metadata.items():
                     if (
-                            k == field
-                            and type(v) == str
-                            and str(v).startswith(BIN_DELIM_L)
-                            and str(v).endswith(BIN_DELIM_R)
+                        k == field
+                        and type(v) == str
+                        and str(v).startswith(BIN_DELIM_L)
+                        and str(v).endswith(BIN_DELIM_R)
                     ):
-                        idx = int(v[len(BIN_DELIM_L): -len(BIN_DELIM_R)])
+                        idx = int(v[len(BIN_DELIM_L) : -len(BIN_DELIM_R)])
                         metadata[k] = l_bin[idx]
     for field in exclude_meta:
         del object_index[field]
@@ -354,7 +354,7 @@ def dump_helper_bin(d: ConvoKitMeta, d_bin: Dict, fields_to_skip=None) -> Dict: 
 
 
 def dump_corpus_component(
-        corpus, dir_name, filename, obj_type, bin_name, exclude_vectors, fields_to_skip
+    corpus, dir_name, filename, obj_type, bin_name, exclude_vectors, fields_to_skip
 ):
     with open(os.path.join(dir_name, filename), "w") as f:
         d_bin = defaultdict(list)

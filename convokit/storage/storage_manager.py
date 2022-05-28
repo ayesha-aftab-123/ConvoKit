@@ -23,13 +23,13 @@ TEXT = (
 
 class StorageManager:
     def __init__(
-            self,
-            storage_type: str,
-            db_host: Optional[str] = None,
-            data_directory: Optional[str] = None,
-            corpus_id: Optional[str] = None,
-            version: Optional[str] = "0",
-            in_place: Optional[bool] = True,
+        self,
+        storage_type: str,
+        db_host: Optional[str] = None,
+        data_directory: Optional[str] = None,
+        corpus_id: Optional[str] = None,
+        version: Optional[str] = "0",
+        in_place: Optional[bool] = True,
     ):
         """
         Object to manage data storage.

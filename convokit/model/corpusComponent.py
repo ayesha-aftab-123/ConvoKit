@@ -8,14 +8,14 @@ from .convoKitMeta import ConvoKitMeta
 
 class CorpusComponent:
     def __init__(
-            self,
-            obj_type: str,
-            owner=None,
-            id=None,
-            vectors: List[str] = None,
-            meta=None,
-            storage: Optional[StorageManager] = None,
-            from_db=False,
+        self,
+        obj_type: str,
+        owner=None,
+        id=None,
+        vectors: List[str] = None,
+        meta=None,
+        storage: Optional[StorageManager] = None,
+        from_db=False,
     ):
 
         if storage is not None:
@@ -97,9 +97,7 @@ class CorpusComponent:
         if not isinstance(new_id, str) and new_id is not None:
             self.fields.__setitem__("id", str(new_id))
             warn(
-                "{} id must be a string. ID input has been cast to a string.".format(
-                    self.obj_type
-                )
+                "{} id must be a string. ID input has been cast to a string.".format(self.obj_type)
             )
         else:
             self.fields.__setitem__("id", new_id)
@@ -193,10 +191,10 @@ class CorpusComponent:
         self.meta[key] = value
 
     def get_vector(
-            self,
-            vector_name: str,
-            as_dataframe: bool = False,
-            columns: Optional[List[str]] = None,
+        self,
+        vector_name: str,
+        as_dataframe: bool = False,
+        columns: Optional[List[str]] = None,
     ):
         """
         Get the vector stored as `vector_name` for this object.

@@ -31,19 +31,19 @@ class Utterance(CorpusComponent):
     """
 
     def __init__(
-            self,
-            owner=None,
-            id: Optional[str] = None,
-            speaker: Optional[Speaker] = None,
-            user: Optional[Speaker] = None,
-            conversation_id: Optional[str] = None,
-            root: Optional[str] = None,
-            reply_to: Optional[str] = None,
-            timestamp: Optional[int] = None,
-            text: str = "",
-            meta: Optional[Dict] = None,
-            from_db=False,
-            storage: Optional[StorageManager] = None,
+        self,
+        owner=None,
+        id: Optional[str] = None,
+        speaker: Optional[Speaker] = None,
+        user: Optional[Speaker] = None,
+        conversation_id: Optional[str] = None,
+        root: Optional[str] = None,
+        reply_to: Optional[str] = None,
+        timestamp: Optional[int] = None,
+        text: str = "",
+        meta: Optional[Dict] = None,
+        from_db=False,
+        storage: Optional[StorageManager] = None,
     ):
         super().__init__(
             obj_type="utterance",
@@ -196,12 +196,12 @@ class Utterance(CorpusComponent):
             return False
         try:
             return (
-                    self.id == other.id
-                    and self.conversation_id == other.conversation_id
-                    and self.reply_to == other.reply_to
-                    and self.speaker == other.speaker
-                    and self.timestamp == other.timestamp
-                    and self.text == other.text
+                self.id == other.id
+                and self.conversation_id == other.conversation_id
+                and self.reply_to == other.reply_to
+                and self.speaker == other.speaker
+                and self.timestamp == other.timestamp
+                and self.text == other.text
             )
         except AttributeError as e:  # for backwards compatibility with wikiconv
             # print(f'\tUsing direct __dict__ comparison because of error {e}')

@@ -1,11 +1,13 @@
-import pandas as pd
-from typing import Optional, List
-import pickle
 import os
+import pickle
+from typing import Optional, List
+
 import numpy as np
-from convokit.util import warn
-from scipy.sparse import issparse, csr_matrix, hstack, vstack
+import pandas as pd
 import scipy
+from scipy.sparse import issparse, csr_matrix, hstack, vstack
+
+from convokit.util import warn
 
 
 class ConvoKitMatrix:
@@ -139,7 +141,7 @@ class ConvoKitMatrix:
             return retval
 
     @staticmethod
-    def from_dir(dirpath, matrix_name):
+    def from_directory(dirpath, matrix_name):
         """
         Initialize a ConvoKitMatrix of the specified `matrix_name` from a specified directory `dirpath`.
 

@@ -36,8 +36,8 @@ class DBCollectionMapping(MutableMapping):
             DBDocumentMapping(self, key, data=value)
         elif isinstance(value, self.type):
             if (
-                    isinstance(value.fields, DBDocumentMapping)
-                    and value.fields.collection_mapping.name == self.name
+                isinstance(value.fields, DBDocumentMapping)
+                and value.fields.collection_mapping.name == self.name
             ):
                 data = {"_id": key}
                 res = self.collection.find_one(data)
@@ -70,9 +70,9 @@ class DBCollectionMapping(MutableMapping):
             return False
         else:
             return (
-                    self.db.name == o.db.name
-                    and self.collection.name == o.collection.name
-                    and self.type == o.type
+                self.db.name == o.db.name
+                and self.collection.name == o.collection.name
+                and self.type == o.type
             )
 
     def __contains__(self, key):

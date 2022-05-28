@@ -10,8 +10,8 @@ from yaml import load, Loader
 
 from convokit.util import warn
 from .convoKitIndex import ConvoKitIndex
-from .dbMappings import DBCollectionMapping, DBDocumentMapping
-from .memMappings import MemCollectionMapping, MemDocumentMapping
+from .db_mappings import DBCollectionMapping, DBDocumentMapping
+from .mem_mappings import MemCollectionMapping, MemDocumentMapping
 
 TEXT = (
     "# Default Storage Parameters\n"
@@ -47,9 +47,9 @@ class StorageManager:
         :ivar storage_type: either 'mem' or 'db' or None
         :ivar index: ConvoKitIndex to track types of metadata stored in this StorageManager
         :ivar corpus_id: id of the corpus this StorageManager is connected to.
-        :ivar CollectionMapping: class constructor to use to store collections of items.
+        :ivar collection_mapping: class constructor to use to store collections of items.
             Either a DBCollectionMapping or MemCollectionMapping
-        :ivar ItemMapping: class constructor to use to store data for items in the collections.
+        :ivar item_mapping: class constructor to use to store data for items in the collections.
             Either a DBDocumentMapping or MemDocumentMapping
         """
         if storage_type not in ["mem", "db", None]:
@@ -78,18 +78,18 @@ class StorageManager:
             self.client = MongoClient(db_host)
             self.db = self.client["convokit"]
             if corpus_id is None:
-                corpus_id = safe_corpus_id()
+                corpus_id = uuid.uuid4().hex
                 print(
                     f"No filename or corpus name specified for DB storage; using name {corpus_id}"
                 )
             self.corpus_id = corpus_id
-            self.CollectionMapping = DBCollectionMapping.with_storage(self)
-            self.ItemMapping = DBDocumentMapping
+            self.collection_mapping = DBCollectionMapping.with_storage(self)
+            self.item_mapping = DBDocumentMapping
         elif storage_type == "mem":
             self.connection = {}
             self.corpus_id = corpus_id
-            self.CollectionMapping = MemCollectionMapping.with_storage(self)
-            self.ItemMapping = MemDocumentMapping
+            self.collection_mapping = MemCollectionMapping.with_storage(self)
+            self.item_mapping = MemDocumentMapping
         else:
             raise ValueError(
                 f'Expected storage type to be "mem" or "db"; got {storage_type} instead'
@@ -174,10 +174,10 @@ class StorageManager:
         to circular imports, so a call to setup_collections is required to configure a StorageManager with
         the correct types.
         """
-        self.utterances = self.CollectionMapping("utterances", item_type=utterance)
-        self.conversations = self.CollectionMapping("conversations", item_type=conversation)
-        self.speakers = self.CollectionMapping("speakers", item_type=speaker)
-        self.metas = self.CollectionMapping("metas", item_type=convokitmeta)
+        self.utterances = self.collection_mapping("utterances", item_type=utterance)
+        self.conversations = self.collection_mapping("conversations", item_type=conversation)
+        self.speakers = self.collection_mapping("speakers", item_type=speaker)
+        self.metas = self.collection_mapping("metas", item_type=convokitmeta)
 
     def __eq__(self, other):
         if not isinstance(other, StorageManager):
@@ -187,10 +187,6 @@ class StorageManager:
 
     def __repr__(self):
         return f"<StorageManager: {self.storage_type}-{self.full_name}>"
-
-
-def safe_corpus_id():
-    return uuid.uuid4().hex
 
 
 def make_full_name(corpus_id, version):

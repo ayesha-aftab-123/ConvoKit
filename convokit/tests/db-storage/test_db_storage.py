@@ -1,5 +1,5 @@
 import unittest
-from pymongo import MongoClient
+
 from convokit import (
     DBDocumentMapping,
     DBCollectionMapping,
@@ -66,7 +66,7 @@ class DBStorage(unittest.TestCase):
 
     def test_db_corpusComponent(self):
         storage = StorageManager(storage_type="db", corpus_id="direct_storage")
-        print(f"(test_db_corpusComponent)\tstorage.CollectionMapping: {storage.CollectionMapping}")
+        print(f"(test_db_corpusComponent)\tstorage.CollectionMapping: {storage.collection_mapping}")
         # For testing repeatability.
         print("purging DB storage")
         storage.purge_all_collections()
@@ -121,7 +121,7 @@ class DBStorage(unittest.TestCase):
 
     def test_mem_corpusComponent(self):
         storage = StorageManager(storage_type="mem")
-        print(f"(test_mem_corpusComponent)\tstorage.CollectionMapping: {storage.CollectionMapping}")
+        print(f"(test_mem_corpusComponent)\tstorage.CollectionMapping: {storage.collection_mapping}")
         print("purging mem storage (no-op)")
         storage.purge_all_collections()
 
@@ -221,10 +221,10 @@ class DBStorage(unittest.TestCase):
         storage = StorageManager(storage_type="db", corpus_id="testo")
         storage.purge_all_collections()
 
-        storage.utterances = storage.CollectionMapping("utterances", item_type=Utterance)
-        storage.conversations = storage.CollectionMapping("conversations", item_type=Conversation)
-        storage.speakers = storage.CollectionMapping("speakers", item_type=Speaker)
-        storage.metas = storage.CollectionMapping("metas", item_type=ConvoKitMeta)
+        storage.utterances = storage.collection_mapping("utterances", item_type=Utterance)
+        storage.conversations = storage.collection_mapping("conversations", item_type=Conversation)
+        storage.speakers = storage.collection_mapping("speakers", item_type=Speaker)
+        storage.metas = storage.collection_mapping("metas", item_type=ConvoKitMeta)
 
         s0 = Speaker(id="alice", storage=storage)
         self.assertEqual(storage.speakers["alice"], s0)

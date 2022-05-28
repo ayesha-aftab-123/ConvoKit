@@ -38,7 +38,7 @@ class CorpusComponent:
             mapped_item = self.storage.conversations
         else:
             mapped_item = self.storage.utterances
-        self.fields = self.storage.ItemMapping(mapped_item, id)
+        self.fields = self.storage.item_mapping(mapped_item, id)
 
         self.obj_type = obj_type  # utterance, speaker, conversation
         self.id = self.fields.id
@@ -276,7 +276,7 @@ class CorpusComponent:
             return "(" + str(copy) + ")"
 
     @classmethod
-    def from_dbdoc(cls, doc: DBDocumentMapping):
+    def from_db_document(cls, doc: DBDocumentMapping):
         """
         Initialize a corpusComponent object with data contained in the DB document
         represented by doc.

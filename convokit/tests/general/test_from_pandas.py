@@ -1,12 +1,13 @@
 import unittest
-from convokit.model import Utterance, Speaker, Corpus
+
 from convokit import download, StorageManager
+from convokit.model import Corpus
 
 
 class CorpusFromPandas(unittest.TestCase):
     def setUp(self) -> None:
         print("default: ", StorageManager.default_storage_mode())
-        StorageManager.purge_db()
+        StorageManager.purge_database()
         self.corpus = Corpus(download("subreddit-hey"), storage_type="mem")
         if StorageManager.default_storage_mode() == "db":
             self.corpus = self.corpus.copy_as("db", corpus_id="subreddit-hey")

@@ -1,4 +1,5 @@
 import unittest
+
 from convokit import Utterance, Speaker, Corpus, StorageManager
 
 
@@ -7,7 +8,7 @@ class CorpusMerge(unittest.TestCase):
         """
         Basic merge: no overlap in utterance id
         """
-        StorageManager.purge_db()
+        StorageManager.purge_database()
         corpus1 = Corpus(
             utterances=[
                 Utterance(id="0", text="hello world", speaker=Speaker(id="alice")),
@@ -34,7 +35,7 @@ class CorpusMerge(unittest.TestCase):
         """
         Basic merge: with overlap in utterance id (but utterance has same data & metadata)
         """
-        StorageManager.purge_db()
+        StorageManager.purge_database()
         corpus1 = Corpus(
             utterances=[
                 Utterance(id="0", text="hello world", speaker=Speaker(id="alice")),
@@ -63,7 +64,7 @@ class CorpusMerge(unittest.TestCase):
 
         Warning should be printed. Original utterance data should be preserved.
         """
-        StorageManager.purge_db()
+        StorageManager.purge_database()
         corpus1 = Corpus(
             utterances=[
                 Utterance(id="0", text="hello world", speaker=Speaker(id="alice")),
@@ -95,7 +96,7 @@ class CorpusMerge(unittest.TestCase):
 
         Second corpus utterance metadata should override if the keys are the same.
         """
-        StorageManager.purge_db()
+        StorageManager.purge_database()
         corpus1 = Corpus(
             utterances=[
                 Utterance(id="0", text="hello world", speaker=Speaker(id="alice")),
@@ -139,7 +140,7 @@ class CorpusMerge(unittest.TestCase):
 
         Expect second corpus convo metadata to override if keys are the same
         """
-        StorageManager.purge_db()
+        StorageManager.purge_database()
         corpus1 = Corpus(
             utterances=[
                 Utterance(
@@ -203,7 +204,7 @@ class CorpusMerge(unittest.TestCase):
 
         Expect second corpus metadata to override if keys are the same
         """
-        StorageManager.purge_db()
+        StorageManager.purge_database()
         corpus1 = Corpus(
             utterances=[
                 Utterance(id="0", text="hello world", speaker=Speaker(id="alice")),
@@ -231,7 +232,7 @@ class CorpusMerge(unittest.TestCase):
         self.assertEqual(merged.meta["toxicity"], 0.9)
 
     def test_add_utterance(self):
-        StorageManager.purge_db()
+        StorageManager.purge_database()
         corpus1 = Corpus(
             utterances=[
                 Utterance(id="0", text="hello world", speaker=Speaker(id="alice")),

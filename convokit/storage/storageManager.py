@@ -1,25 +1,17 @@
-from typing import (
-    List,
-    Collection,
-    Callable,
-    Set,
-    Generator,
-    Tuple,
-    Optional,
-    ValuesView,
-    Union,
-    MutableMapping,
-)
-from pymongo import MongoClient
-from pymongo.database import Database
 import os
 import uuid
-from yaml import load, dump, Loader, Dumper
+from typing import (
+    Optional,
+)
 
-from .dbMappings import DBCollectionMapping, DBDocumentMapping
-from .memMappings import MemCollectionMapping, MemDocumentMapping
+from pymongo import MongoClient
+from pymongo.database import Database
+from yaml import load, Loader
+
 from convokit.util import warn
 from .convoKitIndex import ConvoKitIndex
+from .dbMappings import DBCollectionMapping, DBDocumentMapping
+from .memMappings import MemCollectionMapping, MemDocumentMapping
 
 TEXT = (
     "# Default Storage Parameters\n"
@@ -31,13 +23,13 @@ TEXT = (
 
 class StorageManager:
     def __init__(
-        self,
-        storage_type: str,
-        db_host: Optional[str] = None,
-        data_directory: Optional[str] = None,
-        corpus_id: Optional[str] = None,
-        version: Optional[str] = "0",
-        in_place: Optional[bool] = True,
+            self,
+            storage_type: str,
+            db_host: Optional[str] = None,
+            data_directory: Optional[str] = None,
+            corpus_id: Optional[str] = None,
+            version: Optional[str] = "0",
+            in_place: Optional[bool] = True,
     ):
         """
         Object to manage data storage.
@@ -161,7 +153,7 @@ class StorageManager:
             return config["default_storage_mode"]
 
     @staticmethod
-    def purge_db():
+    def purge_database():
         """
         Remove all data in the default database.
         """
@@ -198,7 +190,7 @@ class StorageManager:
 
 
 def safe_corpus_id():
-    return str(uuid.uuid4())
+    return uuid.uuid4().hex
 
 
 def make_full_name(corpus_id, version):

@@ -1,6 +1,5 @@
 import unittest
 
-import os
 from convokit import Utterance, Corpus, Speaker, StorageManager
 
 
@@ -90,7 +89,7 @@ class CorpusMerge(unittest.TestCase):
         self.assertEqual(corpus1.get_utterance("1"), corpus2.get_utterance("1"))
 
     def test_partial_load_start_idx_specified_only(self):
-        StorageManager.purge_db()
+        StorageManager.purge_database()
         speaker_byte_arr1 = bytearray([120, 3, 255, 0, 100])
         speaker_byte_arr2 = bytearray([110, 3, 255, 90])
         utt_byte_arr1 = bytearray([99, 44, 33])

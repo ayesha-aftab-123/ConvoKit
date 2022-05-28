@@ -1,21 +1,21 @@
-from .convoKitMeta import ConvoKitMeta
-from convokit.util import warn, deprecation
-from typing import List, Optional, Type
 import uuid
+from typing import List, Optional
 
 from convokit.storage import DBDocumentMapping, StorageManager
+from convokit.util import warn, deprecation
+from .convoKitMeta import ConvoKitMeta
 
 
 class CorpusComponent:
     def __init__(
-        self,
-        obj_type: str,
-        owner=None,
-        id=None,
-        vectors: List[str] = None,
-        meta=None,
-        storage: Optional[StorageManager] = None,
-        from_db=False,
+            self,
+            obj_type: str,
+            owner=None,
+            id=None,
+            vectors: List[str] = None,
+            meta=None,
+            storage: Optional[StorageManager] = None,
+            from_db=False,
     ):
 
         if storage is not None:
@@ -30,12 +30,7 @@ class CorpusComponent:
             return
 
         if id is None and obj_type != "conversation":
-            id = uuid.uuid4()
-
-        if (obj_type == "utterance" and id in self.storage.utterances) or (
-            obj_type == "speaker" and id in self.storage.speakers
-        ):
-            id = f"{id}.1"
+            id = uuid.uuid4().hex
 
         if obj_type == "speaker":
             mapped_item = self.storage.speakers
@@ -198,10 +193,10 @@ class CorpusComponent:
         self.meta[key] = value
 
     def get_vector(
-        self,
-        vector_name: str,
-        as_dataframe: bool = False,
-        columns: Optional[List[str]] = None,
+            self,
+            vector_name: str,
+            as_dataframe: bool = False,
+            columns: Optional[List[str]] = None,
     ):
         """
         Get the vector stored as `vector_name` for this object.

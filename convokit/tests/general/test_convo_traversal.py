@@ -1,10 +1,11 @@
 import unittest
+
 from convokit import Utterance, Speaker, Corpus, StorageManager
 
 
 class CorpusTraversal(unittest.TestCase):
     def setUp(self) -> None:
-        StorageManager.purge_db()
+        StorageManager.purge_database()
         """
         Basic Conversation tree (left to right within subtree => earliest to latest)
                    0
@@ -111,7 +112,7 @@ class CorpusTraversal(unittest.TestCase):
         self.corpus.meta["foo"] = "bar"
 
     def test_broken_convos(self):
-        StorageManager.purge_db()
+        StorageManager.purge_database()
         """
         Test basic meta functions
         """

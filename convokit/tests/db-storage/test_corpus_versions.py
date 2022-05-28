@@ -1,22 +1,21 @@
 import unittest
-from pymongo import MongoClient
+
 from convokit import (
     Utterance,
-    Conversation,
     Speaker,
     Corpus,
-    ConvoKitMeta,
     StorageManager,
 )
 
 jim = Speaker(id="Jim")
 bill = Speaker(id="Bill")
 
+
 # Is this file necessary now that default is in_place = True?
 
 
 def get_version_test_corpus():
-    StorageManager.purge_db()
+    StorageManager.purge_database()
     return Corpus(
         corpus_id="version_test_corpus",
         storage_type="db",

@@ -4,14 +4,16 @@ import json
 
 
 class ConvoKitIndex:
-    def __init__(self,
-                 storage,
-                 utterances_index: Optional[Dict[str, List[str]]] = None,
-                 speakers_index: Optional[Dict[str, List[str]]] = None,
-                 conversations_index: Optional[Dict[str, List[str]]] = None,
-                 overall_index: Optional[Dict[str, List[str]]] = None,
-                 vectors: Optional[List[str]] = None,
-                 version: Optional[int] = 0):
+    def __init__(
+        self,
+        storage,
+        utterances_index: Optional[Dict[str, List[str]]] = None,
+        speakers_index: Optional[Dict[str, List[str]]] = None,
+        conversations_index: Optional[Dict[str, List[str]]] = None,
+        overall_index: Optional[Dict[str, List[str]]] = None,
+        vectors: Optional[List[str]] = None,
+        version: Optional[int] = 0,
+    ):
 
         self.storage = storage
         self.fields = {}
@@ -20,85 +22,84 @@ class ConvoKitIndex:
         self.conversations_index = conversations_index if conversations_index is not None else {}
         self.overall_index = overall_index if overall_index is not None else {}
         self.indices = {
-            'utterance': self.utterances_index,
-            'conversation': self.conversations_index,
-            'speaker': self.speakers_index,
-            'corpus': self.overall_index
+            "utterance": self.utterances_index,
+            "conversation": self.conversations_index,
+            "speaker": self.speakers_index,
+            "corpus": self.overall_index,
         }
         self.vectors = list(vectors) if vectors is not None else []
         self.version = version
         self.type_check = True  # toggle-able to enable/disable type checks on metadata additions
         self.lock_metadata_deletion = {
-            'utterance': True,
-            'conversation': True,
-            'speaker': True
+            "utterance": True,
+            "conversation": True,
+            "speaker": True,
         }
 
     # Defining Properties for abstract storage
     @property
     def utterances_index(self):
-        return self.fields.__getitem__('utterances_index')
+        return self.fields.__getitem__("utterances_index")
 
     @utterances_index.setter
     def utterances_index(self, new_utterances_index):
-        self.fields.__setitem__('utterances_index', new_utterances_index)
+        self.fields.__setitem__("utterances_index", new_utterances_index)
 
     @property
     def speakers_index(self):
-        return self.fields.__getitem__('speakers_index')
+        return self.fields.__getitem__("speakers_index")
 
     @speakers_index.setter
     def speakers_index(self, new_speakers_index):
-        self.fields.__setitem__('speakers_index', new_speakers_index)
+        self.fields.__setitem__("speakers_index", new_speakers_index)
 
     @property
     def conversations_index(self):
-        return self.fields.__getitem__('conversations_index')
+        return self.fields.__getitem__("conversations_index")
 
     @conversations_index.setter
     def conversations_index(self, new_conversations_index):
-        self.fields.__setitem__('conversations_index', new_conversations_index)
+        self.fields.__setitem__("conversations_index", new_conversations_index)
 
     @property
     def overall_index(self):
-        return self.fields.__getitem__('overall_index')
+        return self.fields.__getitem__("overall_index")
 
     @overall_index.setter
     def overall_index(self, new_overall_index):
-        self.fields.__setitem__('overall_index', new_overall_index)
+        self.fields.__setitem__("overall_index", new_overall_index)
 
     @property
     def vectors(self):
-        return self.fields.__getitem__('vectors')
+        return self.fields.__getitem__("vectors")
 
     @vectors.setter
     def vectors(self, new_vectors):
-        self.fields.__setitem__('vectors', new_vectors)
+        self.fields.__setitem__("vectors", new_vectors)
 
     @property
     def version(self):
-        return self.fields.__getitem__('version')
+        return self.fields.__getitem__("version")
 
     @version.setter
     def version(self, new_version):
-        self.fields.__setitem__('version', new_version)
+        self.fields.__setitem__("version", new_version)
 
     @property
     def type_check(self):
-        return self.fields.__getitem__('type_check')
+        return self.fields.__getitem__("type_check")
 
     @type_check.setter
     def type_check(self, new_type_check):
-        self.fields.__setitem__('type_check', new_type_check)
+        self.fields.__setitem__("type_check", new_type_check)
 
     @property
     def lock_metadata_deletion(self):
-        return self.fields.__getitem__('lock_metadata_deletion')
+        return self.fields.__getitem__("lock_metadata_deletion")
 
     @lock_metadata_deletion.setter
     def lock_metadata_deletion(self, new_lock_metadata_deletion):
-        self.fields.__setitem__('lock_metadata_deletion',
-                                new_lock_metadata_deletion)
+        self.fields.__setitem__("lock_metadata_deletion", new_lock_metadata_deletion)
 
     ############
 
@@ -112,9 +113,9 @@ class ConvoKitIndex:
         :return: None
         """
         if type(key) != str:
-            raise TypeError(f'key must be a string (got {type(key)} instead)')
-        if not('class' in class_type or class_type == 'bin'):
-            raise TypeError(f'class_type incorrect (got {class_type} instead)')
+            raise TypeError(f"key must be a string (got {type(key)} instead)")
+        if not ("class" in class_type or class_type == "bin"):
+            raise TypeError(f"class_type incorrect (got {class_type} instead)")
         if key not in self.indices[obj_type]:
             self.indices[obj_type][key] = []
         if class_type not in self.indices[obj_type][key]:
@@ -130,9 +131,9 @@ class ConvoKitIndex:
         :return: None
         """
         if type(key) != str:
-            raise TypeError(f'key must be a string (got {type(key)} instead)')
-        if not('class' in class_type or class_type == 'bin'):
-            raise TypeError(f'class_type incorrect (got {class_type} instead)')
+            raise TypeError(f"key must be a string (got {type(key)} instead)")
+        if not ("class" in class_type or class_type == "bin"):
+            raise TypeError(f"class_type incorrect (got {class_type} instead)")
         self.indices[obj_type][key] = [class_type]
 
     def get_index(self, obj_type: str):
@@ -140,8 +141,9 @@ class ConvoKitIndex:
 
     def del_from_index(self, obj_type: str, key: str):
         if type(key) != str:
-            raise TypeError(f'key must be a string (got {type(key)} instead)')
-        if key not in self.indices[obj_type]: return
+            raise TypeError(f"key must be a string (got {type(key)} instead)")
+        if key not in self.indices[obj_type]:
+            return
         del self.indices[obj_type][key]
         #
         # corpus = self.owner
@@ -162,7 +164,7 @@ class ConvoKitIndex:
         speaker_index = "speakers-index" if "speakers-index" in meta_index else "users-index"
         self.speakers_index.update(meta_index[speaker_index])
         self.overall_index.update(meta_index["overall-index"])
-        self.vectors = list(meta_index.get('vectors', []))
+        self.vectors = list(meta_index.get("vectors", []))
         for index in self.indices.values():
             for k, v in index.items():
                 if isinstance(v, str):
@@ -178,14 +180,14 @@ class ConvoKitIndex:
         retval["overall-index"] = self.overall_index
 
         if force_version is None:
-            retval['version'] = self.version + 1
+            retval["version"] = self.version + 1
         else:
-            retval['version'] = force_version
+            retval["version"] = force_version
 
         if exclude_vectors is not None:
-            retval['vectors'] = list(set(self.vectors) - set(exclude_vectors))
+            retval["vectors"] = list(set(self.vectors) - set(exclude_vectors))
         else:
-            retval['vectors'] = list(self.vectors)
+            retval["vectors"] = list(self.vectors)
 
         return retval
 
@@ -214,7 +216,7 @@ class ConvoKitIndex:
         new_index._reinitialize_index_helper(corpus, "conversation")
 
         for key, value in corpus.meta.items():  # overall
-            new_index.update_index('corpus', key, str(type(value)))
+            new_index.update_index("corpus", key, str(type(value)))
 
         new_index.version = self.version
         return new_index
@@ -231,8 +233,7 @@ class ConvoKitIndex:
             obj.storage.index = self
 
     def _check_type_and_update_index(self, obj_type, key, value):
-        if not isinstance(value,
-                          type(None)):  # do nothing to index if value is None
+        if not isinstance(value, type(None)):  # do nothing to index if value is None
             # print(
             #     f'_check_type_and_update_index: key={key}\nindex.indices[obj_type]={index.indices[obj_type]}'
             # )
@@ -241,9 +242,7 @@ class ConvoKitIndex:
                 self.update_index(obj_type, key=key, class_type=type_)
             else:
                 # entry exists
-                if self.get_index(obj_type)[key] != [
-                        "bin"
-                ]:  # if "bin" do no further checks
+                if self.get_index(obj_type)[key] != ["bin"]:  # if "bin" do no further checks
                     if str(type(value)) not in self.get_index(obj_type)[key]:
                         new_type = _optimized_type_check(value)
 
@@ -253,7 +252,12 @@ class ConvoKitIndex:
                             self.update_index(obj_type, key, new_type)
 
 
-_basic_types = {type(0), type(1.0), type('str'), type(True)}  # cannot include lists or dicts
+_basic_types = {
+    type(0),
+    type(1.0),
+    type("str"),
+    type(True),
+}  # cannot include lists or dicts
 
 
 def _optimized_type_check(val):

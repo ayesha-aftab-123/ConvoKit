@@ -10,20 +10,19 @@ from convokit import TextParser
 from pandas import DataFrame
 from typing import List, Dict, Set
 
-DATA_DIR = 'Stanford_politeness_corpus/'
+DATA_DIR = "Stanford_politeness_corpus/"
 OUT_DIR = "/convokit_data"
 
 
-def convert_df_to_corpus(df: DataFrame, id_col: str, text_col: str,
-                         meta_cols: List[str]) -> Corpus:
-    """ Helper function to convert data to Corpus format
-     
+def convert_df_to_corpus(df: DataFrame, id_col: str, text_col: str, meta_cols: List[str]) -> Corpus:
+    """Helper function to convert data to Corpus format
+
     Arguments:
         df {DataFrame} -- Actual data, in a pandas Dataframe
-        id_col {str} -- name of the column that corresponds to utterances ids 
-        text_col {str} -- name of the column that stores texts of the utterances  
-        meta_cols {List[str]} -- set of columns that stores relevant metadata 
-    
+        id_col {str} -- name of the column that corresponds to utterances ids
+        text_col {str} -- name of the column that stores texts of the utterances
+        meta_cols {List[str]} -- set of columns that stores relevant metadata
+
     Returns:
         Corpus -- the converted corpus
     """
@@ -42,10 +41,17 @@ def convert_df_to_corpus(df: DataFrame, id_col: str, text_col: str,
         for meta_col in meta_cols:
             metadata[meta_col] = row[meta_col]
 
-        utterance_list.append(Utterance(id=str(row[id_col]), speaker=generic_speaker, \
-                                        conversation_id=str(row[id_col]), reply_to=None, \
-                                        timestamp=time, text=row[text_col], \
-                                        meta=metadata))
+        utterance_list.append(
+            Utterance(
+                id=str(row[id_col]),
+                speaker=generic_speaker,
+                conversation_id=str(row[id_col]),
+                reply_to=None,
+                timestamp=time,
+                text=row[text_col],
+                meta=metadata,
+            )
+        )
 
     return Corpus(utterances=utterance_list)
 
@@ -56,18 +62,22 @@ def prepare_corpus_df(filename, data_dir=DATA_DIR):
 
     # if Id is not uniquely identifiable, use df index
     if len(set(df["Id"])) < len(df):
-        df['Id'] = df.index
+        df["Id"] = df.index
 
-    df["Annotations"] = [dict(zip([df.iloc[i]["TurkId{}".format(j)] for j in range(1,6)], \
-                             [df.iloc[i]["Score{}".format(j)] for j in range(1,6)])) for i in tqdm(range(len(df)))]
+    df["Annotations"] = [
+        dict(
+            zip(
+                [df.iloc[i]["TurkId{}".format(j)] for j in range(1, 6)],
+                [df.iloc[i]["Score{}".format(j)] for j in range(1, 6)],
+            )
+        )
+        for i in tqdm(range(len(df)))
+    ]
 
-    top = np.percentile(df['Normalized Score'], 75)
+    top = np.percentile(df["Normalized Score"], 75)
     bottom = np.percentile(df["Normalized Score"], 25)
 
-    df['Binary'] = [
-        int(score >= top) - int(score <= bottom)
-        for score in df['Normalized Score']
-    ]
+    df["Binary"] = [int(score >= top) - int(score <= bottom) for score in df["Normalized Score"]]
 
     return df
 
@@ -83,8 +93,9 @@ if __name__ == "__main__":
 
         print("constructing corpus {}".format(corpus_id))
         corpus = convert_df_to_corpus(
-            df, "Id", "Request", ["Normalized Score", "Binary", "Annotations"])
+            df, "Id", "Request", ["Normalized Score", "Binary", "Annotations"]
+        )
 
-        print('parsing corpus...')
+        print("parsing corpus...")
         corpus = parser.transform(corpus)
         corpus.dump(corpus_id, base_path=OUT_DIR)

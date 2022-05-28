@@ -2,6 +2,7 @@ from typing import Dict, Optional
 from convokit.util import deprecation, warn
 from .corpusComponent import CorpusComponent
 from .speaker import Speaker
+
 # from .conversation import Conversation
 
 from convokit.storage import StorageManager
@@ -27,40 +28,43 @@ class Utterance(CorpusComponent):
     :ivar meta: A dictionary-like view object providing read-write access to
         utterance-level metadata.
     """
-    def __init__(self,
-                 owner=None,
-                 id: Optional[str] = None,
-                 speaker: Optional[Speaker] = None,
-                 user: Optional[Speaker] = None,
-                 conversation_id: Optional[str] = None,
-                 root: Optional[str] = None,
-                 reply_to: Optional[str] = None,
-                 timestamp: Optional[int] = None,
-                 text: str = '',
-                 meta: Optional[Dict] = None,
-                 from_db=False,
-                 storage: Optional[StorageManager] = None):
-        super().__init__(obj_type="utterance",
-                         owner=owner,
-                         id=id,
-                         meta=meta,
-                         storage=storage,
-                         from_db=from_db)
+
+    def __init__(
+        self,
+        owner=None,
+        id: Optional[str] = None,
+        speaker: Optional[Speaker] = None,
+        user: Optional[Speaker] = None,
+        conversation_id: Optional[str] = None,
+        root: Optional[str] = None,
+        reply_to: Optional[str] = None,
+        timestamp: Optional[int] = None,
+        text: str = "",
+        meta: Optional[Dict] = None,
+        from_db=False,
+        storage: Optional[StorageManager] = None,
+    ):
+        super().__init__(
+            obj_type="utterance",
+            owner=owner,
+            id=id,
+            meta=meta,
+            storage=storage,
+            from_db=from_db,
+        )
         if from_db:
             return
         speaker_ = speaker if speaker is not None else user
         if speaker_ is None:
-            raise ValueError(
-                "No Speaker found: Utterance must be initialized with a Speaker."
-            )
+            raise ValueError("No Speaker found: Utterance must be initialized with a Speaker.")
         else:
             self.speaker = speaker_
         conversation_id = conversation_id if conversation_id is not None else root
-        if conversation_id is not None and not isinstance(
-                conversation_id, str):
+        if conversation_id is not None and not isinstance(conversation_id, str):
             warn(
                 "Utterance conversation_id must be a string: conversation_id of utterance with ID: {} "
-                "has been casted to a string.".format(self.id))
+                "has been casted to a string.".format(self.id)
+            )
             conversation_id = str(self.conversation_id)
         # elif conversation_id is None:
         #     conversation_id = self.id
@@ -70,8 +74,9 @@ class Utterance(CorpusComponent):
         if not isinstance(text, str):
             warn(
                 "Utterance text must be a string: text of utterance with ID: {} "
-                "has been casted to a string.".format(self.id))
-            text = '' if text is None else str(text)
+                "has been casted to a string.".format(self.id)
+            )
+            text = "" if text is None else str(text)
         self.text = text
 
         self.storage.utterances[self.id] = self
@@ -83,11 +88,11 @@ class Utterance(CorpusComponent):
     # Defining Properties for abstract storage
     @property
     def conversation_id(self):
-        return self.fields['conversation_id']
+        return self.fields["conversation_id"]
 
     @conversation_id.setter
     def conversation_id(self, new_conversation_id):
-        self.fields['conversation_id'] = new_conversation_id
+        self.fields["conversation_id"] = new_conversation_id
 
     @property
     def conversation(self):
@@ -112,35 +117,35 @@ class Utterance(CorpusComponent):
 
     @property
     def speaker_id(self):
-        return self.fields.__getitem__('speaker_id')
+        return self.fields.__getitem__("speaker_id")
 
     @speaker_id.setter
     def speaker_id(self, new_speaker_id):
-        self.fields.__setitem__('speaker_id', new_speaker_id)
+        self.fields.__setitem__("speaker_id", new_speaker_id)
 
     @property
     def reply_to(self):
-        return self.fields.__getitem__('reply_to')
+        return self.fields.__getitem__("reply_to")
 
     @reply_to.setter
     def reply_to(self, new_reply_to):
-        self.fields.__setitem__('reply_to', new_reply_to)
+        self.fields.__setitem__("reply_to", new_reply_to)
 
     @property
     def timestamp(self):
-        return self.fields.__getitem__('timestamp')
+        return self.fields.__getitem__("timestamp")
 
     @timestamp.setter
     def timestamp(self, new_timestamp):
-        self.fields.__setitem__('timestamp', new_timestamp)
+        self.fields.__setitem__("timestamp", new_timestamp)
 
     @property
     def text(self):
-        return self.fields.__getitem__('text')
+        return self.fields.__getitem__("text")
 
     @text.setter
     def text(self, new_text):
-        self.fields.__setitem__('text', new_text)
+        self.fields.__setitem__("text", new_text)
 
     # Properties for backwards compatability
     @property
@@ -189,22 +194,32 @@ class Utterance(CorpusComponent):
         if not isinstance(other, Utterance):
             return False
         try:
-            return self.id == other.id and self.conversation_id == other.conversation_id and self.reply_to == other.reply_to and \
-                   self.speaker == other.speaker and self.timestamp == other.timestamp and self.text == other.text
+            return (
+                self.id == other.id
+                and self.conversation_id == other.conversation_id
+                and self.reply_to == other.reply_to
+                and self.speaker == other.speaker
+                and self.timestamp == other.timestamp
+                and self.text == other.text
+            )
         except AttributeError as e:  # for backwards compatibility with wikiconv
             # print(f'\tUsing direct __dict__ comparison because of error {e}')
             return self.__dict__ == other.__dict__
 
     def __str__(self):
-        return "Utterance(id: {}, conversation_id: {}, reply-to: {}, " \
-               "speaker: {}, timestamp: {}, text: {}, vectors: {}, meta: {})".format(repr(self.id),
-                                                                                    self.conversation_id,
-                                                                                    self.reply_to,
-                                                                                    self.speaker,
-                                                                                    self.timestamp,
-                                                                                    repr(self.text),
-                                                                                    self.vectors,
-                                                                                    self.meta)
+        return (
+            "Utterance(id: {}, conversation_id: {}, reply-to: {}, "
+            "speaker: {}, timestamp: {}, text: {}, vectors: {}, meta: {})".format(
+                repr(self.id),
+                self.conversation_id,
+                self.reply_to,
+                self.speaker,
+                self.timestamp,
+                repr(self.text),
+                self.vectors,
+                self.meta,
+            )
+        )
 
     def __repr__(self):
-        return f'{self.fields.collection_mapping.name}.{self.fields.id}: {self.__str__()}'
+        return f"{self.fields.collection_mapping.name}.{self.fields.id}: {self.__str__()}"

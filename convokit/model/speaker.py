@@ -26,22 +26,27 @@ class Speaker(CorpusComponent):
     :ivar meta: A dictionary-like view object providing read-write access to
         speaker-level metadata.
     """
-    def __init__(self,
-                 owner=None,
-                 id: str = None,
-                 name: str = None,
-                 utts: MutableMapping = None,
-                 convos: MutableMapping = None,
-                 meta: Optional[Dict] = None,
-                 from_db=False,
-                 storage: Optional[StorageManager] = None):
+
+    def __init__(
+        self,
+        owner=None,
+        id: str = None,
+        name: str = None,
+        utts: MutableMapping = None,
+        convos: MutableMapping = None,
+        meta: Optional[Dict] = None,
+        from_db=False,
+        storage: Optional[StorageManager] = None,
+    ):
         name_var = id if id is not None else name  # to be deprecated
-        super().__init__(obj_type="speaker",
-                         owner=owner,
-                         id=name_var,
-                         meta=meta,
-                         storage=storage,
-                         from_db=from_db)
+        super().__init__(
+            obj_type="speaker",
+            owner=owner,
+            id=name_var,
+            meta=meta,
+            storage=storage,
+            from_db=from_db,
+        )
         if from_db:
             return
 
@@ -75,7 +80,7 @@ class Speaker(CorpusComponent):
         self.id = new_name
 
     # End properties
-    def get_utterance(self, ut_id: str):  #-> Utterance:
+    def get_utterance(self, ut_id: str):  # -> Utterance:
         """
         Get the Utterance with the specified Utterance id
 
@@ -87,34 +92,30 @@ class Speaker(CorpusComponent):
         else:
             return None
 
-    def iter_utterances(
-            self,
-            selector=lambda utt: True):  #-> Generator[Utterance, None, None]:
+    def iter_utterances(self, selector=lambda utt: True):  # -> Generator[Utterance, None, None]:
         """
         Get utterances made by the Speaker, with an optional selector that selects for Utterances that
         should be included.
 
-		:param selector: a (lambda) function that takes an Utterance and returns True or False (i.e. include / exclude).
-			By default, the selector includes all Utterances in the Corpus.
+                :param selector: a (lambda) function that takes an Utterance and returns True or False (i.e. include / exclude).
+                        By default, the selector includes all Utterances in the Corpus.
         :return: An iterator of the Utterances made by the speaker
         """
         for k, v in self.utterances.items():
             if k in self.utterance_ids and selector(v):
                 yield v
 
-    def get_utterances_dataframe(self,
-                                 selector=lambda utt: True,
-                                 exclude_meta: bool = False):
+    def get_utterances_dataframe(self, selector=lambda utt: True, exclude_meta: bool = False):
         """
-		Get a DataFrame of the Utterances made by the Speaker with fields and metadata attributes.
-		Set an optional selector that filters for Utterances that should be included.
-		Edits to the DataFrame do not change the corpus in any way.
+        Get a DataFrame of the Utterances made by the Speaker with fields and metadata attributes.
+        Set an optional selector that filters for Utterances that should be included.
+        Edits to the DataFrame do not change the corpus in any way.
 
-		:param exclude_meta: whether to exclude metadata
-		:param selector: a (lambda) function that takes a Utterance and returns True or False (i.e. include / exclude).
-			By default, the selector includes all Utterances in the Corpus.
-		:return: a pandas DataFrame
-		"""
+        :param exclude_meta: whether to exclude metadata
+        :param selector: a (lambda) function that takes a Utterance and returns True or False (i.e. include / exclude).
+                By default, the selector includes all Utterances in the Corpus.
+        :return: a pandas DataFrame
+        """
         return get_utterances_dataframe(self, selector, exclude_meta)
 
     def get_utterance_ids(self, selector=lambda utt: True) -> List[str]:
@@ -137,9 +138,9 @@ class Speaker(CorpusComponent):
         else:
             return None
 
-    def iter_conversations(self,
-                           selector=lambda convo: True
-                           ):  # -> Generator[Conversation, None, None]:
+    def iter_conversations(
+        self, selector=lambda convo: True
+    ):  # -> Generator[Conversation, None, None]:
         """
 
         :return: An iterator of the Conversations that the speaker has participated in
@@ -148,9 +149,7 @@ class Speaker(CorpusComponent):
             if k in self.conversation_ids and selector(v):
                 yield v
 
-    def get_conversations_dataframe(self,
-                                    selector=lambda convo: True,
-                                    exclude_meta: bool = False):
+    def get_conversations_dataframe(self, selector=lambda convo: True, exclude_meta: bool = False):
         """
         Get a DataFrame of the Conversations the Speaker has participated in, with fields and metadata attributes.
         Set an optional selector that filters for Conversations that should be included. Edits to the DataFrame do not
@@ -177,10 +176,8 @@ class Speaker(CorpusComponent):
 
         :return: None (prints output)
         """
-        print("Number of Utterances: {}".format(
-            len(list(self.iter_utterances()))))
-        print("Number of Conversations: {}".format(
-            len(list(self.iter_conversations()))))
+        print("Number of Utterances: {}".format(len(list(self.iter_utterances()))))
+        print("Number of Conversations: {}".format(len(list(self.iter_conversations()))))
 
     def __lt__(self, other):
         return self.id < other.id
@@ -194,10 +191,10 @@ class Speaker(CorpusComponent):
         try:
             return self.id == other.id
         except AttributeError:
-            return self.__dict__['_name'] == other.__dict__['_name']
+            return self.__dict__["_name"] == other.__dict__["_name"]
 
     def __str__(self):
-        return f'Speaker(id: {self.id})'
+        return f"Speaker(id: {self.id})"
 
     def __repr__(self):
         return self.__str__()

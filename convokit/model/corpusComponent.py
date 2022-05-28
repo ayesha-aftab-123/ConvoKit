@@ -7,36 +7,39 @@ from convokit.storage import DBDocumentMapping, StorageManager
 
 
 class CorpusComponent:
-    def __init__(self,
-                 obj_type: str,
-                 owner=None,
-                 id=None,
-                 vectors: List[str] = None,
-                 meta=None,
-                 storage: Optional[StorageManager] = None,
-                 from_db=False):
+    def __init__(
+        self,
+        obj_type: str,
+        owner=None,
+        id=None,
+        vectors: List[str] = None,
+        meta=None,
+        storage: Optional[StorageManager] = None,
+        from_db=False,
+    ):
 
         if storage is not None:
             self.storage = storage
         elif owner is not None:
             self.storage = owner.storage
         else:
-            self.storage = StorageManager('mem')
+            self.storage = StorageManager("mem")
             self.storage.setup_collections(None, None, None, None)
 
         if from_db:
             return
 
-        if id is None and obj_type != 'conversation':
+        if id is None and obj_type != "conversation":
             id = uuid.uuid4()
 
-        if ((obj_type == 'utterance' and id in self.storage.utterances)
-                or (obj_type == 'speaker' and id in self.storage.speakers)):
-            id = f'{id}.1'
-            
-        if obj_type == 'speaker':
+        if (obj_type == "utterance" and id in self.storage.utterances) or (
+            obj_type == "speaker" and id in self.storage.speakers
+        ):
+            id = f"{id}.1"
+
+        if obj_type == "speaker":
             mapped_item = self.storage.speakers
-        elif obj_type == 'conversation':
+        elif obj_type == "conversation":
             mapped_item = self.storage.conversations
         else:
             mapped_item = self.storage.utterances
@@ -60,75 +63,73 @@ class CorpusComponent:
 
     @property
     def utterance_ids(self):
-        return self.fields['utterance_ids']
+        return self.fields["utterance_ids"]
 
     @utterance_ids.setter
     def utterance_ids(self, new_utterance_ids):
-        self.fields['utterance_ids'] = new_utterance_ids
+        self.fields["utterance_ids"] = new_utterance_ids
 
     @property
     def speaker_ids(self):
-        return self.fields['speaker_ids']
+        return self.fields["speaker_ids"]
 
     @speaker_ids.setter
     def speaker_ids(self, new_speaker_ids):
-        self.fields['speaker_ids'] = new_speaker_ids
+        self.fields["speaker_ids"] = new_speaker_ids
 
     @property
     def conversation_ids(self):
-        return self.fields['conversation_ids']
+        return self.fields["conversation_ids"]
 
     @conversation_ids.setter
     def conversation_ids(self, new_conversation_ids):
-        self.fields['conversation_ids'] = new_conversation_ids
+        self.fields["conversation_ids"] = new_conversation_ids
 
     @property
     def obj_type(self):
-        return self.fields['obj_type']
+        return self.fields["obj_type"]
 
     @obj_type.setter
     def obj_type(self, new_obj_type):
-        self.fields['obj_type'] = new_obj_type
+        self.fields["obj_type"] = new_obj_type
 
     @property
     def id(self):
-        return self.fields.__getitem__('id')
+        return self.fields.__getitem__("id")
 
     @id.setter
     def id(self, new_id):
         if not isinstance(new_id, str) and new_id is not None:
-            self.fields.__setitem__('id', str(new_id))
+            self.fields.__setitem__("id", str(new_id))
             warn(
-                "{} id must be a string. ID input has been casted to a string."
-                .format(self.obj_type))
+                "{} id must be a string. ID input has been casted to a string.".format(
+                    self.obj_type
+                )
+            )
         else:
-            self.fields.__setitem__('id', new_id)
+            self.fields.__setitem__("id", new_id)
 
     @property
     def vectors(self):
-        return self.fields.__getitem__('vectors')
+        return self.fields.__getitem__("vectors")
 
     @vectors.setter
     def vectors(self, new_vectors):
-        self.fields.__setitem__('vectors', new_vectors)
+        self.fields.__setitem__("vectors", new_vectors)
 
     def init_meta(self, meta):
         if isinstance(meta, ConvoKitMeta):
             return meta
         elif isinstance(meta, dict):
-            ck_meta = ConvoKitMeta(obj_type=self.obj_type,
-                                   id=self._meta_id(),
-                                   storage=self.storage)
+            ck_meta = ConvoKitMeta(obj_type=self.obj_type, id=self._meta_id(), storage=self.storage)
             for key, value in meta.items():
                 ck_meta[key] = value
             return ck_meta
         elif meta is None:
-            return ConvoKitMeta(obj_type=self.obj_type,
-                                id=self._meta_id(),
-                                storage=self.storage)
+            return ConvoKitMeta(obj_type=self.obj_type, id=self._meta_id(), storage=self.storage)
         else:
             raise TypeError(
-                f'expected meta to be of type ConvoKitMeta or dict, or be None; found type {type(meta)} instead'
+                f"expected meta to be of type ConvoKitMeta or dict, or be None; found type {type(meta)} instead"
             )
 
     def _add_utterance(self, utt):
@@ -148,7 +149,7 @@ class CorpusComponent:
         self.conversations[convo.id] = convo
 
     def _meta_id(self):
-        return f'{self.obj_type}_{self.id}'
+        return f"{self.obj_type}_{self.id}"
 
     # def __eq__(self, other):
     #     if type(self) != type(other): return False
@@ -196,10 +197,12 @@ class CorpusComponent:
         deprecation("set_info()", "add_meta()")
         self.meta[key] = value
 
-    def get_vector(self,
-                   vector_name: str,
-                   as_dataframe: bool = False,
-                   columns: Optional[List[str]] = None):
+    def get_vector(
+        self,
+        vector_name: str,
+        as_dataframe: bool = False,
+        columns: Optional[List[str]] = None,
+    ):
         """
         Get the vector stored as `vector_name` for this object.
         :param vector_name: name of vector
@@ -210,11 +213,13 @@ class CorpusComponent:
         :return: a numpy / scipy array
         """
         if vector_name not in self.vectors:
-            raise ValueError("This {} has no vector stored as '{}'.".format(
-                self.obj_type, vector_name))
+            raise ValueError(
+                "This {} has no vector stored as '{}'.".format(self.obj_type, vector_name)
+            )
 
         return self.owner.get_vector_matrix(vector_name).get_vectors(
-            ids=[self.id], as_dataframe=as_dataframe, columns=columns)
+            ids=[self.id], as_dataframe=as_dataframe, columns=columns
+        )
 
     def add_vector(self, vector_name: str):
         """
@@ -241,7 +246,8 @@ class CorpusComponent:
 
     def __str__(self):
         return "{}(id: {}, vectors: {}, meta: {})".format(
-            self.obj_type.capitalize(), self.id, self.vectors, self.meta)
+            self.obj_type.capitalize(), self.id, self.vectors, self.meta
+        )
 
     def __hash__(self):
         return hash(self.obj_type + str(self.id))
@@ -249,15 +255,19 @@ class CorpusComponent:
     def __repr__(self):
         copy = self.__dict__.copy()
         deleted_keys = [
-            'utterances', 'conversations', 'user', '_root', '_utterance_ids',
-            '_speaker_ids'
+            "utterances",
+            "conversations",
+            "user",
+            "_root",
+            "_utterance_ids",
+            "_speaker_ids",
         ]
         for k in deleted_keys:
             if k in copy:
                 del copy[k]
 
-        to_delete = [k for k in copy if k.startswith('_')]
-        to_add = {k[1:]: copy[k] for k in copy if k.startswith('_')}
+        to_delete = [k for k in copy if k.startswith("_")]
+        to_add = {k[1:]: copy[k] for k in copy if k.startswith("_")}
 
         for k in to_delete:
             del copy[k]
@@ -266,7 +276,7 @@ class CorpusComponent:
 
         try:
             return self.obj_type.capitalize() + "(" + str(copy) + ")"
-          
+
         except AttributeError:  # for backwards compatibility when corpus objects are saved as binary data, e.g. wikiconv
             return "(" + str(copy) + ")"
 
@@ -274,14 +284,12 @@ class CorpusComponent:
     def from_dbdoc(cls, doc: DBDocumentMapping):
         """
         Initialize a corpusComponent object with data contained in the DB document
-        represented by doc. 
+        represented by doc.
 
         :param cls: class to initialize: Utterance, Conversation, or Speaker
         :param doc: DB document to initialize the corpusComponent from
         :return: the initialized corpusComponent object
         """
-        ret = cls(from_db=True,
-                  id=doc.id,
-                  storage=doc.collection_mapping.storage)
+        ret = cls(from_db=True, id=doc.id, storage=doc.collection_mapping.storage)
         ret.fields = doc
         return ret

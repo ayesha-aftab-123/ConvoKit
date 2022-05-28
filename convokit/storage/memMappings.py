@@ -13,7 +13,8 @@ class MemCollectionMapping(MutableMapping):
         def ret(collection_name, item_type=None):
             if collection_name not in storage.connection:
                 storage.connection[collection_name] = MemCollectionMapping(
-                    collection_name, item_type=item_type)
+                    collection_name, item_type=item_type
+                )
 
             return storage.connection[collection_name]
 
@@ -21,12 +22,12 @@ class MemCollectionMapping(MutableMapping):
 
     def __setitem__(self, key, value):
         if key is None:
-            key = 'None'
+            key = "None"
         self.data[key] = value
 
     def __getitem__(self, key):
         if key is None:
-            key = 'None'
+            key = "None"
         return self.data[key]
 
     def __delitem__(self, key):
@@ -45,17 +46,14 @@ class MemCollectionMapping(MutableMapping):
         del self.data
 
     def filter_by(self, condition):
-        self.data = {
-            key: value
-            for key, value in self.data.items() if condition(value)
-        }
+        self.data = {key: value for key, value in self.data.items() if condition(value)}
 
 
 class MemDocumentMapping(MutableMapping):
     def __init__(self, collection_mapping, id):
         super().__init__()
         if id is None:
-            id = 'None'
+            id = "None"
         self.id = id
         self.data = {}
         if id in collection_mapping:
@@ -65,9 +63,9 @@ class MemDocumentMapping(MutableMapping):
     def dict(self, with_id=True):
         d = self.data.copy()
         if with_id:
-            d['id'] = self.id
-        elif 'id' in d:
-            del d['id']
+            d["id"] = self.id
+        elif "id" in d:
+            del d["id"]
         return d
 
     def __setitem__(self, key, value):
@@ -89,6 +87,4 @@ class MemDocumentMapping(MutableMapping):
         return self.data.__contains__(x)
 
     def transfer_to_dbcoll(self, collection_mapping, cls):
-        return cls(collection_mapping=collection_mapping,
-                   id=self.id,
-                   data=self.dict())
+        return cls(collection_mapping=collection_mapping, id=self.id, data=self.dict())

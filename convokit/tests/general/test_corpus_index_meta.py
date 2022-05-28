@@ -8,110 +8,135 @@ class CorpusIndexMeta(unittest.TestCase):
         Test basic meta functions
         """
 
-        corpus1 = Corpus(utterances=[
-            Utterance(id="0", text="hello world", speaker=Speaker(id="alice")),
-            Utterance(id="1", text="my name is bob", speaker=Speaker(id="bob")),
-            Utterance(id="2", text="this is a test", speaker=Speaker(id="charlie")),
-        ])
+        corpus1 = Corpus(
+            utterances=[
+                Utterance(id="0", text="hello world", speaker=Speaker(id="alice")),
+                Utterance(id="1", text="my name is bob", speaker=Speaker(id="bob")),
+                Utterance(id="2", text="this is a test", speaker=Speaker(id="charlie")),
+            ]
+        )
 
         first_utt = corpus1.get_utterance("0")
-        first_utt.meta['hey'] = 9
+        first_utt.meta["hey"] = 9
 
         # correct class type stored
-        self.assertEqual(first_utt.storage.index.utterances_index['hey'], [repr(type(9))])
-        self.assertEqual(corpus1.storage.index.utterances_index['hey'], [repr(type(9))])
+        self.assertEqual(first_utt.storage.index.utterances_index["hey"], [repr(type(9))])
+        self.assertEqual(corpus1.storage.index.utterances_index["hey"], [repr(type(9))])
 
         # keyErrors result in None output
         with self.assertRaises(KeyError):
-            first_utt.meta['nonexistent key']
+            first_utt.meta["nonexistent key"]
 
         # test that setting a custom get still works
-        self.assertEqual(first_utt.meta.get('nonexistent_key', {}), {})
+        self.assertEqual(first_utt.meta.get("nonexistent_key", {}), {})
 
     def test_key_insertion_deletion(self):
-        corpus1 = Corpus(utterances=[
-            Utterance(id="0", text="hello world", speaker=Speaker(id="alice")),
-            Utterance(id="1", text="my name is bob", speaker=Speaker(id="bob")),
-            Utterance(id="2", text="this is a test", speaker=Speaker(id="charlie")),
-        ])
+        corpus1 = Corpus(
+            utterances=[
+                Utterance(id="0", text="hello world", speaker=Speaker(id="alice")),
+                Utterance(id="1", text="my name is bob", speaker=Speaker(id="bob")),
+                Utterance(id="2", text="this is a test", speaker=Speaker(id="charlie")),
+            ]
+        )
 
-        corpus1.get_utterance("0").meta['foo'] = 'bar'
-        corpus1.get_utterance("1").meta['foo'] = 'bar2'
-        corpus1.get_utterance("2").meta['hey'] = 'jude'
+        corpus1.get_utterance("0").meta["foo"] = "bar"
+        corpus1.get_utterance("1").meta["foo"] = "bar2"
+        corpus1.get_utterance("2").meta["hey"] = "jude"
 
-        corpus1.get_conversation(None).meta['convo_meta'] = 1  # Todo: Was get_conversation(None)
+        corpus1.get_conversation(None).meta["convo_meta"] = 1  # Todo: Was get_conversation(None)
 
-        corpus1.get_speaker("alice").meta['surname'] = 1.0
+        corpus1.get_speaker("alice").meta["surname"] = 1.0
 
-        self.assertEqual(corpus1.storage.index.utterances_index['foo'],[str(type('bar'))])
-        self.assertEqual(corpus1.storage.index.conversations_index['convo_meta'], [str(type(1))])
-        self.assertEqual(corpus1.storage.index.speakers_index['surname'], [str(type(1.0))])
+        self.assertEqual(corpus1.storage.index.utterances_index["foo"], [str(type("bar"))])
+        self.assertEqual(corpus1.storage.index.conversations_index["convo_meta"], [str(type(1))])
+        self.assertEqual(corpus1.storage.index.speakers_index["surname"], [str(type(1.0))])
 
         # test that deleting an attribute from an individual utterance fails to remove it
-        del corpus1.get_utterance("2").meta['hey']
-        corpus1.get_utterance("2").meta['hey']
+        del corpus1.get_utterance("2").meta["hey"]
+        corpus1.get_utterance("2").meta["hey"]
 
         # test that delete_metadata works
-        corpus1.delete_metadata('utterance', 'foo')
+        corpus1.delete_metadata("utterance", "foo")
         with self.assertRaises(KeyError):
-            corpus1.storage.index.utterances_index['foo']
+            corpus1.storage.index.utterances_index["foo"]
         with self.assertRaises(KeyError):
             corpus1.get_utterance("0").meta["foo"]
 
     def test_corpus_merge_add(self):
-        corpus1 = Corpus(utterances=[
-            Utterance(id="0", text="hello world", speaker=Speaker(id="alice")),
-            Utterance(id="1", text="my name is bob", speaker=Speaker(id="bob")),
-            Utterance(id="2", text="this is a test", speaker=Speaker(id="charlie")),
-        ])
+        corpus1 = Corpus(
+            utterances=[
+                Utterance(id="0", text="hello world", speaker=Speaker(id="alice")),
+                Utterance(id="1", text="my name is bob", speaker=Speaker(id="bob")),
+                Utterance(id="2", text="this is a test", speaker=Speaker(id="charlie")),
+            ]
+        )
 
-        corpus1.get_utterance("0").meta['foo'] = 'bar'
-        corpus1.get_utterance("1").meta['foo'] = 'bar2'
-        corpus1.get_utterance("2").meta['hey'] = 'jude'
+        corpus1.get_utterance("0").meta["foo"] = "bar"
+        corpus1.get_utterance("1").meta["foo"] = "bar2"
+        corpus1.get_utterance("2").meta["hey"] = "jude"
 
         # test that adding separately initialized utterances with new metadata updates Index
-        new_utt = Utterance(id="4", text="hello world", speaker=Speaker(id="alice", meta={'donkey': 'kong'}), meta={'new': 'meta'})
+        new_utt = Utterance(
+            id="4",
+            text="hello world",
+            speaker=Speaker(id="alice", meta={"donkey": "kong"}),
+            meta={"new": "meta"},
+        )
 
         new_corpus = corpus1.add_utterances([new_utt])
-        self.assertTrue('new' in new_corpus.storage.index.utterances_index)
-        self.assertTrue('donkey' in new_corpus.storage.index.speakers_index)
+        self.assertTrue("new" in new_corpus.storage.index.utterances_index)
+        self.assertTrue("donkey" in new_corpus.storage.index.speakers_index)
 
     def test_corpus_dump(self):
-        corpus1 = Corpus(utterances=[
-            Utterance(id="0", text="hello world", speaker=Speaker(id="alice")),
-            Utterance(id="1", text="my name is bob", speaker=Speaker(id="bob")),
-            Utterance(id="2", text="this is a test", speaker=Speaker(id="charlie")),
-        ], storage_type='mem')
+        corpus1 = Corpus(
+            utterances=[
+                Utterance(id="0", text="hello world", speaker=Speaker(id="alice")),
+                Utterance(id="1", text="my name is bob", speaker=Speaker(id="bob")),
+                Utterance(id="2", text="this is a test", speaker=Speaker(id="charlie")),
+            ],
+            storage_type="mem",
+        )
 
-        corpus1.get_utterance("0").meta['foo'] = 'bar'
-        corpus1.get_utterance("1").meta['foo'] = 'bar2'
-        corpus1.get_utterance("2").meta['hey'] = 'jude'
+        corpus1.get_utterance("0").meta["foo"] = "bar"
+        corpus1.get_utterance("1").meta["foo"] = "bar2"
+        corpus1.get_utterance("2").meta["hey"] = "jude"
 
         # corpus1.get_conversation(None).meta['convo_meta'] = 1 # ToDo: Put back
 
-        corpus1.get_speaker("alice").meta['surname'] = 1.0
-        corpus1.dump('test_index_meta_corpus', data_directory="./")
-        corpus2 = Corpus(filename="./test_index_meta_corpus", storage_type='mem')
+        corpus1.get_speaker("alice").meta["surname"] = 1.0
+        corpus1.dump("test_index_meta_corpus", data_directory="./")
+        corpus2 = Corpus(filename="./test_index_meta_corpus", storage_type="mem")
 
-        self.assertEqual(corpus1.storage.index.utterances_index, corpus2.storage.index.utterances_index)
+        self.assertEqual(
+            corpus1.storage.index.utterances_index,
+            corpus2.storage.index.utterances_index,
+        )
         self.assertEqual(corpus1.storage.index.speakers_index, corpus2.storage.index.speakers_index)
-        self.assertEqual(corpus1.storage.index.conversations_index, corpus2.storage.index.conversations_index)
+        self.assertEqual(
+            corpus1.storage.index.conversations_index,
+            corpus2.storage.index.conversations_index,
+        )
         self.assertEqual(corpus1.storage.index.overall_index, corpus2.storage.index.overall_index)
 
     def test_multiple_types(self):
-        corpus1 = Corpus(utterances=[
-            Utterance(id="0", text="hello world", speaker=Speaker(id="alice")),
-            Utterance(id="1", text="my name is bob", speaker=Speaker(id="bob")),
-            Utterance(id="2", text="this is a test", speaker=Speaker(id="charlie")),
-        ])
+        corpus1 = Corpus(
+            utterances=[
+                Utterance(id="0", text="hello world", speaker=Speaker(id="alice")),
+                Utterance(id="1", text="my name is bob", speaker=Speaker(id="bob")),
+                Utterance(id="2", text="this is a test", speaker=Speaker(id="charlie")),
+            ]
+        )
 
-        corpus1.get_utterance('2').meta['hey'] = None
-        self.assertEqual(corpus1.storage.index.utterances_index.get('hey', None), None)
-        corpus1.get_utterance('0').meta['hey'] = 5
-        self.assertEqual(corpus1.storage.index.utterances_index['hey'], [str(type(5))])
-        corpus1.get_utterance('1').meta['hey'] = 'five'
-        self.assertEqual(corpus1.storage.index.utterances_index['hey'], [str(type(5)), str(type('five'))])
+        corpus1.get_utterance("2").meta["hey"] = None
+        self.assertEqual(corpus1.storage.index.utterances_index.get("hey", None), None)
+        corpus1.get_utterance("0").meta["hey"] = 5
+        self.assertEqual(corpus1.storage.index.utterances_index["hey"], [str(type(5))])
+        corpus1.get_utterance("1").meta["hey"] = "five"
+        self.assertEqual(
+            corpus1.storage.index.utterances_index["hey"],
+            [str(type(5)), str(type("five"))],
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

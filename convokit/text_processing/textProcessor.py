@@ -14,13 +14,16 @@ class TextProcessor(Transformer):
     :param input_filter: a boolean function of signature `input_filter(utterance, aux_input)`. attributes will only be computed for utterances where `input_filter` returns `True`. By default, will always return `True`, meaning that attributes will be computed for all utterances.
     :param verbosity: frequency at which to print status messages when computing attributes.
     """
-    def __init__(self,
-                 proc_fn,
-                 output_field,
-                 input_field=None,
-                 aux_input=None,
-                 input_filter=None,
-                 verbosity=0):
+
+    def __init__(
+        self,
+        proc_fn,
+        output_field,
+        input_field=None,
+        aux_input=None,
+        input_filter=None,
+        verbosity=0,
+    ):
 
         self.proc_fn = proc_fn
         self.aux_input = aux_input if aux_input is not None else {}
@@ -43,10 +46,10 @@ class TextProcessor(Transformer):
 
     def transform(self, corpus: Corpus) -> Corpus:
         """
-            Computes per-utterance attributes for each utterance in the Corpus, storing these values in the `output_field` of each utterance as specified in the constructor. For utterances which do not contain all of the `input_field` attributes as specified in the constructor, or for utterances which return `False` on `input_filter`, this call will not annotate the utterance. 
+        Computes per-utterance attributes for each utterance in the Corpus, storing these values in the `output_field` of each utterance as specified in the constructor. For utterances which do not contain all of the `input_field` attributes as specified in the constructor, or for utterances which return `False` on `input_filter`, this call will not annotate the utterance.
 
-            :param corpus: Corpus
-            :return: the corpus
+        :param corpus: Corpus
+        :return: the corpus
         """
 
         total_utts = len(corpus.storage.utterances)
@@ -54,18 +57,16 @@ class TextProcessor(Transformer):
         for idx, utterance in enumerate(corpus.iter_utterances()):
 
             if self._print_output(idx):
-                print('%03d/%03d utterances processed' % (idx, total_utts))
-            if not self.input_filter(utterance, self.aux_input): continue
+                print("%03d/%03d utterances processed" % (idx, total_utts))
+            if not self.input_filter(utterance, self.aux_input):
+                continue
             if self.input_field is None:
                 text_entry = utterance.text
             elif isinstance(self.input_field, str):
                 text_entry = utterance.retrieve_meta(self.input_field)
 
             elif isinstance(self.input_field, list):
-                text_entry = {
-                    field: utterance.retrieve_meta(field)
-                    for field in self.input_field
-                }
+                text_entry = {field: utterance.retrieve_meta(field) for field in self.input_field}
                 if sum(x is None for x in text_entry.values()) > 0:
                     text_entry = None
             if text_entry is None:
@@ -80,7 +81,7 @@ class TextProcessor(Transformer):
             else:
                 utterance.add_meta(self.output_field, result)
         if self.verbosity > 0:
-            print('%03d/%03d utterances processed' % (total_utts, total_utts))
+            print("%03d/%03d utterances processed" % (total_utts, total_utts))
         return corpus
 
     def transform_utterance(self, utt, override_input_filter=False):
@@ -103,10 +104,7 @@ class TextProcessor(Transformer):
             if isinstance(self.input_field, str):
                 text_entry = utt.retrieve_meta(self.input_field)
             elif isinstance(self.input_field, list):
-                text_entry = {
-                    field: utt.retrieve_meta(field)
-                    for field in self.input_field
-                }
+                text_entry = {field: utt.retrieve_meta(field) for field in self.input_field}
                 if sum(x is None for x in text_entry.values()) > 0:
                     return utt
         if text_entry is None:

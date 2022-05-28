@@ -1,7 +1,8 @@
 from typing import MutableMapping, Callable
 
-from convokit.util import warn
 from bson import Binary
+
+from convokit.util import warn
 
 
 class DBCollectionMapping(MutableMapping):
@@ -44,9 +45,9 @@ class DBCollectionMapping(MutableMapping):
                     self.collection.update_one(data, {"$set": value.fields.dict()}, upsert=True)
             else:
                 if hasattr(value, "meta"):
-                    value.meta.fields.transfer_to_dbcoll(self.storage.metas, DBDocumentMapping)
+                    value.meta.fields.transfer_to_db_collection(self.storage.metas, DBDocumentMapping)
 
-                value.fields.transfer_to_dbcoll(self, DBDocumentMapping)
+                value.fields.transfer_to_db_collection(self, DBDocumentMapping)
 
         else:
             raise TypeError(

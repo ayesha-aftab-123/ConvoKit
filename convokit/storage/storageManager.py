@@ -11,7 +11,7 @@ from yaml import load, Loader
 from convokit.util import warn
 from .convoKitIndex import ConvoKitIndex
 from .dbMappings import DBCollectionMapping, DBDocumentMapping
-from .memMappings import MemCollectionMapping, MemDocumentMapping
+from .memory_mappings import MemCollectionMapping, MemDocumentMapping
 
 TEXT = (
     "# Default Storage Parameters\n"

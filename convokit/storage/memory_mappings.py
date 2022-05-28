@@ -86,5 +86,5 @@ class MemDocumentMapping(MutableMapping):
     def __contains__(self, x):
         return self.data.__contains__(x)
 
-    def transfer_to_dbcoll(self, collection_mapping, cls):
+    def transfer_to_db_collection(self, collection_mapping, cls):
         return cls(collection_mapping=collection_mapping, id=self.id, data=self.dict())

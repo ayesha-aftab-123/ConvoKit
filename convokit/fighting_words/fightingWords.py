@@ -1,12 +1,14 @@
-import numpy as np
-from sklearn.feature_extraction.text import CountVectorizer as CV
-from convokit import Transformer
-from convokit.model import Corpus, CorpusComponent
+from collections import defaultdict
 from typing import List, Callable, Tuple
-from matplotlib import pyplot as plt
+
+import numpy as np
 import pandas as pd
 from cleantext import clean
-from collections import defaultdict
+from matplotlib import pyplot as plt
+from sklearn.feature_extraction.text import CountVectorizer as CV
+
+from convokit import Transformer
+from convokit.model import Corpus, CorpusComponent
 
 clean_str = lambda s: clean(
     s,
@@ -206,14 +208,11 @@ class FightingWords(Transformer):
                 class2.append(obj)
 
         if len(class1) == 0:
-            raise ValueError("class1_func returned 0 valid corpus components.")
+            raise ValueError(f"class1_func returned 0 valid {self.obj_type}s.")
         if len(class2) == 0:
-            raise ValueError("class2_func returned 0 valid corpus components.")
+            raise ValueError(f"class2_func returned 0 valid {self.obj_type}s.")
 
-        print(
-            "class1_func returned {} valid corpus components. "
-            "class2_func returned {} valid corpus components.".format(len(class1), len(class2))
-        )
+        print(f"class1_func returned {len(class1)} valid {self.obj_type}s. class2_func returned {len(class2)} valid {self.obj_type}s.")
 
         self.ngram_zscores = self._bayes_compare_language(class1, class2)
         print("ngram zscores computed.")

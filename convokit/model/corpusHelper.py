@@ -26,7 +26,7 @@ KeyMeta = "meta"
 KeyVectors = "vectors"
 
 
-def load_uttinfo_from_dir(
+def load_utterances_data_from_directory(
         dirname, utterance_start_index, utterance_end_index, exclude_utterance_meta
 ):
     assert dirname is not None
@@ -81,7 +81,7 @@ def load_speakers_data_from_dir(filename, exclude_speaker_meta):
     return id_to_speaker_data
 
 
-def load_convos_data_from_dir(filename, exclude_conversation_meta):
+def load_conversations_data_from_directory(filename, exclude_conversation_meta):
     """
 
     :param filename:
@@ -109,7 +109,7 @@ def load_convos_data_from_dir(filename, exclude_conversation_meta):
     return id_to_convo_data
 
 
-def load_corpus_meta_from_dir(filename, corpus_meta, exclude_overall_meta):
+def load_corpus_meta_from_directory(filename, corpus_meta, exclude_overall_meta):
     """
     Updates corpus meta object with fields from corpus.json
     """
@@ -120,7 +120,7 @@ def load_corpus_meta_from_dir(filename, corpus_meta, exclude_overall_meta):
             corpus_meta[k] = v
 
 
-def unpack_binary_data_for_utts(utterances, filename, utterance_index, exclude_meta, KeyMeta):
+def unpack_binary_data_for_utterances(utterances, filename, utterance_index, exclude_meta, KeyMeta):
     """
 
     :param utterances: mapping from utterance id to {'meta': ..., 'vectors': ...}
@@ -419,6 +419,6 @@ def dump_jsonlist_from_dict(entries, filename, index_key="id", value_key="value"
             f.write("\n")
 
 
-def extract_meta_from_df(df):
+def extract_metadata_from_dataframe(df):
     meta_cols = [col.split(".")[1] for col in df if col.startswith("meta")]
     return meta_cols

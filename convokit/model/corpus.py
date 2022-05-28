@@ -183,7 +183,7 @@ class Corpus:
                         self.storage.index.disable_type_check()
                     if os.path.isdir(filename):  # Load corpus data from dir
                         assert utterances is None
-                        utterances = load_uttinfo_from_dir(
+                        utterances = load_utterances_data_from_directory(
                             filename,
                             utterance_start_index,
                             utterance_end_index,
@@ -191,15 +191,15 @@ class Corpus:
                         )
 
                         speakers_data = load_speakers_data_from_dir(filename, exclude_speaker_meta)
-                        convos_data = load_convos_data_from_dir(filename, exclude_conversation_meta)
-                        load_corpus_meta_from_dir(filename, self.meta, exclude_overall_meta)
+                        convos_data = load_conversations_data_from_directory(filename, exclude_conversation_meta)
+                        load_corpus_meta_from_directory(filename, self.meta, exclude_overall_meta)
 
                         with open(os.path.join(filename, "index.json"), "r") as f:
                             idx_dict = json.load(f)
                             self.storage.index.update_from_dict(idx_dict)
 
                         # unpack binary data for utterances
-                        unpack_binary_data_for_utts(
+                        unpack_binary_data_for_utterances(
                             utterances,
                             filename,
                             self.storage.index.utterances_index,
@@ -1533,7 +1533,7 @@ class Corpus:
 
     def update_metadata_from_df(self, obj_type, df):
         assert obj_type in ["utterance", "speaker", "conversation"]
-        meta_cols = extract_meta_from_df(df)
+        meta_cols = extract_metadata_from_dataframe(df)
         df.columns = [col.replace("meta.", "") for col in df.columns]
         if df.index.name != "id":
             df.set_index("id")
@@ -1589,7 +1589,7 @@ class Corpus:
             pd.Series(columns).isin(utterances_df.columns).all()
         ), "Utterances dataframe must contain all primary data fields"
 
-        utterance_meta_cols = extract_meta_from_df(utterances_df)
+        utterance_meta_cols = extract_metadata_from_dataframe(utterances_df)
 
         utterance_list = []
         for index, row in tqdm(utterances_df.iterrows()):

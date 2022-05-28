@@ -293,12 +293,12 @@ def initialize_conversations(corpus, convos_data):
     # organize utterances by conversation
     convo_to_utts = defaultdict(
         list)  # temp container identifying utterances by conversation
-    for u in corpus.storage.utterances.values():
-        convo_key = u.conversation_id  # each conversation_id is considered a separate conversation
-        convo_to_utts[convo_key].append(u.id)
-    for convo_id in convo_to_utts:
+    for utt in corpus.storage.utterances.values():
+        conversation_id = utt.conversation_id  # each conversation_id is considered a separate conversation
+        convo_to_utts[conversation_id].append(utt.id)
+    for conversation_id in convo_to_utts:
         # look up the metadata associated with this conversation, if any
-        convo_data = convos_data.get(convo_id, None)
+        convo_data = convos_data.get(conversation_id, None)
         if convo_data is not None:
             if KeyMeta in convo_data:
                 convo_meta = convo_data[KeyMeta]
@@ -308,8 +308,8 @@ def initialize_conversations(corpus, convos_data):
             convo_meta = None
 
         convo = Conversation(storage=corpus.storage,
-                             id=convo_id,
-                             utterances=convo_to_utts[convo_id],
+                             id=conversation_id,
+                             utterances=convo_to_utts[conversation_id],
                              meta=convo_meta)
         if convo_data is not None and KeyVectors in convo_data and KeyMeta in convo_data:
             convo.vectors = convo_data.get(KeyVectors, [])

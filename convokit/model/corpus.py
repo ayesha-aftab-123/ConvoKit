@@ -109,7 +109,7 @@ class Corpus:
         convos_data = defaultdict(dict)
 
         if from_corpus is not None:
-            self.copy_from(from_corpus.storage)
+            self.copy_from_storage(from_corpus.storage)
 
         else:
             # Loading in preconstruced & Stored corpus
@@ -127,7 +127,7 @@ class Corpus:
                             tmp_storage.setup_collections(
                                 Utterance, Conversation, Speaker, ConvoKitMeta)
 
-                            self.copy_from(tmp_storage)
+                            self.copy_from_storage(tmp_storage)
                             print(
                                 f'Copying corpus {self.id}_v{self.storage.raw_version} '
                                 f'to corpus {self.storage.full_name}')
@@ -242,7 +242,8 @@ class Corpus:
         if merge_lines:
             merge_utterance_lines(storage)
 
-        if disable_type_check: self.storage.index.disable_type_check()
+        if disable_type_check:
+            self.storage.index.disable_type_check()
         initialize_conversations(self, convos_data)
         self.update_speakers_data()
         self.reinitialize_index()
@@ -1020,13 +1021,13 @@ class Corpus:
         new_corpus.update_speakers_data()
         new_corpus.reinitialize_index()
         if modify:
-            self.copy_from(new_corpus.storage)
+            self.copy_from_storage(new_corpus.storage)
             if self.storage.storage_type == 'db':
                 return self
         
         return new_corpus
 
-    def copy_from(self, from_storage: StorageManager):
+    def copy_from_storage(self, from_storage: StorageManager):
         for uid, utt in from_storage.utterances.items():
             self.storage.utterances[uid] = utt
 

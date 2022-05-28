@@ -84,7 +84,7 @@ class ConvoKitMeta(MutableMapping):
         return theirs == mine
 
     def __repr__(self):
-        return f"{self.fields.collection_mapping.name}.{self.fields.id}: {str(self.fields.dict(with_id=False))}"
+        return f"{str(self.fields.dict(with_id=False))}"
 
     def __str__(self):
         return str(self.fields.dict(with_id=False))

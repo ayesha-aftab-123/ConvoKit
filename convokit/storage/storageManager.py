@@ -10,7 +10,7 @@ from yaml import load, Loader
 
 from convokit.util import warn
 from .convoKitIndex import ConvoKitIndex
-from .dbMappings import DBCollectionMapping, DBDocumentMapping
+from .database_mappings import DBCollectionMapping, DBDocumentMapping
 from .memory_mappings import MemCollectionMapping, MemDocumentMapping
 
 TEXT = (

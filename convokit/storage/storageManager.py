@@ -9,7 +9,7 @@ from pymongo.database import Database
 from yaml import load, Loader
 
 from convokit.util import warn
-from .convoKitIndex import ConvoKitIndex
+from .convokit_index import ConvoKitIndex
 from .database_mappings import DBCollectionMapping, DBDocumentMapping
 from .memory_mappings import MemCollectionMapping, MemDocumentMapping
 

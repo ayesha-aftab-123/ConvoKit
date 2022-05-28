@@ -2,20 +2,17 @@
 Contains functions that help with the construction / dumping of a Corpus
 """
 
-import os
 import json
+import os
+import pickle
 from collections import defaultdict
 from typing import Dict
-import pickle
 
-from convokit.storage.dbMappings import DBCollectionMapping
-from convokit.storage.memMappings import MemCollectionMapping
-
-from .speaker import Speaker
-from .utterance import Utterance
+from convokit.util import warn
 from .conversation import Conversation
 from .convoKitMeta import ConvoKitMeta
-from convokit.util import warn
+from .speaker import Speaker
+from .utterance import Utterance
 
 BIN_DELIM_L, BIN_DELIM_R = "<##bin{", "}&&@**>"
 KeyId = "id"
@@ -318,6 +315,7 @@ def initialize_conversations(corpus, convos_data):
             convo_meta = None
 
         convo = Conversation(
+            owner=corpus,
             storage=corpus.storage,
             id=conversation_id,
             utterances=convo_to_utts[conversation_id],

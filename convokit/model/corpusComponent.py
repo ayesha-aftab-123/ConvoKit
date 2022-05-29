@@ -238,9 +238,7 @@ class CorpusComponent:
         self.vectors.remove(vector_name)
 
     def __str__(self):
-        return "{}(id: {}, vectors: {}, meta: {})".format(
-            self.obj_type.capitalize(), self.id, self.vectors, self.meta
-        )
+        return f'{self.obj_type.capitalize()}(id: {self.id}, vectors: {self.vectors}, meta: {self.meta})'
 
     def __hash__(self):
         return hash(self.obj_type + str(self.id))
@@ -274,7 +272,7 @@ class CorpusComponent:
             return "(" + str(copy) + ")"
 
     @classmethod
-    def from_dbdoc(cls, doc: DBDocumentMapping):
+    def from_db_document(cls, doc: DBDocumentMapping):
         """
         Initialize a corpusComponent object with data contained in the DB document
         represented by doc.

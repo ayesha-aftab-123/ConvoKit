@@ -1,3 +1,5 @@
+import random
+import shutil
 from typing import (
     List,
     Collection,
@@ -8,25 +10,17 @@ from typing import (
     Optional,
     ValuesView,
     Union,
-    MutableMapping,
 )
-from tqdm import tqdm
+
 from pandas import DataFrame
 
-from convokit import storage
-from .corpusHelper import *
-from convokit.util import deprecation, warn
-from .corpusUtil import *
-import random
-from .convoKitMeta import ConvoKitMeta
+from convokit.storage import StorageManager
+from convokit.util import deprecation
 from .convoKitMatrix import ConvoKitMatrix
-import shutil
-
-from convokit.storage import StorageManager, storageManager
-
+from .corpusHelper import *
+from .corpusUtil import *
 from .speaker import Speaker
 from .utterance import Utterance
-from .conversation import Conversation
 
 
 class Corpus:
@@ -54,9 +48,9 @@ class Corpus:
         True by default, i.e. type-checking is not carried out.
     :param storage_type: optionally either 'mem' or 'db', default None
     :param storage: optional convokit.storage.StorageManager object to load the Corpus from
-    :param in_place: when connecting to a Corpus with data already in db storage, whether to load a copy of the Corpus
+    :param in_place: when loading a Corpus with data already in db storage, whether to load a copy of the Corpus
         or modify the existing Corpus in place.
-        True by default, i.e. Corpus is not initialized as a seperate copy.
+        False by default, i.e. changes to the Corpus when loaded will not update the Corpus in db storage.
     :param from_corpus: if specified, the corpus to make a copy from.
     :param version: if `storage_type` is 'db', this specifies the version of the corpus to connect to
     :param db_host: name of the DB host
@@ -83,7 +77,7 @@ class Corpus:
         storage: Optional[StorageManager] = None,
         data_directory: Optional[str] = None,
         db_host: Optional[str] = None,
-        in_place: bool = True,
+        in_place: bool = False,
         filename: Optional[str] = None,
         from_corpus: Optional["Corpus"] = None,
         version: Optional[int] = 0,
@@ -100,6 +94,8 @@ class Corpus:
         if storage is not None:
             self.storage = storage
         else:
+            if corpus_id is None:
+                corpus_id = os.path.basename(os.path.normpath(filename))
             self.storage = StorageManager(
                 storage_type,
                 db_host=db_host,
@@ -179,11 +175,8 @@ class Corpus:
 
                 # Construct corpus from file or directory
                 if self.storage.corpus_id is not None or filename is not None:
-                    filename = (
-                        os.path.join(self.storage.data_directory, self.id)
-                        if filename is None
-                        else filename
-                    )
+                    if filename is None:
+                        filename = os.path.join(self.storage.data_directory, self.id)
                     print(f"Loading corpus {self.id} from disk at {filename}")
                     if disable_type_check:
                         self.storage.index.disable_type_check()

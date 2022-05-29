@@ -34,7 +34,7 @@ class StorageManager:
         """
         Object to manage data storage.
 
-        :param storage_type: either 'mem' or 'db' or None
+        :param storage_type: either 'mem' or 'db' or None.
         :param db_host: name of the DB host
         :param data_directory: path to the directory containing Mem Corpora. If left
             unspecified, will use the data_directory specified in ~/.convokit/config.yml
@@ -44,7 +44,7 @@ class StorageManager:
             this increments the version number so that the original copy
             of the data is left unmodified.
 
-        :ivar storage_type: either 'mem' or 'db' or None
+        :ivar storage_type: either 'mem' or 'db'
         :ivar index: ConvoKitIndex to track types of metadata stored in this StorageManager
         :ivar corpus_id: id of the corpus this StorageManager is connected to.
         :ivar CollectionMapping: class constructor to use to store collections of items.
@@ -65,7 +65,7 @@ class StorageManager:
             config["default_storage_mode"] = tmp_mode
 
         if storage_type is None:
-            storage_type = config["default_storage_mode"]
+            storage_type = config.get("default_storage_mode", 'mem')
         if db_host is None:
             db_host = config["db_host"]
         if data_directory is None:
@@ -74,6 +74,7 @@ class StorageManager:
         self.storage_type = storage_type
         self.index = ConvoKitIndex(self)
         self.data_directory = data_directory
+
         if storage_type == "db":
             self.client = MongoClient(db_host)
             self.db = self.client["convokit"]
@@ -85,11 +86,13 @@ class StorageManager:
             self.corpus_id = corpus_id
             self.CollectionMapping = DBCollectionMapping.with_storage(self)
             self.ItemMapping = DBDocumentMapping
+
         elif storage_type == "mem":
             self.connection = {}
             self.corpus_id = corpus_id
             self.CollectionMapping = MemCollectionMapping.with_storage(self)
             self.ItemMapping = MemDocumentMapping
+
         else:
             raise ValueError(
                 f'Expected storage type to be "mem" or "db"; got {storage_type} instead'
@@ -105,15 +108,15 @@ class StorageManager:
         # child collections utterances, speakers, etc. within those directories.
         if storage_type == "db":
             collections = self.db.list_collection_names()
-            augment = "_utterances"
+            suffix = "_utterances"
         else:
             collections = os.listdir(data_directory) if os.path.isdir(data_directory) else []
-            augment = ""
-        if not in_place and f"{make_full_name(self.corpus_id, version)}{augment}" in collections:
+            suffix = ""
+        if not in_place and f"{make_full_name(self.corpus_id, version)}{suffix}" in collections:
             x = 1
             while True:
                 test_version = f"{version}.{x}"
-                if f"{make_full_name(self.corpus_id, test_version)}{augment}" in collections:
+                if f"{make_full_name(self.corpus_id, test_version)}{suffix}" in collections:
                     x += 1
                 else:
                     self.version = test_version
@@ -145,9 +148,9 @@ class StorageManager:
 
     @staticmethod
     def default_storage_mode():
-        tmp_mode = os.environ.get("CONVOKIT_STORAGE_MODE")
-        if tmp_mode in ["mem", "db"]:
-            return tmp_mode
+        mode = os.environ.get("CONVOKIT_STORAGE_MODE")
+        if mode in ["mem", "db"]:
+            return mode
         else:
             config = read_or_create_config(os.path.expanduser("~/.convokit/config.yml"))
             return config["default_storage_mode"]

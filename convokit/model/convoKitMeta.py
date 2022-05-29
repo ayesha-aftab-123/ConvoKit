@@ -103,7 +103,7 @@ class ConvoKitMeta(MutableMapping):
             super().update(other=other, **kwds)
 
     @classmethod
-    def from_dbdoc(cls, doc: DBDocumentMapping):
+    def from_db_document(cls, doc: DBDocumentMapping):
         """
         Initialize a corpusComponent object with data contained in the DB document
         represented by doc.

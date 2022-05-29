@@ -94,7 +94,7 @@ class Corpus:
         if storage is not None:
             self.storage = storage
         else:
-            if corpus_id is None:
+            if corpus_id is None and filename is not None:
                 corpus_id = os.path.basename(os.path.normpath(filename))
             self.storage = StorageManager(
                 storage_type,

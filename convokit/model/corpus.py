@@ -196,8 +196,8 @@ class Corpus:
                         load_corpus_meta_from_directory(filename, self.meta, exclude_overall_meta)
 
                         with open(os.path.join(filename, "index.json"), "r") as f:
-                            idx_dict = json.load(f)
-                            self.storage.index.update_from_dict(idx_dict)
+                            index_dict = json.load(f)
+                            self.storage.index.update_from_dict(index_dict)
 
                         # unpack binary data for utterances
                         unpack_binary_data_for_utterances(

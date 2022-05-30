@@ -1,0 +1,27 @@
+name: Build docs
+
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Sphinx Build
+      uses: ammaraskar/sphinx-action@master
+      with:
+        docs-folder: "docs/"
+        build-command: "sphinx-build -b html ./source ./build"
+    - name: rsync docs
+      uses: burnett01/rsync-deployments@master
+      with:
+        switches: -vzr
+        path: docs/build/html
+        remote_path: /var/www/html/socialkit/documentation
+        remote_host: zissou.infosci.cornell.edu
+        remote_user: $${{ secrets.ZISSOU_USER }}
+        remote_key: $${{ secrets.ZISSOU_KEY }}
+

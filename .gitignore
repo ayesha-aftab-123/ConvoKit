@@ -9,7 +9,7 @@
 /*.egg-info
 *.swp
 *.p
-/doc/build/
+/docs/build/
 /convokit/data/downloads/
 datasets/supreme-corpus/supreme-raw/
 /convokit/downloads/
@@ -36,5 +36,5 @@ venv-triadmotif/
 *.xlsx
 *.csv
 *.tsv
-!/doc/source/img/*
+!/docs/source/img/*
 env/

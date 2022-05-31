@@ -80,13 +80,6 @@ class Speaker(CorpusComponent):
         self.id = new_name
 
     # End properties
-
-    def _check_utterance_id(self, ut_id: str):
-        """self.utterance_ids is List for storage reasons, but checking list membership is expensive when many utterances present,
-           so this convenience function runs a set conversion first (duplicates ok since we're just checking for membership)"""
-        utterances_set = set(self.utterance_ids)
-        return ut_id in utterances_set
-
     def get_utterance(self, ut_id: str):  # -> Utterance:
         """
         Get the Utterance with the specified Utterance id
@@ -94,7 +87,7 @@ class Speaker(CorpusComponent):
         :param ut_id: The id of the Utterance
         :return: An Utterance object
         """
-        if self._check_utterance_id(ut_id):
+        if ut_id in self.utterance_ids:
             return self.utterances[ut_id]
         else:
             return None
@@ -108,8 +101,9 @@ class Speaker(CorpusComponent):
                         By default, the selector includes all Utterances in the Corpus.
         :return: An iterator of the Utterances made by the speaker
         """
+        utt_id_set = set(self.utterance_ids)
         for k, v in self.utterances.items():
-            if self._check_utterance_id(k) and selector(v):
+            if k in utt_id_set and selector(v):
                 yield v
 
     def get_utterances_dataframe(self, selector=lambda utt: True, exclude_meta: bool = False):

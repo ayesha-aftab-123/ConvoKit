@@ -182,7 +182,7 @@ class Pairer(Transformer):
         UNIQUE_VAL_LIMIT = 30 # limit on the number of distinct categories plotted in categorical plot if uniqueness threshold is not met.
         simple_meta_value_types = ["<class 'int'>", "<class 'float'>", "<class 'str'>", "<class 'bool'>"]
         attributes_to_consider = {} # keeps track of the analysis schema
-        values_to_plot = {} # keeps track of values to be plotted 
+        values_to_plot = {} # keeps track of values to be plotted
         if attributes is None:
             # go across all simple meta attributes (i.e. string, integer, or float)
             for meta_name in meta_index:
@@ -197,9 +197,15 @@ class Pairer(Transformer):
                     uniqueness_factor  = len(unique_values)/total_value_count
 
                     if uniqueness_factor < uniqueness_threshold:
-                        # for values that satisfy uniqueness threshold proceed with categorical plot
-                        attributes_to_consider[meta_name] = {'type': meta_index[meta_name][0], 'category': 'categorical'}
-                        values_to_plot[meta_name] = {'pos': Counter(pos_values), 'neg': Counter(neg_values)}
+                        # for values that satisfy uniqueness threshold AND if the number of categories
+                        # for plotting (i.e., categories that satisfy categorical_minperc) does not
+                        # exceed UNIQUE_VAL_LIMIT, we proceed with categorical plot
+                        pos_counts = Counter(pos_values)
+                        neg_counts = Counter(neg_values)
+                        categories_for_plotting = [c for c in unique_values if min(pos_counts[c],neg_counts[c]) >= categorical_minperc*total_value_count]
+                        if len(categories_for_plotting) <= UNIQUE_VAL_LIMIT:
+                            attributes_to_consider[meta_name] = {'type': meta_index[meta_name][0], 'category': 'categorical'}
+                            values_to_plot[meta_name] = {'pos': pos_counts, 'neg': neg_counts}
 
                     elif meta_index[meta_name][0] in ["<class 'int'>", "<class 'float'>"]:
                         # for values that are of type integer or float proceed with numerical plot
@@ -207,13 +213,14 @@ class Pairer(Transformer):
                         values_to_plot[meta_name] = {'pos': pos_values, 'neg': neg_values}
 
                     else:
-                        # if we were to make a categorical plot, check how many categories would be shown with categorical_minperc
-                        # if this number of categories is less than UNIQUE_VAL_LIMIT, then we can plot categorial
+                        # even if the uniqueness threshold is not satisfied by we have less categories
+                        # for plotting (i.e. categories that satisfy categorical_minperc threshold)
+                        # than UNIQUE_VAL_LIMIT, we proceed with categorical plot
                         pos_counts = Counter(pos_values)
                         neg_counts = Counter(neg_values)
                         categories_for_plotting = [c for c in unique_values if min(pos_counts[c],neg_counts[c]) >= categorical_minperc*total_value_count]
-                        
-                        if len(categories_for_plotting) < UNIQUE_VAL_LIMIT:
+
+                        if len(categories_for_plotting) <= UNIQUE_VAL_LIMIT:
                             attributes_to_consider[meta_name] = {'type': meta_index[meta_name][0], 'category': 'categorical'}
                             values_to_plot[meta_name] = {'pos': pos_counts, 'neg': neg_counts}
 
@@ -230,9 +237,17 @@ class Pairer(Transformer):
                     uniqueness_factor  = len(unique_values)/total_value_count
 
                     if uniqueness_factor < uniqueness_threshold:
-                        # for values that satisfy uniqueness threshold proceed with categorical plot
-                        attributes_to_consider[meta_name] = {'type': meta_index[meta_name][0], 'category': 'categorical'}
-                        values_to_plot[meta_name] = {'pos': Counter(pos_values), 'neg': Counter(neg_values)}
+                        # for values that satisfy uniqueness threshold AND if the number of categories
+                        # for plotting (i.e., categories that satisfy categorical_minperc) does not
+                        # exceed UNIQUE_VAL_LIMIT, we proceed with categorical plot
+                        pos_counts = Counter(pos_values)
+                        neg_counts = Counter(neg_values)
+                        categories_for_plotting = [c for c in unique_values if min(pos_counts[c],neg_counts[c]) >= categorical_minperc*total_value_count]
+                        if len(categories_for_plotting) <= UNIQUE_VAL_LIMIT:
+                            attributes_to_consider[meta_name] = {'type': meta_index[meta_name][0], 'category': 'categorical'}
+                            values_to_plot[meta_name] = {'pos': pos_counts, 'neg': neg_counts}
+                        else:
+                            raise ValueError('Attribute {} has too many unique categories for plotting: {} exceeds UNIQUE_VAL_LIMIT=30. Adjust categorical_minperc to reduce the number of categories.'.format(meta_name, len(categories_for_plotting)))
 
                     elif meta_index[meta_name][0] in ["<class 'int'>", "<class 'float'>"]:
                         # for values that are of type integer or float proceed with numerical plot
@@ -245,11 +260,11 @@ class Pairer(Transformer):
                         pos_counts = Counter(pos_values)
                         neg_counts = Counter(neg_values)
                         categories_for_plotting = [c for c in unique_values if min(pos_counts[c],neg_counts[c]) >= categorical_minperc*total_value_count]
-                        if len(categories_for_plotting) < UNIQUE_VAL_LIMIT:
+                        if len(categories_for_plotting) <= UNIQUE_VAL_LIMIT:
                             attributes_to_consider[meta_name] = {'type': meta_index[meta_name][0], 'category': 'categorical'}
                             values_to_plot[meta_name] = {'pos': pos_counts, 'neg': neg_counts}
                         else:
-                            raise ValueError('Attribute {} has too many unque values to be considered for categorical summary.'.format(meta_name))
+                            raise ValueError('Attribute {} has too many unique categories for plotting: {} exceeds UNIQUE_VAL_LIMIT=30. Adjust categorical_minperc to reduce the number of categories.'.format(meta_name, len(categories_for_plotting)))
 
                 elif meta_name not in meta_index:
                     raise ValueError('Attribute {} is not part of {} corpus object metadata.'.format(meta_name, self.obj_type))
@@ -272,29 +287,25 @@ class Pairer(Transformer):
                     desired_category = attributes[meta_name]
 
                     assert desired_category in ['numerical', 'categorical']
-                    if desired_category == 'numerical' and meta_index[meta_name][0] in ["<class 'int'>", "<class 'float'>"]:
+                    if desired_category == 'numerical':
                         # for values that are of type integer or float proceed with numerical plot
-                        attributes_to_consider[meta_name] = {'type': meta_index[meta_name][0], 'category': 'numerical'}
-
-                    elif desired_category == 'numerical':
-                        raise ValueError('Attribute {} is of type {} while <class \'int\'> or <class \'float\'> are expected for numerical summary.'.format(meta_name, meta_index[meta_name][0]))
-
-                    elif desired_category == 'categorical' and uniqueness_factor < uniqueness_threshold:
-                        # for values that satisfy uniqueness threshold proceed with categorical plot
-                        attributes_to_consider[meta_name] = {'type': meta_index[meta_name][0], 'category': 'categorical'}
-                        values_to_plot[meta_name] = {'pos': Counter(pos_values), 'neg': Counter(neg_values)}
+                        if meta_index[meta_name][0] in ["<class 'int'>", "<class 'float'>"]:
+                            attributes_to_consider[meta_name] = {'type': meta_index[meta_name][0], 'category': 'numerical'}
+                            values_to_plot[meta_name] = {'pos': pos_values, 'neg': neg_values}
+                        else:
+                            raise ValueError('Attribute {} is of type {} while <class \'int\'> or <class \'float\'> are expected for numerical summary.'.format(meta_name, meta_index[meta_name][0]))
 
                     elif desired_category == 'categorical':
-                        # for all other values, check how many categories have counts above categorical_minperc
-                        # if this number of categories is less than UNIQUE_VAL_LIMIT, then we can plot categorial
+                        # if the number of categories for plotting does not exceed
+                        # UNIQUE_VAL_LIMIT proceed with categorical plot
                         pos_counts = Counter(pos_values)
                         neg_counts = Counter(neg_values)
                         categories_for_plotting = [c for c in unique_values if min(pos_counts[c],neg_counts[c]) >= categorical_minperc*total_value_count]
-                        if len(categories_for_plotting) < UNIQUE_VAL_LIMIT:
+                        if len(categories_for_plotting) <= UNIQUE_VAL_LIMIT:
                             attributes_to_consider[meta_name] = {'type': meta_index[meta_name][0], 'category': 'categorical'}
                             values_to_plot[meta_name] = {'pos': pos_counts, 'neg': neg_counts}
                         else:
-                            raise ValueError('Attribute {} has too many unque values to be considered for categorical summary.'.format(meta_name))
+                            raise ValueError('Attribute {} has too many unique categories for plotting: {} exceeds UNIQUE_VAL_LIMIT=30. Adjust categorical_minperc to reduce the number of categories.'.format(meta_name, len(categories_for_plotting)))
 
                 elif meta_name not in meta_index:
                     raise ValueError('Attribute {} is not part of {} corpus object metadata.'.format(meta_name, self.obj_type))
@@ -307,7 +318,7 @@ class Pairer(Transformer):
 
         else:
             raise ValueError('Value of type <class \'list\'> or <class \'dict\'> is expected for attributes parameter, but value of type {} was provided.'.format(type(attributes)))
-        
+
         # plot comparisons of relevant metadata attributes
         pos_class_name = "{}='pos'".format(self.label_attribute_name)
         neg_class_name = "{}='neg'".format(self.label_attribute_name)

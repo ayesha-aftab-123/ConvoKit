@@ -1,14 +1,26 @@
 SPOLIN Corpus
 ============================
 
-**Selected Pairs of Learnable ImprovisatioN (SPOLIN)** is a collection of more than 68,000 "Yes, and” type utterance pairs extracted from the long-form improvisation podcast *Spontaneanation* by Paul F. Tompkins, the Cornell Movie-Dialogs Corpus, and the SubTle corpus.
+**Selected Pairs of Learnable ImprovisatioN (SPOLIN)** is a collection of more than 68,000 "Yes, and" type utterance pairs extracted from the long-form improvisation podcast *Spontaneanation* by Paul F. Tompkins, the Cornell Movie-Dialogs Corpus, and the SubTle corpus.
+
+Please cite this paper when using it in your research:
+
+| @inproceedings{cho2020spolin,
+|     title={Grounding Conversations with Improvised Dialogues},
+|     author={Cho, Hyundong and May, Jonathan},
+|     booktitle ={Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics},
+|     year={2020}
+| }
+
 
 Dataset details
 ---------------
 
 Speaker-level information
 ^^^^^^^^^^^^^^^^^^^^^^^^^
+There is no speaker-level information.
 
+Each conversation pair has two speakers named ``{conversation_id}_speaker_1`` for the first turn and ``{conversation_id}_speaker_2`` for the second turn.
 
 Utterance-level information
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -20,18 +32,33 @@ It does not require the response to explicitly contain the phrase "Yes, and".
 Metadata for each utterance:
 
 * split: whether it belongs to the original dataset’s train or validation set
-* label: 1 if it is part of a “yes-and” pair or 0 otherwise
-* source: whether it comes from Spontaneantion (“spont”), Cornell Movie-Dialogs Corpus (“cornell”), or the SubTle corpus (“subtle”)
+* label: 1 if it is part of a "yes-and" pair or 0 otherwise
+* source: whether it comes from Spontaneantion (``spont``), Cornell Movie-Dialogs Corpus (``cornell``), or the SubTle corpus (``subtle``)
 
 
 Conversational-level information
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Conversation IDs are in the following format: ``{split}_{idx}``, where:
+* split: either ``train`` or ``valid``, indicating whether the conversation belongs to the training set or the validation set.
+* idx: an integer value that corresponds to the order that it appears in the original dataset.
 
 Corpus-level information
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-The metadata includes a summarized version of the information contained in this documentation.
+The metadata is as follows:
+
+| {
+|     "name": "spolin",
+|     "brief description": "Selected Pairs of Learnable ImprovisatioN (SPOLIN) is a collection of more than 68,000 \"Yes, and\" type dialogue pairs extracted from the Spontaneanation podcast by Paul F. Tompkins, the Cornell Movie-Dialogs Corpus, and the SubTle corpus.",
+|     "authors": "Hyundong Justin Cho, Jonathan May",
+|     "poc_email": "jcho@isi.edu",
+|     "github_url": "https://github.com/wise-east/spolin",
+|     "publication_title": "Grounding Conversations with Improvised Dialogues",
+|     "publication_venue": "ACL2020",
+|     "publication_url": "https://aclanthology.org/2020.acl-main.218/",
+|     "license": "Creative Commons Attribution-NonCommercial 4.0 International License",
+| }
 
 Usage
 -----
@@ -62,6 +89,8 @@ Additional notes
 ----------------
 
 More details about the SPOLIN project can be found on: https://justin-cho.com/spolin
+
+The URL
 
 License
 ^^^^^^^

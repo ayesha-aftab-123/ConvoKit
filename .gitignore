@@ -4,7 +4,6 @@
 *.jsonlist
 *.jsonlistx
 *.dat
-*.txt
 !requirements-dev.txt
 *.pyc
 /dist/

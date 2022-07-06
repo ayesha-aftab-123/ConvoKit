@@ -12,10 +12,11 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install nanosite
     - name: Nanosite build
+      working-directory: ./website
       run: |
         tail -n +2 ./README.md > index.md+
         nanosite build
-    - name: rsync docs
+    - name: rsync homepage files
       uses: burnett01/rsync-deployments@master
       with:
         switches: -vzr

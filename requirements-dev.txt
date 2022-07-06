@@ -1,6 +1,8 @@
 black
 pre-commit
 pytest
+nbmake
+pytest-xdist
 pytest-cov
 twine
 sphinx

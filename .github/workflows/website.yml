@@ -14,7 +14,7 @@ jobs:
     - name: Nanosite build
       working-directory: ./website
       run: |
-        tail -n +2 ./README.md > index.md+
+        tail -n +2 ../README.md > index.md+
         nanosite build
     - name: rsync homepage files
       uses: burnett01/rsync-deployments@master

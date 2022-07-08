@@ -15,6 +15,7 @@ jobs:
         python -m pip install .
         python -m pip install convokit[craft]
         python -m spacy download en_core_web_sm
+        python -m pip install -r requirements-dev.txt
     - name: Run notebooks
       run: |
         pytest --nbmake --nbmake-timeout=3000 -n=auto --full-trace examples/**/*.ipynb

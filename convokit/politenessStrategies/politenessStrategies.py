@@ -76,7 +76,7 @@ class PolitenessStrategies(Transformer):
         :param markers: whether or not to add politeness occurrence markers
         """
 
-        total_utts = len(corpus.iter_utterances())
+        total_utts = len(corpus.utterances)
 
         for idx, utt in enumerate(corpus.iter_utterances()):
 

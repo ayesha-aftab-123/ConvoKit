@@ -50,7 +50,7 @@ setup(
         "nltk>=3.4",
         "dill>=0.2.9",
         "joblib>=0.13.2",
-        "clean-text>=0.1.1",
+        "clean-text>=0.6.0",
         "unidecode>=1.1.1",
         "tqdm>=4.64.0",
     ],

@@ -31,6 +31,7 @@ Conversational-level information
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Conversation IDs are in the following format: ``{split}_{idx}``, where:
+
 * split: either ``train`` or ``valid``, indicating whether the conversation belongs to the training set or the validation set.
 * idx: an integer value that corresponds to the order that it appears in the original dataset.
 

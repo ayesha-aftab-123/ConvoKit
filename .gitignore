@@ -1,16 +1,16 @@
 *.json
-!/convokit/download_config.json
+!download_config.json
 *.jsonl
 *.jsonlist
 *.jsonlistx
 *.dat
-*.txt
+!requirements-dev.txt
 *.pyc
 /dist/
 /*.egg-info
 *.swp
 *.p
-/doc/build/
+/docs/build/
 /convokit/data/downloads/
 datasets/supreme-corpus/supreme-raw/
 /convokit/downloads/
@@ -37,5 +37,5 @@ venv-triadmotif/
 *.xlsx
 *.csv
 *.tsv
-!/doc/source/img/*
+!/docs/source/img/*
 env/

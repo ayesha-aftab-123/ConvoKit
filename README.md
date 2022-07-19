@@ -1,12 +1,14 @@
 # [ConvoKit](http://convokit.cornell.edu/)
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-28-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-29-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![pypi](https://img.shields.io/pypi/v/convokit.svg)](https://pypi.org/pypi/convokit/)
-[![py\_versions](https://img.shields.io/badge/python-3.6%2B-blue)](https://pypi.org/pypi/convokit/)
+[![py\_versions](https://img.shields.io/badge/python-3.7%2B-blue)](https://pypi.org/pypi/convokit/)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![license](https://img.shields.io/badge/license-MIT-green)](https://github.com/CornellNLP/ConvoKit/blob/master/LICENSE.md)
 [![Slack Community](https://img.shields.io/static/v1?logo=slack&style=flat&color=red&label=slack&message=community)](https://join.slack.com/t/convokit/shared_invite/zt-1axq34qrp-1hDXQrvSXClIbJOqw4S03Q)
+
 
 This toolkit contains tools to extract conversational features and analyze social phenomena in conversations, using a [single unified interface](https://convokit.cornell.edu/documentation/architecture.html) inspired by (and compatible with) scikit-learn.  Several large [conversational datasets](https://github.com/CornellNLP/ConvoKit#datasets) are included together with scripts exemplifying the use of the toolkit on these datasets. The latest version is [2.5.3](https://github.com/CornellNLP/ConvoKit/releases/tag/v2.5.2) (released 16 Jan 2022); follow the [project on GitHub](https://github.com/CornellNLP/ConvoKit) to keep track of updates.
 
@@ -16,18 +18,18 @@ The toolkit currently implements features for:
 
 ### [Linguistic coordination](https://www.cs.cornell.edu/~cristian/Echoes_of_power.html) <sub><sup>[(API)](https://convokit.cornell.edu/documentation/coordination.html)</sup></sub>
 
-A measure of linguistic influence (and relative power) between individuals or groups based on their use of function words.  
+A measure of linguistic influence (and relative power) between individuals or groups based on their use of function words.
 Example: [exploring the balance of power in the U.S. Supreme Court](https://github.com/CornellNLP/ConvoKit/blob/master/examples/coordination/examples.ipynb).
 
 ### [Politeness strategies](https://www.cs.cornell.edu/~cristian/Politeness.html) <sub><sup>[(API)](https://convokit.cornell.edu/documentation/politenessStrategies.html)</sup></sub>
 
-A set of lexical and parse-based features correlating with politeness and impoliteness.  
+A set of lexical and parse-based features correlating with politeness and impoliteness.
 Example: [understanding the (mis)use of politeness strategies in conversations gone awry on Wikipedia](https://github.com/CornellNLP/ConvoKit/blob/master/examples/conversations-gone-awry/Conversations_Gone_Awry_Prediction.ipynb).
 
 ### [Expected Conversational Context Framework](https://tisjune.github.io/research/dissertation) <sub><sup>[(API)](https://convokit.cornell.edu/documentation/expected_context_model.html)</sup></sub>
 
 A framework for characterizing utterances and terms based on their expected conversational context, consisting of model implementations and wrapper pipelines.
-Examples: [deriving question types and other characterizations in British parliamentary question periods](https://github.com/CornellNLP/ConvoKit/blob/master/convokit/expected_context_framework/demos/parliament_demo.ipynb), 
+Examples: [deriving question types and other characterizations in British parliamentary question periods](https://github.com/CornellNLP/ConvoKit/blob/master/convokit/expected_context_framework/demos/parliament_demo.ipynb),
 [exploration of Switchboard dialog acts corpus](https://github.com/CornellNLP/ConvoKit/blob/master/convokit/expected_context_framework/demos/switchboard_exploration_demo.ipynb),  [examining Wikipedia talk page discussions](https://github.com/CornellNLP/ConvoKit/blob/master/convokit/expected_context_framework/demos/wiki_awry_demo.ipynb) and [computing the orientation of justice utterances in the US Supreme Court](https://github.com/CornellNLP/ConvoKit/blob/master/convokit/expected_context_framework/demos/scotus_orientation_demo.ipynb)
 
 <!-- ### [Prompt types](http://www.cs.cornell.edu/~cristian/Asking_too_much.html) <sub><sup>[(API)](https://convokit.cornell.edu/documentation/promptTypes.html)</sup></sub>
@@ -38,15 +40,15 @@ Examples: [extracting question types in the U.K. parliament](https://github.com/
 Also includes functionality to extract surface motifs to represent utterances, used in the above paper [(API)](https://convokit.cornell.edu/documentation/phrasingMotifs.html). -->
 
 ### [Hypergraph conversation representation](http://www.cs.cornell.edu/~cristian/Patterns_of_participant_interactions.html) <sub><sup>[(API)](https://convokit.cornell.edu/documentation/hyperconvo.html)</sup></sub>
-A method for extracting structural features of conversations through a hypergraph representation.  
+A method for extracting structural features of conversations through a hypergraph representation.
 Example: [hypergraph creation and feature extraction, visualization and interpretation on a subsample of Reddit](https://github.com/CornellNLP/ConvoKit/blob/master/examples/hyperconvo/demo_new.ipynb).
 
 ### [Linguistic diversity in conversations](http://www.cs.cornell.edu/~cristian/Finding_your_voice__linguistic_development.html) <sub><sup>[(API)](https://convokit.cornell.edu/documentation/speakerConvoDiversity.html)</sup></sub>
-A method to compute the linguistic diversity of individuals within their own conversations, and between other individuals in a population.  
+A method to compute the linguistic diversity of individuals within their own conversations, and between other individuals in a population.
 Example: [speaker conversation attributes and diversity example on ChangeMyView](https://github.com/CornellNLP/ConvoKit/blob/master/examples/speaker-convo-attributes/speaker-convo-diversity-demo.ipynb)
 
 ### [CRAFT: Online forecasting of conversational outcomes](https://arxiv.org/abs/1909.01362) <sub><sup>[(API)](https://convokit.cornell.edu/documentation/forecaster.html)</sup></sub>
-A neural model for forecasting future outcomes of conversations (e.g., derailment into personal attacks) as they develop.  
+A neural model for forecasting future outcomes of conversations (e.g., derailment into personal attacks) as they develop.
 Available as an interactive notebook: [full version (fine-tuning + inference)](https://colab.research.google.com/drive/1SH4iMEHdoH4IovN-b9QOSK4kG4DhAwmb) or [inference-only](https://colab.research.google.com/drive/1GvICZN0VwZQSWw3pJaEVY-EQGoO-L5lH).
 
 
@@ -57,39 +59,39 @@ These datasets can be downloaded using the `convokit.download()` [helper functio
 
 ### [Conversations Gone Awry Dataset](https://convokit.cornell.edu/documentation/awry.html)
 
-Two related corpora of conversations that derail into antisocial behavior. One corpus consists of Wikipedia talk page conversations that derail into personal attacks as labeled by crowdworkers (4,188 conversations containing 30.021 comments). The other consists of discussion threads on the subreddit ChangeMyView (CMV) that derail into rule-violating behavior as determined by the presence of a moderator intervention (6,842 conversations containing 42,964 comments).  
+Two related corpora of conversations that derail into antisocial behavior. One corpus consists of Wikipedia talk page conversations that derail into personal attacks as labeled by crowdworkers (4,188 conversations containing 30.021 comments). The other consists of discussion threads on the subreddit ChangeMyView (CMV) that derail into rule-violating behavior as determined by the presence of a moderator intervention (6,842 conversations containing 42,964 comments).
 Name for download: `conversations-gone-awry-corpus` (Wikipedia version) or `conversations-gone-awry-cmv-corpus` (Reddit CMV version)
 
 ### [Cornell Movie-Dialogs Corpus](https://convokit.cornell.edu/documentation/movie.html)
 
-A large metadata-rich collection of fictional conversations extracted from raw movie scripts. (220,579 conversational exchanges between 10,292 pairs of movie characters in 617 movies). 
+A large metadata-rich collection of fictional conversations extracted from raw movie scripts. (220,579 conversational exchanges between 10,292 pairs of movie characters in 617 movies).
 Name for download: `movie-corpus`
 
 ### [Parliament Question Time Corpus](https://convokit.cornell.edu/documentation/parliament.html)
 
-Parliamentary question periods from May 1979 to December 2016 (216,894 question-answer pairs).  
+Parliamentary question periods from May 1979 to December 2016 (216,894 question-answer pairs).
 Name for download: `parliament-corpus`
 
 ### [Supreme Court Corpus](https://convokit.cornell.edu/documentation/supreme.html)
 
-A collection of conversations from the U.S. Supreme Court Oral Arguments.  
+A collection of conversations from the U.S. Supreme Court Oral Arguments.
 Name for download: `supreme-corpus`
 
 ### [Wikipedia Talk Pages Corpus](https://convokit.cornell.edu/documentation/wiki.html)
 
-A medium-size collection of conversations from Wikipedia editors' talk pages.  
+A medium-size collection of conversations from Wikipedia editors' talk pages.
 Name for download: `wiki-corpus`
 
 ### [Tennis Interviews](https://convokit.cornell.edu/documentation/tennis.html)
 
-Transcripts for tennis singles post-match press conferences for major tournaments between 2007 to 2015 (6,467 post-match press conferences).  
+Transcripts for tennis singles post-match press conferences for major tournaments between 2007 to 2015 (6,467 post-match press conferences).
 Name for download: `tennis-corpus`
 
 ### [Reddit Corpus](https://convokit.cornell.edu/documentation/subreddit.html)
 
-Reddit conversations from over 900k subreddits, arranged by subreddit. A [small subset](https://convokit.cornell.edu/documentation/reddit-small.html) sampled from 100 highly active subreddits is also available. 
- 
-Name for download: `subreddit-<name_of_subreddit>` for the by-subreddit data, `reddit-corpus-small` for the small subset. 
+Reddit conversations from over 900k subreddits, arranged by subreddit. A [small subset](https://convokit.cornell.edu/documentation/reddit-small.html) sampled from 100 highly active subreddits is also available.
+
+Name for download: `subreddit-<name_of_subreddit>` for the by-subreddit data, `reddit-corpus-small` for the small subset.
 
 ### [WikiConv Corpus](https://convokit.cornell.edu/documentation/wikiconv.html)
 
@@ -179,7 +181,7 @@ This toolkit requires Python >= 3.6.
 2. Download Spacy's English model: `python3 -m spacy download en`
 3. Download NLTK's 'punkt' model: `import nltk; nltk.download('punkt')` (in Python interpreter)
 
-Alternatively, visit our [Github Page](https://github.com/CornellNLP/ConvoKit) to install from source. 
+Alternatively, visit our [Github Page](https://github.com/CornellNLP/ConvoKit) to install from source.
 
 **If you encounter difficulties with installation**, check out our **[Troubleshooting Guide](https://convokit.cornell.edu/documentation/troubleshooting.html)** for a list of solutions to common issues.
 
@@ -210,40 +212,43 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- markdownlint-disable -->
 <table>
   <tr>
-    <td align="center"><a href="https://github.com/rgangela99"><img src="https://avatars.githubusercontent.com/u/35738132?v=4?s=100" width="100px;" alt=""/><br /><sub><b>rgangela99</b></sub></a><br /><a href="https://github.com/CornellNLP/ConvoKit/commits?author=rgangela99" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/Khonzoda"><img src="https://avatars.githubusercontent.com/u/26072772?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Khonzoda Umarova</b></sub></a><br /><a href="#data-Khonzoda" title="Data">🔣</a> <a href="#maintenance-Khonzoda" title="Maintenance">🚧</a></td>
-    <td align="center"><a href="https://github.com/mwilbz"><img src="https://avatars.githubusercontent.com/u/14115641?v=4?s=100" width="100px;" alt=""/><br /><sub><b>mwilbz</b></sub></a><br /><a href="https://github.com/CornellNLP/ConvoKit/commits?author=mwilbz" title="Tests">⚠️</a></td>
-    <td align="center"><a href="https://www.alexkoen.com"><img src="https://avatars.githubusercontent.com/u/43913902?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Alex Koen</b></sub></a><br /><a href="https://github.com/CornellNLP/ConvoKit/issues?q=author%3Aakoen" title="Bug reports">🐛</a></td>
-    <td align="center"><a href="http://emtseng.me"><img src="https://avatars.githubusercontent.com/u/5270852?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Emily Tseng</b></sub></a><br /><a href="https://github.com/CornellNLP/ConvoKit/issues?q=author%3Aemtseng" title="Bug reports">🐛</a> <a href="#data-emtseng" title="Data">🔣</a></td>
-    <td align="center"><a href="https://github.com/ZiggyFloat"><img src="https://avatars.githubusercontent.com/u/41927607?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Uliyana Kubasova</b></sub></a><br /><a href="#data-ZiggyFloat" title="Data">🔣</a></td>
-    <td align="center"><a href="https://jschluger.github.io/"><img src="https://avatars.githubusercontent.com/u/14956008?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Jack Schluger</b></sub></a><br /><a href="https://github.com/CornellNLP/ConvoKit/issues?q=author%3Ajschluger" title="Bug reports">🐛</a></td>
-  </tr>
-  <tr>
-    <td align="center"><a href="https://github.com/kushalchawla"><img src="https://avatars.githubusercontent.com/u/8416863?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Kushal Chawla</b></sub></a><br /><a href="#data-kushalchawla" title="Data">🔣</a></td>
-    <td align="center"><a href="https://github.com/sc782"><img src="https://avatars.githubusercontent.com/u/14970930?v=4?s=100" width="100px;" alt=""/><br /><sub><b>June Cho</b></sub></a><br /><a href="#data-sc782" title="Data">🔣</a></td>
-    <td align="center"><a href="https://github.com/noameshed"><img src="https://avatars.githubusercontent.com/u/40632766?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Noam Eshed</b></sub></a><br /><a href="#data-noameshed" title="Data">🔣</a></td>
-    <td align="center"><a href="https://github.com/szmurlo"><img src="https://avatars.githubusercontent.com/u/31192340?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Andrew Szmurlo</b></sub></a><br /><a href="#data-szmurlo" title="Data">🔣</a></td>
-    <td align="center"><a href="https://github.com/kcsadow"><img src="https://avatars.githubusercontent.com/u/34074151?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Katharine Sadowski</b></sub></a><br /><a href="#data-kcsadow" title="Data">🔣</a></td>
-    <td align="center"><a href="https://github.com/lucasvanbramer"><img src="https://avatars.githubusercontent.com/u/32553676?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Lucas Van Bramer</b></sub></a><br /><a href="#data-lucasvanbramer" title="Data">🔣</a></td>
-    <td align="center"><a href="http://mariannealq.com"><img src="https://avatars.githubusercontent.com/u/16949591?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Marianne Aubin</b></sub></a><br /><a href="#data-maubinle" title="Data">🔣</a></td>
-  </tr>
-  <tr>
-    <td align="center"><a href="https://github.com/dn273"><img src="https://avatars.githubusercontent.com/u/27926662?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Di Ni</b></sub></a><br /><a href="#data-dn273" title="Data">🔣</a></td>
-    <td align="center"><a href="https://github.com/gdeng96"><img src="https://avatars.githubusercontent.com/u/8600751?v=4?s=100" width="100px;" alt=""/><br /><sub><b>gdeng96</b></sub></a><br /><a href="#data-gdeng96" title="Data">🔣</a></td>
-    <td align="center"><a href="https://github.com/junfrankli"><img src="https://avatars.githubusercontent.com/u/22462584?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Frank Li</b></sub></a><br /><a href="#data-junfrankli" title="Data">🔣</a></td>
-    <td align="center"><a href="http://rujzhao.com"><img src="https://avatars.githubusercontent.com/u/31158748?v=4?s=100" width="100px;" alt=""/><br /><sub><b>rjz46</b></sub></a><br /><a href="#data-rjz46" title="Data">🔣</a></td>
-    <td align="center"><a href="https://github.com/KatyBlumer"><img src="https://avatars.githubusercontent.com/u/3669069?v=4?s=100" width="100px;" alt=""/><br /><sub><b>KatyBlumer</b></sub></a><br /><a href="#data-KatyBlumer" title="Data">🔣</a></td>
-    <td align="center"><a href="https://github.com/als452"><img src="https://avatars.githubusercontent.com/u/15838258?v=4?s=100" width="100px;" alt=""/><br /><sub><b>als452</b></sub></a><br /><a href="#data-als452" title="Data">🔣</a></td>
-    <td align="center"><a href="https://github.com/KaminskyJ"><img src="https://avatars.githubusercontent.com/u/26395772?v=4?s=100" width="100px;" alt=""/><br /><sub><b>KaminskyJ</b></sub></a><br /><a href="https://github.com/CornellNLP/ConvoKit/commits?author=KaminskyJ" title="Code">💻</a></td>
-  </tr>
-  <tr>
     <td align="center"><a href="https://github.com/cristiandnm"><img src="https://avatars.githubusercontent.com/u/8700563?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Cristian Danescu-Niculescu-Mizil</b></sub></a><br /><a href="https://github.com/CornellNLP/ConvoKit/commits?author=cristiandnm" title="Code">💻</a> <a href="#data-cristiandnm" title="Data">🔣</a> <a href="#ideas-cristiandnm" title="Ideas, Planning, & Feedback">🤔</a> <a href="#maintenance-cristiandnm" title="Maintenance">🚧</a> <a href="https://github.com/CornellNLP/ConvoKit/commits?author=cristiandnm" title="Documentation">📖</a> <a href="https://github.com/CornellNLP/ConvoKit/pulls?q=is%3Apr+reviewed-by%3Acristiandnm" title="Reviewed Pull Requests">👀</a></td>
     <td align="center"><a href="http://wanganzhou.com"><img src="https://avatars.githubusercontent.com/u/4683423?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Andrew Wang</b></sub></a><br /><a href="https://github.com/CornellNLP/ConvoKit/commits?author=qema" title="Code">💻</a> <a href="#data-qema" title="Data">🔣</a> <a href="#ideas-qema" title="Ideas, Planning, & Feedback">🤔</a> <a href="#maintenance-qema" title="Maintenance">🚧</a> <a href="https://github.com/CornellNLP/ConvoKit/commits?author=qema" title="Documentation">📖</a> <a href="https://github.com/CornellNLP/ConvoKit/pulls?q=is%3Apr+reviewed-by%3Aqema" title="Reviewed Pull Requests">👀</a></td>
     <td align="center"><a href="http://tisjune.github.io"><img src="https://avatars.githubusercontent.com/u/8534072?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Justine Zhang</b></sub></a><br /><a href="https://github.com/CornellNLP/ConvoKit/commits?author=tisjune" title="Code">💻</a> <a href="#data-tisjune" title="Data">🔣</a> <a href="#ideas-tisjune" title="Ideas, Planning, & Feedback">🤔</a> <a href="#maintenance-tisjune" title="Maintenance">🚧</a> <a href="https://github.com/CornellNLP/ConvoKit/commits?author=tisjune" title="Documentation">📖</a> <a href="https://github.com/CornellNLP/ConvoKit/pulls?q=is%3Apr+reviewed-by%3Atisjune" title="Reviewed Pull Requests">👀</a></td>
     <td align="center"><a href="http://cs.cornell.edu/~jpchang"><img src="https://avatars.githubusercontent.com/u/989906?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Jonathan Chang</b></sub></a><br /><a href="https://github.com/CornellNLP/ConvoKit/commits?author=jpwchang" title="Code">💻</a> <a href="#data-jpwchang" title="Data">🔣</a> <a href="#ideas-jpwchang" title="Ideas, Planning, & Feedback">🤔</a> <a href="#maintenance-jpwchang" title="Maintenance">🚧</a> <a href="https://github.com/CornellNLP/ConvoKit/commits?author=jpwchang" title="Documentation">📖</a> <a href="https://github.com/CornellNLP/ConvoKit/pulls?q=is%3Apr+reviewed-by%3Ajpwchang" title="Reviewed Pull Requests">👀</a></td>
     <td align="center"><a href="http://www.cs.cornell.edu/~liye/"><img src="https://avatars.githubusercontent.com/u/12224673?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Liye Fu</b></sub></a><br /><a href="https://github.com/CornellNLP/ConvoKit/commits?author=liye" title="Code">💻</a> <a href="#data-liye" title="Data">🔣</a> <a href="#ideas-liye" title="Ideas, Planning, & Feedback">🤔</a> <a href="#maintenance-liye" title="Maintenance">🚧</a> <a href="https://github.com/CornellNLP/ConvoKit/commits?author=liye" title="Documentation">📖</a> <a href="https://github.com/CornellNLP/ConvoKit/pulls?q=is%3Apr+reviewed-by%3Aliye" title="Reviewed Pull Requests">👀</a></td>
     <td align="center"><a href="https://github.com/calebchiam"><img src="https://avatars.githubusercontent.com/u/14286996?v=4?s=100" width="100px;" alt=""/><br /><sub><b>calebchiam</b></sub></a><br /><a href="https://github.com/CornellNLP/ConvoKit/commits?author=calebchiam" title="Code">💻</a> <a href="#data-calebchiam" title="Data">🔣</a> <a href="#ideas-calebchiam" title="Ideas, Planning, & Feedback">🤔</a> <a href="#maintenance-calebchiam" title="Maintenance">🚧</a> <a href="https://github.com/CornellNLP/ConvoKit/commits?author=calebchiam" title="Documentation">📖</a> <a href="https://github.com/CornellNLP/ConvoKit/pulls?q=is%3Apr+reviewed-by%3Acalebchiam" title="Reviewed Pull Requests">👀</a></td>
+    <td align="center"><a href="https://github.com/rgangela99"><img src="https://avatars.githubusercontent.com/u/35738132?v=4?s=100" width="100px;" alt=""/><br /><sub><b>rgangela99</b></sub></a><br /><a href="https://github.com/CornellNLP/ConvoKit/commits?author=rgangela99" title="Code">💻</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/Khonzoda"><img src="https://avatars.githubusercontent.com/u/26072772?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Khonzoda Umarova</b></sub></a><br /><a href="#data-Khonzoda" title="Data">🔣</a> <a href="#maintenance-Khonzoda" title="Maintenance">🚧</a></td>
+    <td align="center"><a href="https://github.com/mwilbz"><img src="https://avatars.githubusercontent.com/u/14115641?v=4?s=100" width="100px;" alt=""/><br /><sub><b>mwilbz</b></sub></a><br /><a href="https://github.com/CornellNLP/ConvoKit/commits?author=mwilbz" title="Tests">⚠️</a></td>
+    <td align="center"><a href="https://www.alexkoen.com"><img src="https://avatars.githubusercontent.com/u/43913902?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Alex Koen</b></sub></a><br /><a href="https://github.com/CornellNLP/ConvoKit/issues?q=author%3Aakoen" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="http://emtseng.me"><img src="https://avatars.githubusercontent.com/u/5270852?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Emily Tseng</b></sub></a><br /><a href="https://github.com/CornellNLP/ConvoKit/issues?q=author%3Aemtseng" title="Bug reports">🐛</a> <a href="#data-emtseng" title="Data">🔣</a></td>
+    <td align="center"><a href="https://github.com/ZiggyFloat"><img src="https://avatars.githubusercontent.com/u/41927607?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Uliyana Kubasova</b></sub></a><br /><a href="#data-ZiggyFloat" title="Data">🔣</a></td>
+    <td align="center"><a href="https://jschluger.github.io/"><img src="https://avatars.githubusercontent.com/u/14956008?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Jack Schluger</b></sub></a><br /><a href="https://github.com/CornellNLP/ConvoKit/issues?q=author%3Ajschluger" title="Bug reports">🐛</a> <a href="https://github.com/CornellNLP/ConvoKit/commits?author=jschluger" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/kushalchawla"><img src="https://avatars.githubusercontent.com/u/8416863?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Kushal Chawla</b></sub></a><br /><a href="#data-kushalchawla" title="Data">🔣</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/sc782"><img src="https://avatars.githubusercontent.com/u/14970930?v=4?s=100" width="100px;" alt=""/><br /><sub><b>June Cho</b></sub></a><br /><a href="#data-sc782" title="Data">🔣</a></td>
+    <td align="center"><a href="https://github.com/noameshed"><img src="https://avatars.githubusercontent.com/u/40632766?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Noam Eshed</b></sub></a><br /><a href="#data-noameshed" title="Data">🔣</a></td>
+    <td align="center"><a href="https://github.com/szmurlo"><img src="https://avatars.githubusercontent.com/u/31192340?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Andrew Szmurlo</b></sub></a><br /><a href="#data-szmurlo" title="Data">🔣</a></td>
+    <td align="center"><a href="https://github.com/kcsadow"><img src="https://avatars.githubusercontent.com/u/34074151?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Katharine Sadowski</b></sub></a><br /><a href="#data-kcsadow" title="Data">🔣</a></td>
+    <td align="center"><a href="https://github.com/lucasvanbramer"><img src="https://avatars.githubusercontent.com/u/32553676?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Lucas Van Bramer</b></sub></a><br /><a href="#data-lucasvanbramer" title="Data">🔣</a></td>
+    <td align="center"><a href="http://mariannealq.com"><img src="https://avatars.githubusercontent.com/u/16949591?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Marianne Aubin</b></sub></a><br /><a href="#data-maubinle" title="Data">🔣</a></td>
+    <td align="center"><a href="https://github.com/dn273"><img src="https://avatars.githubusercontent.com/u/27926662?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Di Ni</b></sub></a><br /><a href="#data-dn273" title="Data">🔣</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/gdeng96"><img src="https://avatars.githubusercontent.com/u/8600751?v=4?s=100" width="100px;" alt=""/><br /><sub><b>gdeng96</b></sub></a><br /><a href="#data-gdeng96" title="Data">🔣</a></td>
+    <td align="center"><a href="https://github.com/junfrankli"><img src="https://avatars.githubusercontent.com/u/22462584?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Frank Li</b></sub></a><br /><a href="#data-junfrankli" title="Data">🔣</a></td>
+    <td align="center"><a href="http://rujzhao.com"><img src="https://avatars.githubusercontent.com/u/31158748?v=4?s=100" width="100px;" alt=""/><br /><sub><b>rjz46</b></sub></a><br /><a href="#data-rjz46" title="Data">🔣</a></td>
+    <td align="center"><a href="https://github.com/KatyBlumer"><img src="https://avatars.githubusercontent.com/u/3669069?v=4?s=100" width="100px;" alt=""/><br /><sub><b>KatyBlumer</b></sub></a><br /><a href="#data-KatyBlumer" title="Data">🔣</a></td>
+    <td align="center"><a href="https://github.com/als452"><img src="https://avatars.githubusercontent.com/u/15838258?v=4?s=100" width="100px;" alt=""/><br /><sub><b>als452</b></sub></a><br /><a href="#data-als452" title="Data">🔣</a></td>
+    <td align="center"><a href="https://github.com/KaminskyJ"><img src="https://avatars.githubusercontent.com/u/26395772?v=4?s=100" width="100px;" alt=""/><br /><sub><b>KaminskyJ</b></sub></a><br /><a href="https://github.com/CornellNLP/ConvoKit/commits?author=KaminskyJ" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/Ap1075"><img src="https://avatars.githubusercontent.com/u/25790092?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Armaan Puri</b></sub></a><br /><a href="https://github.com/CornellNLP/ConvoKit/commits?author=Ap1075" title="Code">💻</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/oscarso2000"><img src="https://avatars.githubusercontent.com/u/20172573?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Oscar So</b></sub></a><br /><a href="https://github.com/CornellNLP/ConvoKit/commits?author=oscarso2000" title="Code">💻</a></td>
   </tr>
 </table>
 

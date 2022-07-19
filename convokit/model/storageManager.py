@@ -1,5 +1,9 @@
 from typing import Optional
 from abc import ABCMeta, abstractmethod
+from pymongo import MongoClient
+from pymongo.database import Database
+from yaml import load, Loader
+import bson
 
 
 class StorageManager(metaclass=ABCMeta):
@@ -169,3 +173,81 @@ class MemStorageManager(StorageManager):
     def clear_all_data(self):
         for key in self.data:
             self.data[key] = {}
+
+
+class DBStorageManager(StorageManager):
+    """
+    Concrete StorageManager implementation for database-backed data storage.
+    Collections are implemented as MongoDB collections.
+    """
+
+    def __init__(self, collection_prefix, db_host: Optional[str] = None):
+        super().__init__()
+
+        self.collection_prefix = collection_prefix
+        self.client = MongoClient(db_host)
+        self.db = self.client["convokit"]
+
+        # initialize component collections as MongoDB collections in the convokit db
+        for key in self.data:
+            self.data[key] = self.db[self._get_collection_name(key)]
+
+    def _get_collection_name(self, component_type: str) -> str:
+        return f"{self.collection_prefix}_{component_type}"
+
+    def get_collection_ids(self, component_type: str):
+        # from StackOverflow: get all keys in a MongoDB collection
+        # https://stackoverflow.com/questions/2298870/get-names-of-all-keys-in-the-collection
+        map = bson.Code("function() { for (var key in this) { emit(key, null); } }")
+        reduce = bson.Code("function(key, stuff) { return null; }")
+        result = self.db[self._get_collection_name(component_type)].map_reduce(
+            map, reduce, "get_collection_ids_result"
+        )
+        return result.distinct("_id")
+
+    def has_data_for_component(self, component_type: str, component_id: str) -> bool:
+        collection = self.get_collection(component_type)
+        lookup = collection.find_one({"_id": component_id})
+        return lookup is not None
+
+    def initialize_data_for_component(
+        self, component_type: str, component_id: str, overwrite: bool = False, initial_value=None
+    ):
+        collection = self.get_collection(component_type)
+        if overwrite or not self.has_data_for_component(component_type, component_id):
+            data = initial_value if initial_value is not None else {}
+            collection.update_one({"_id": component_id}, {"$set": data}, upsert=True)
+
+    def get_data(self, component_type: str, component_id: str, property_name: Optional[str] = None):
+        collection = self.get_collection(component_type)
+        all_fields = collection.find_one({"_id": component_id})
+        if all_fields is None:
+            raise KeyError(
+                f"This StorageManager does not have an entry for the {component_type} with id {component_id}."
+            )
+        if property_name is None:
+            return all_fields
+        else:
+            return all_fields[property_name]
+
+    def update_data(self, component_type: str, component_id: str, property_name: str, new_value):
+        data = self.get_data(component_type, component_id)
+        data[property_name] = new_value
+        collection = self.get_collection(component_type)
+        collection.update_one({"_id": component_id}, {"$set": data})
+
+    def delete_data(
+        self, component_type: str, component_id: str, property_name: Optional[str] = None
+    ):
+        collection = self.get_collection(component_type)
+        if property_name is None:
+            # delete the entire document
+            collection.delete_one({"_id": component_id})
+        else:
+            # delete only the specified property
+            collection.update_one({"_id": component_id}, {"$unset": {property_name: ""}})
+
+    def clear_all_data(self):
+        for key in self.data:
+            self.data[key].drop()
+            self.data[key] = self.db[self._get_collection_name(key)]

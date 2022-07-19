@@ -3,15 +3,6 @@ SPOLIN Corpus
 
 **Selected Pairs of Learnable ImprovisatioN (SPOLIN)** is a collection of more than 68,000 "Yes, and" type utterance pairs extracted from the long-form improvisation podcast *Spontaneanation* by Paul F. Tompkins, the Cornell Movie-Dialogs Corpus, and the SubTle corpus.
 
-Please cite this paper when using it in your research:
-
-| @inproceedings{cho2020spolin,
-|     title={Grounding Conversations with Improvised Dialogues},
-|     author={Cho, Hyundong and May, Jonathan},
-|     booktitle ={Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics},
-|     year={2020}
-| }
-
 
 Dataset details
 ---------------
@@ -26,7 +17,7 @@ Utterance-level information
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Every conversation is labeled with its source (Spontaneantion, Cornell Movie-Dialogs Corpus, or the SubTle corpus) and whether it abides by the “Yes, and” principle or not.
-The “Yes, and” principle is a rule-of-thumb of improvisational theater that suggests that a participant should accept the reality of what the other participant has said (“Yes”) and expand or refine that reality with additional information ("and").
+The "Yes, and" principle is a rule-of-thumb of improvisational theater that suggests that a participant should accept the reality of what the other participant has said (“Yes”) and expand or refine that reality with additional information ("and").
 It does not require the response to explicitly contain the phrase "Yes, and".
 
 Metadata for each utterance:
@@ -95,6 +86,19 @@ The URL
 License
 ^^^^^^^
 This dataset is shared under the `Creative Commons Attribution-NonCommercial 4.0 International License <https://creativecommons.org/licenses/by-nc/4.0/>`_.
+
+Publication to cite
+^^^^^^^^^^^^^^^^^^^
+
+Please cite this paper when using it in your research:
+
+| @inproceedings{cho2020spolin,
+|     title={Grounding Conversations with Improvised Dialogues},
+|     author={Cho, Hyundong and May, Jonathan},
+|     booktitle ={Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics},
+|     year={2020}
+| }
+
 
 Contact
 ^^^^^^^

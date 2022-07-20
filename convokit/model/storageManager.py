@@ -2,7 +2,6 @@ from typing import Optional
 from abc import ABCMeta, abstractmethod
 from pymongo import MongoClient
 from pymongo.database import Database
-from yaml import load, Loader
 import bson
 
 

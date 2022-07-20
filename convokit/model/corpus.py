@@ -2,13 +2,14 @@ from pandas import DataFrame
 from tqdm import tqdm
 from typing import List, Collection, Callable, Set, Generator, Tuple, Optional, ValuesView, Union
 from .corpusHelper import *
-from convokit.util import deprecation, warn
+from convokit.util import deprecation, warn, create_safe_id
+from convokit.convokitConfig import ConvoKitConfig
 from .corpusUtil import *
 from .convoKitIndex import ConvoKitIndex
 import random
 from .convoKitMeta import ConvoKitMeta
 from .convoKitMatrix import ConvoKitMatrix
-from .storageManager import StorageManager, MemStorageManager
+from .storageManager import DBStorageManager, StorageManager, MemStorageManager
 import shutil
 
 
@@ -44,6 +45,8 @@ class Corpus:
         self,
         filename: Optional[str] = None,
         utterances: Optional[List[Utterance]] = None,
+        db_collection_prefix: Optional[str] = None,
+        db_host: Optional[str] = None,
         preload_vectors: List[str] = None,
         utterance_start_index: int = None,
         utterance_end_index: int = None,
@@ -53,8 +56,11 @@ class Corpus:
         exclude_speaker_meta: Optional[List[str]] = None,
         exclude_overall_meta: Optional[List[str]] = None,
         disable_type_check=True,
+        storage_type: Optional[str] = None,
         storage: Optional[StorageManager] = None,
     ):
+
+        self.config = ConvoKitConfig()
 
         if filename is None:
             self.corpus_dirpath = None
@@ -63,8 +69,20 @@ class Corpus:
         else:
             self.corpus_dirpath = os.path.dirname(filename)
 
+        # configure corpus ID (optional for mem mode, required for DB mode)
+        if storage_type is None:
+            storage_type = self.config.default_storage_mode
+        if db_collection_prefix is None and filename is None and storage_type == "db":
+            db_collection_prefix = create_safe_id()
+            warn(
+                "You are in DB mode, but no collection prefix was specified and no filename was given from which to infer one."
+                "Will use a randomly generated unique prefix " + db_collection_prefix
+            )
         self.id = None
-        if filename is not None:
+        if db_collection_prefix is not None:
+            # treat the unique collection prefix as the ID (even if a filename is specified)
+            self.id = db_collection_prefix
+        elif filename is not None:
             # automatically derive an ID from the file path
             self.id = os.path.basename(os.path.normpath(filename))
 
@@ -72,7 +90,16 @@ class Corpus:
         if storage is not None:
             self.storage = storage
         else:
-            self.storage = MemStorageManager()
+            if storage_type == "mem":
+                self.storage = MemStorageManager()
+            elif storage_type == "db":
+                if db_host is None:
+                    db_host = self.config.db_host
+                self.storage = DBStorageManager(self.id, db_host)
+            else:
+                raise ValueError(
+                    f"Unrecognized setting '{storage_type}' for storage type; should be either 'mem' or 'db'."
+                )
 
         self.meta_index = ConvoKitIndex(self)
         self.meta = ConvoKitMeta(self, self.meta_index, "corpus")

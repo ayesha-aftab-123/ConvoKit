@@ -69,13 +69,25 @@ Number of Utterances: 225194
 Number of Conversations: 112597
 
 
-Number of yesands / non-yesands:
+**Number of yesands / non-yesands:**
 
-* Total: 68,188 / 44,409
 * Spontaneanation: 10,959 / 6,087
 * Cornell: 16,926 / 18,810
 * SubTle: 40,303 / 19,512
+* Total: 68,188 / 44,409
 
+**Number of yesands / non-yesands (train split)**
+
+* Spontaneanation: 10,459 / 5,587
+* Cornell: 16,426 / 18,310
+* SubTle: 40,303 / 19,512
+* Total: 67,188 / 43,409
+
+**Number of yesands / non-yesands (validation split)**
+
+* Spontaneanation: 500 / 500
+* Cornell: 500 / 500
+* Total: 1,000 / 1,000
 
 Additional notes
 ----------------

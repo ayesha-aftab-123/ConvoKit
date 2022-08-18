@@ -284,15 +284,18 @@ def merge_utterance_lines(utt_dict):
     return new_utterances
 
 
-def initialize_conversations(corpus, utt_dict, convos_data):
+def initialize_conversations(corpus, utt_dict, convos_data, convo_to_utts=None):
     """
     Initialize Conversation objects from utterances and conversations data
     """
     # organize utterances by conversation
-    convo_to_utts = defaultdict(list)  # temp container identifying utterances by conversation
-    for u in utt_dict.values():
-        convo_key = u.conversation_id  # each conversation_id is considered a separate conversation
-        convo_to_utts[convo_key].append(u.id)
+    if convo_to_utts is None:
+        convo_to_utts = defaultdict(list)  # temp container identifying utterances by conversation
+        for u in utt_dict.values():
+            convo_key = (
+                u.conversation_id
+            )  # each conversation_id is considered a separate conversation
+            convo_to_utts[convo_key].append(u.id)
     conversations = {}
     for convo_id in convo_to_utts:
         # look up the metadata associated with this conversation, if any

@@ -187,6 +187,11 @@ class DBStorageManager(StorageManager):
         self.client = MongoClient(db_host)
         self.db = self.client["convokit"]
 
+        # this special lock is used for reconnecting to an existing DB, whereupon
+        # it is known that all the data already exists and so the initialization
+        # step can be skipped, greatly saving time
+        self.bypass_init = False
+
         # initialize component collections as MongoDB collections in the convokit db
         for key in self.data:
             self.data[key] = self.db[self._get_collection_name(key)]
@@ -212,6 +217,8 @@ class DBStorageManager(StorageManager):
     def initialize_data_for_component(
         self, component_type: str, component_id: str, overwrite: bool = False, initial_value=None
     ):
+        if self.bypass_init:
+            return
         collection = self.get_collection(component_type)
         if overwrite or not self.has_data_for_component(component_type, component_id):
             data = initial_value if initial_value is not None else {}

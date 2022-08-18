@@ -213,9 +213,62 @@ class Corpus:
 
         if disable_type_check:
             self.meta_index.disable_type_check()
-        self.conversations = initialize_conversations(self, self.utterances, convos_data)
-        self.meta_index.enable_type_check()
-        self.update_speakers_data()
+        # if corpus is nonempty (check for self.utterances), construct the conversation
+        # data from the utterance list
+        if hasattr(self, "utterances"):
+            self.conversations = initialize_conversations(self, self.utterances, convos_data)
+            self.meta_index.enable_type_check()
+            self.update_speakers_data()
+
+    @classmethod
+    def reconnect_to_db(cls, db_collection_prefix: str, db_host: Optional[str] = None):
+        """
+        Factory method for a Corpus instance backed by an already-existing database (e.g.,
+        one that was created in a previous run of a Python script or interactive session).
+
+        This can be used to reconnect to existing Corpus data that you still want to use
+        without having to reload the data from the source file; this can happen for example
+        if your script crashed in the middle of working with the Corpus and you want to
+        resume where you left off.
+        """
+        # create a blank Corpus that will hold the data
+        result = cls(db_collection_prefix=db_collection_prefix, db_host=db_host, storage_type="db")
+        # we will bypass the initialization step when constructing components since
+        # we know their necessary data already exists within the db
+        result.storage.bypass_init = True
+
+        # fetch object ids from the DB and initialize corpus components for them
+        # create speakers first so we can refer to them when initializing utterances
+        speakers = {}
+        for speaker_doc in result.storage.data["speaker"].find(projection=["_id"]):
+            speaker_id = speaker_doc["_id"]
+            speakers[speaker_id] = Speaker(owner=result, id=speaker_id)
+        result.speakers = speakers
+
+        # next, create utterances
+        utterances = {}
+        convo_to_utts = defaultdict(list)
+        for utt_doc in result.storage.data["utterance"].find(
+            projection=["_id", "speaker_id", "conversation_id"]
+        ):
+            utt_id = utt_doc["_id"]
+            convo_to_utts[utt_doc["conversation_id"]].append(utt_id)
+            utterances[utt_id] = Utterance(
+                owner=result, id=utt_id, speaker=speakers[utt_doc["speaker_id"]]
+            )
+        result.utterances = utterances
+
+        # run post-construction integrity steps as in regular constructor
+        result.conversations = initialize_conversations(
+            result, result.utterances, {}, convo_to_utts
+        )
+        result.meta_index.enable_type_check()
+        result.update_speakers_data()
+
+        # restore the StorageManager's init behavior to default
+        result.storage.bypass_init = False
+
+        return result
 
     @property
     def vectors(self):

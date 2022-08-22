@@ -1,8 +1,9 @@
-from typing import Optional
+from typing import Optional, List
 from abc import ABCMeta, abstractmethod
 from pymongo import MongoClient
 from pymongo.database import Database
 import bson
+import pickle
 
 
 class StorageManager(metaclass=ABCMeta):
@@ -46,19 +47,35 @@ class StorageManager(metaclass=ABCMeta):
         return NotImplemented
 
     @abstractmethod
-    def get_data(self, component_type: str, component_id: str, property_name: Optional[str] = None):
+    def get_data(
+        self,
+        component_type: str,
+        component_id: str,
+        property_name: Optional[str] = None,
+        object_type: Optional[List[str]] = None,
+    ):
         """
         Retrieve the property data for the component of type component_type with
         id component_id. If property_name is specified return only the data for
         that property, otherwise return the dict containing all properties.
+        Additionally, the expected type of the property to be fetched may be specified
+        as a string; this is meant to be used for metadata in conjunction with the index.
         """
         return NotImplemented
 
     @abstractmethod
-    def update_data(self, component_type: str, component_id: str, property_name: str, new_value):
+    def update_data(
+        self,
+        component_type: str,
+        component_id: str,
+        property_name: str,
+        new_value,
+        object_type: Optional[List[str]] = None,
+    ):
         """
         Set or update the property data for the component of type component_type
-        with id component_id
+        with id component_id. For metadata, the Python object type may also be
+        specified, to be used in conjunction with the index.
         """
         return NotImplemented
 
@@ -135,7 +152,13 @@ class MemStorageManager(StorageManager):
         if overwrite or not self.has_data_for_component(component_type, component_id):
             collection[component_id] = initial_value if initial_value is not None else {}
 
-    def get_data(self, component_type: str, component_id: str, property_name: Optional[str] = None):
+    def get_data(
+        self,
+        component_type: str,
+        component_id: str,
+        property_name: Optional[str] = None,
+        object_type: Optional[List[str]] = None,
+    ):
         collection = self.get_collection(component_type)
         if component_id not in collection:
             raise KeyError(
@@ -146,7 +169,14 @@ class MemStorageManager(StorageManager):
         else:
             return collection[component_id][property_name]
 
-    def update_data(self, component_type: str, component_id: str, property_name: str, new_value):
+    def update_data(
+        self,
+        component_type: str,
+        component_id: str,
+        property_name: str,
+        new_value,
+        object_type: Optional[List[str]] = None,
+    ):
         collection = self.get_collection(component_type)
         # don't create new collections if the ID is not found; this is supposed to be handled in the
         # CorpusComponent constructor so if the ID is missing that indicates something is wrong
@@ -224,7 +254,13 @@ class DBStorageManager(StorageManager):
             data = initial_value if initial_value is not None else {}
             collection.update_one({"_id": component_id}, {"$set": data}, upsert=True)
 
-    def get_data(self, component_type: str, component_id: str, property_name: Optional[str] = None):
+    def get_data(
+        self,
+        component_type: str,
+        component_id: str,
+        property_name: Optional[str] = None,
+        object_type: Optional[List[str]] = None,
+    ):
         collection = self.get_collection(component_type)
         all_fields = collection.find_one({"_id": component_id})
         if all_fields is None:
@@ -234,10 +270,24 @@ class DBStorageManager(StorageManager):
         if property_name is None:
             return all_fields
         else:
-            return all_fields[property_name]
+            result = all_fields[property_name]
+            if object_type == ["bin"]:
+                # binary data must be unpacked
+                result = pickle.loads(result)
+            return result
 
-    def update_data(self, component_type: str, component_id: str, property_name: str, new_value):
+    def update_data(
+        self,
+        component_type: str,
+        component_id: str,
+        property_name: str,
+        new_value,
+        object_type: Optional[List[str]] = None,
+    ):
         data = self.get_data(component_type, component_id)
+        if object_type == ["bin"]:
+            # non-serializable types must go through pickling then be encoded as bson.Binary
+            new_value = bson.Binary(pickle.dumps(new_value))
         data[property_name] = new_value
         collection = self.get_collection(component_type)
         collection.update_one({"_id": component_id}, {"$set": data})

@@ -6,7 +6,9 @@ import os
 import json
 from collections import defaultdict
 from typing import Dict
+from pymongo import UpdateOne
 import pickle
+import bson
 
 from .speaker import Speaker
 from .utterance import Utterance
@@ -24,6 +26,8 @@ KeyText = "text"
 DefinedKeys = {KeyId, KeySpeaker, KeyConvoId, KeyReplyTo, KeyTimestamp, KeyText}
 KeyMeta = "meta"
 KeyVectors = "vectors"
+
+JSONLIST_BUFFER_SIZE = 1000
 
 
 def load_uttinfo_from_dir(
@@ -412,3 +416,202 @@ def dump_jsonlist_from_dict(entries, filename, index_key="id", value_key="value"
 def extract_meta_from_df(df):
     meta_cols = [col.split(".")[1] for col in df if col.startswith("meta")]
     return meta_cols
+
+
+def load_binary_metadata(filename, index, exclude_meta=None):
+    binary_data = {"utterance": {}, "conversation": {}, "speaker": {}, "corpus": {}}
+    for component_type in binary_data:
+        meta_index = index.get_index(component_type)
+        for meta_key, meta_type in meta_index.items():
+            if meta_type == ["bin"] and (
+                exclude_meta is None or meta_key not in exclude_meta[component_type]
+            ):
+                try:
+                    with open(
+                        os.path.join(filename, meta_key + "-{}-bin.p".format(component_type)), "rb"
+                    ) as f:
+                        l_bin = pickle.load(f)
+                        binary_data[component_type][meta_key] = l_bin
+                except FileNotFoundError:
+                    warn(
+                        f"Metadata field {meta_key} is specified to have binary type but no saved binary data was found. This field will be skipped."
+                    )
+    return binary_data
+
+
+def load_jsonlist_to_db(
+    filename,
+    db,
+    collection_prefix,
+    start_line=None,
+    end_line=None,
+    exclude_meta=None,
+    bin_meta=None,
+):
+    utt_collection = db[f"{collection_prefix}_utterance"]
+    meta_collection = db[f"{collection_prefix}_meta"]
+    inserted_ids = set()
+    speaker_key = None
+    convo_key = None
+    reply_key = None
+    with open(filename) as f:
+        utt_insertion_buffer = []
+        meta_insertion_buffer = []
+        for ln, line in enumerate(f):
+            if start_line is not None and ln < start_line:
+                continue
+            if end_line is not None and ln > end_line:
+                break
+            utt_obj = json.loads(line)
+            if speaker_key is None:
+                # backwards compatibility for corpora made before the user->speaker rename
+                speaker_key = "speaker" if "speaker" in utt_obj else "user"
+            if convo_key is None:
+                # backwards compatibility for corpora made before the root->conversation_id rename
+                convo_key = "conversation_id" if "conversation_id" in utt_obj else "root"
+            if reply_key is None:
+                # fix for misnamed reply_to in subreddit corpora
+                reply_key = "reply-to" if "reply-to" in utt_obj else "reply_to"
+            utt_insertion_buffer.append(
+                UpdateOne(
+                    {"_id": utt_obj["id"]},
+                    {
+                        "$set": {
+                            "speaker_id": utt_obj[speaker_key],
+                            "conversation_id": utt_obj[convo_key],
+                            "reply_to": utt_obj[reply_key],
+                            "timestamp": utt_obj["timestamp"],
+                            "text": utt_obj["text"],
+                        }
+                    },
+                    upsert=True,
+                )
+            )
+            utt_meta = utt_obj["meta"]
+            if exclude_meta is not None:
+                for exclude_key in exclude_meta:
+                    if exclude_key in utt_meta:
+                        del utt_meta[exclude_key]
+            if bin_meta is not None:
+                for key, bin_list in bin_meta.items():
+                    bin_locator = utt_meta[key]
+                    if (
+                        type(bin_locator) == "str"
+                        and bin_locator.startswith(BIN_DELIM_L)
+                        and bin_locator.endswith(BIN_DELIM_R)
+                    ):
+                        bin_idx = int(bin_locator[len(BIN_DELIM_L) : -len(BIN_DELIM_R)])
+                        utt_meta[key] = bson.Binary(pickle.dumps(bin_list[bin_idx]))
+            meta_insertion_buffer.append(
+                UpdateOne({"_id": "utterance_" + utt_obj["id"]}, {"$set": utt_meta}, upsert=True)
+            )
+            inserted_ids.add(utt_obj["id"])
+            if len(utt_insertion_buffer) >= JSONLIST_BUFFER_SIZE:
+                utt_collection.bulk_write(utt_insertion_buffer)
+                meta_collection.bulk_write(meta_insertion_buffer)
+                utt_insertion_buffer = []
+                meta_insertion_buffer = []
+        # after loop termination, insert any remaining items in the buffer
+        if len(utt_insertion_buffer) > 0:
+            utt_collection.bulk_write(utt_insertion_buffer)
+            meta_collection.bulk_write(meta_insertion_buffer)
+            utt_insertion_buffer = []
+            meta_insertion_buffer = []
+    return inserted_ids
+
+
+def load_json_to_db(
+    filename, db, collection_prefix, component_type, exclude_meta=None, bin_meta=None
+):
+    component_collection = db[f"{collection_prefix}_{component_type}"]
+    meta_collection = db[f"{collection_prefix}_meta"]
+    if component_type == "speaker":
+        json_data = load_speakers_data_from_dir(filename, exclude_meta)
+    elif component_type == "conversation":
+        json_data = load_convos_data_from_dir(filename, exclude_meta)
+    component_insertion_buffer = []
+    meta_insertion_buffer = []
+    for component_id, component_data in json_data.items():
+        if KeyMeta in component_data:
+            # contains non-metadata entries
+            payload = {k: v for k, v in component_data.items() if k not in {"meta", "vectors"}}
+            meta = component_data[KeyMeta]
+        else:
+            # contains only metadata, with metadata at the top level
+            payload = {}
+            meta = component_data
+        component_insertion_buffer.append(
+            UpdateOne({"_id": component_id}, {"$set": payload}, upsert=True)
+        )
+        if bin_meta is not None:
+            for key, bin_list in bin_meta.items():
+                bin_locator = meta[key]
+                if (
+                    type(bin_locator) == "str"
+                    and bin_locator.startswith(BIN_DELIM_L)
+                    and bin_locator.endswith(BIN_DELIM_R)
+                ):
+                    bin_idx = int(bin_locator[len(BIN_DELIM_L) : -len(BIN_DELIM_R)])
+                    meta[key] = bson.Binary(pickle.dumps(bin_list[bin_idx]))
+        meta_insertion_buffer.append(
+            UpdateOne({"_id": f"{component_type}_{component_id}"}, {"$set": meta}, upsert=True)
+        )
+    component_collection.bulk_write(component_insertion_buffer)
+    meta_collection.bulk_write(meta_insertion_buffer)
+
+
+def load_corpus_info_to_db(filename, db, collection_prefix, exclude_meta=None, bin_meta=None):
+    if exclude_meta is None:
+        exclude_meta = {}
+    meta_collection = db[f"{collection_prefix}_meta"]
+    with open(os.path.join(filename, "corpus.json")) as f:
+        corpus_meta = {k: v for k, v in json.load(f).items() if k not in exclude_meta}
+        if bin_meta is not None:
+            for key, bin_list in bin_meta.items():
+                bin_locator = corpus_meta[key]
+                if (
+                    type(bin_locator) == "str"
+                    and bin_locator.startswith(BIN_DELIM_L)
+                    and bin_locator.endswith(BIN_DELIM_R)
+                ):
+                    bin_idx = int(bin_locator[len(BIN_DELIM_L) : -len(BIN_DELIM_R)])
+                    corpus_meta[key] = bson.Binary(pickle.dumps(bin_list[bin_idx]))
+        meta_collection.update_one(
+            {"_id": f"corpus_{collection_prefix}"}, {"$set": corpus_meta}, upsert=True
+        )
+
+
+def init_corpus_from_storagemanager(corpus, utt_ids=None):
+    # we will bypass the initialization step when constructing components since
+    # we know their necessary data already exists within the db
+    corpus.storage.bypass_init = True
+
+    # fetch object ids from the DB and initialize corpus components for them
+    # create speakers first so we can refer to them when initializing utterances
+    speakers = {}
+    for speaker_doc in corpus.storage.data["speaker"].find(projection=["_id"]):
+        speaker_id = speaker_doc["_id"]
+        speakers[speaker_id] = Speaker(owner=corpus, id=speaker_id)
+    corpus.speakers = speakers
+
+    # next, create utterances
+    utterances = {}
+    convo_to_utts = defaultdict(list)
+    for utt_doc in corpus.storage.data["utterance"].find(
+        projection=["_id", "speaker_id", "conversation_id"]
+    ):
+        utt_id = utt_doc["_id"]
+        if utt_ids is None or utt_id in utt_ids:
+            convo_to_utts[utt_doc["conversation_id"]].append(utt_id)
+            utterances[utt_id] = Utterance(
+                owner=corpus, id=utt_id, speaker=speakers[utt_doc["speaker_id"]]
+            )
+    corpus.utterances = utterances
+
+    # run post-construction integrity steps as in regular constructor
+    corpus.conversations = initialize_conversations(corpus, corpus.utterances, {}, convo_to_utts)
+    corpus.meta_index.enable_type_check()
+    corpus.update_speakers_data()
+
+    # restore the StorageManager's init behavior to default
+    corpus.storage.bypass_init = False

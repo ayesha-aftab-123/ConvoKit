@@ -376,6 +376,6 @@ def deprecation(prev_name: str, new_name: str, stacklevel: int = 3):
         stacklevel=stacklevel,
     )
 
+
 def create_safe_id():
     return uuid.uuid4().hex
-    

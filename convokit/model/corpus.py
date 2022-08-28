@@ -1,16 +1,18 @@
+import random
+import shutil
+from typing import List, Collection, Callable, Set, Generator, Tuple, Optional, ValuesView, Union
+
 from pandas import DataFrame
 from tqdm import tqdm
-from typing import List, Collection, Callable, Set, Generator, Tuple, Optional, ValuesView, Union
-from .corpusHelper import *
-from convokit.util import deprecation, warn, create_safe_id
+
 from convokit.convokitConfig import ConvoKitConfig
-from .corpusUtil import *
+from convokit.util import deprecation, warn, create_safe_id
 from .convoKitIndex import ConvoKitIndex
-import random
-from .convoKitMeta import ConvoKitMeta
 from .convoKitMatrix import ConvoKitMatrix
+from .convoKitMeta import ConvoKitMeta
+from .corpusUtil import *
+from .corpus_helpers import *
 from .storageManager import DBStorageManager, StorageManager, MemStorageManager
-import shutil
 
 
 class Corpus:

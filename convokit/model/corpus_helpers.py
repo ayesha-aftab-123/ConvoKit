@@ -2,19 +2,20 @@
 Contains functions that help with the construction / dumping of a Corpus
 """
 
-import os
 import json
+import os
+import pickle
 from collections import defaultdict
 from typing import Dict
-from pymongo import UpdateOne
-import pickle
-import bson
 
-from .speaker import Speaker
-from .utterance import Utterance
+import bson
+from pymongo import UpdateOne
+
+from convokit.util import warn
 from .conversation import Conversation
 from .convoKitMeta import ConvoKitMeta
-from convokit.util import warn
+from .speaker import Speaker
+from .utterance import Utterance
 
 BIN_DELIM_L, BIN_DELIM_R = "<##bin{", "}&&@**>"
 KeyId = "id"
@@ -30,7 +31,7 @@ KeyVectors = "vectors"
 JSONLIST_BUFFER_SIZE = 1000
 
 
-def load_uttinfo_from_dir(
+def load_utterance_info_from_dir(
     dirname, utterance_start_index, utterance_end_index, exclude_utterance_meta
 ):
     assert dirname is not None
@@ -581,7 +582,7 @@ def load_corpus_info_to_db(filename, db, collection_prefix, exclude_meta=None, b
         )
 
 
-def init_corpus_from_storagemanager(corpus, utt_ids=None):
+def init_corpus_from_storage_manager(corpus, utt_ids=None):
     # we will bypass the initialization step when constructing components since
     # we know their necessary data already exists within the db
     corpus.storage.bypass_init = True

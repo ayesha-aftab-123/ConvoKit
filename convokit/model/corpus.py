@@ -6,10 +6,9 @@ from pandas import DataFrame
 from tqdm import tqdm
 
 from convokit.convokitConfig import ConvoKitConfig
-from convokit.util import deprecation, warn, create_safe_id
+from convokit.util import deprecation, create_safe_id
 from .convoKitIndex import ConvoKitIndex
 from .convoKitMatrix import ConvoKitMatrix
-from .convoKitMeta import ConvoKitMeta
 from .corpusUtil import *
 from .corpus_helpers import *
 from .storageManager import DBStorageManager, StorageManager, MemStorageManager
@@ -170,7 +169,7 @@ class Corpus:
             )
             # with the StorageManager's DB now populated, initialize the corresponding
             # CorpusComponent instances.
-            init_corpus_from_storagemanager(self, inserted_utt_ids)
+            init_corpus_from_storage_manager(self, inserted_utt_ids)
 
             self.meta_index.enable_type_check()
             # load preload_vectors
@@ -188,7 +187,7 @@ class Corpus:
                 if disable_type_check:
                     self.meta_index.disable_type_check()
                 if os.path.isdir(filename):
-                    utterances = load_uttinfo_from_dir(
+                    utterances = load_utterance_info_from_dir(
                         filename, utterance_start_index, utterance_end_index, exclude_utterance_meta
                     )
 
@@ -301,7 +300,7 @@ class Corpus:
         result = cls(db_collection_prefix=db_collection_prefix, db_host=db_host, storage_type="db")
         # through the constructor, the blank Corpus' StorageManager is now connected
         # to the DB. Next use the DB contents to populate the corpus components.
-        init_corpus_from_storagemanager(result)
+        init_corpus_from_storage_manager(result)
 
         return result
 

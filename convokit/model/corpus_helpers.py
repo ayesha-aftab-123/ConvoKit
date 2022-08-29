@@ -291,7 +291,11 @@ def merge_utterance_lines(utt_dict):
 
 def initialize_conversations(corpus, utt_dict, convos_data, convo_to_utts=None):
     """
-    Initialize Conversation objects from utterances and conversations data
+    Initialize Conversation objects from utterances and conversations data.
+    If a mapping from Conversation IDs to their constituent Utterance IDs is
+    already known (e.g., as a side effect of a prior computation) they can be
+    directly provided via the convo_to_utts parameter, otherwise the mapping
+    will be computed by iteration over the Utterances in utt_dict.
     """
     # organize utterances by conversation
     if convo_to_utts is None:
@@ -449,6 +453,10 @@ def load_jsonlist_to_db(
     exclude_meta=None,
     bin_meta=None,
 ):
+    """
+    Populate the specified MongoDB database with the utterance data contained in
+    the given filename (which should point to an utterances.jsonl file).
+    """
     utt_collection = db[f"{collection_prefix}_utterance"]
     meta_collection = db[f"{collection_prefix}_meta"]
     inserted_ids = set()
@@ -524,6 +532,12 @@ def load_jsonlist_to_db(
 def load_json_to_db(
     filename, db, collection_prefix, component_type, exclude_meta=None, bin_meta=None
 ):
+    """
+    Populate the specified MongoDB database with corpus component data from
+    either the speakers.json or conversations.json file located in a directory
+    containing valid ConvoKit Corpus data. The component_type parameter controls
+    which JSON file gets used.
+    """
     component_collection = db[f"{collection_prefix}_{component_type}"]
     meta_collection = db[f"{collection_prefix}_meta"]
     if component_type == "speaker":
@@ -562,6 +576,10 @@ def load_json_to_db(
 
 
 def load_corpus_info_to_db(filename, db, collection_prefix, exclude_meta=None, bin_meta=None):
+    """
+    Populate the specified MongoDB database with Corpus metadata loaded from the
+    corpus.json file of a directory containing valid ConvoKit Corpus data.
+    """
     if exclude_meta is None:
         exclude_meta = {}
     meta_collection = db[f"{collection_prefix}_meta"]
@@ -582,7 +600,67 @@ def load_corpus_info_to_db(filename, db, collection_prefix, exclude_meta=None, b
         )
 
 
+def populate_db_from_file(
+    filename,
+    db,
+    collection_prefix,
+    meta_index,
+    utterance_start_index,
+    utterance_end_index,
+    exclude_utterance_meta,
+    exclude_conversation_meta,
+    exclude_speaker_meta,
+    exclude_overall_meta,
+):
+    """
+    Populate all necessary collections of a MongoDB database so that it can be
+    used by a DBStorageManager, sourcing data from the valid ConvoKit Corpus
+    data pointed to by the filename parameter.
+    """
+    binary_meta = load_binary_metadata(
+        filename,
+        meta_index,
+        {
+            "utterance": exclude_utterance_meta,
+            "conversation": exclude_conversation_meta,
+            "speaker": exclude_speaker_meta,
+            "corpus": exclude_overall_meta,
+        },
+    )
+
+    # first load the utterance data
+    inserted_utt_ids = load_jsonlist_to_db(
+        os.path.join(filename, "utterances.jsonl"),
+        db,
+        collection_prefix,
+        utterance_start_index,
+        utterance_end_index,
+        exclude_utterance_meta,
+        binary_meta["utterance"],
+    )
+    # next load the speaker and conversation data
+    for component_type in ["speaker", "conversation"]:
+        load_json_to_db(
+            filename,
+            db,
+            collection_prefix,
+            component_type,
+            (exclude_speaker_meta if component_type == "speaker" else exclude_conversation_meta),
+            binary_meta[component_type],
+        )
+    # finally, load the corpus metadata
+    load_corpus_info_to_db(
+        filename, db, collection_prefix, exclude_overall_meta, binary_meta["corpus"]
+    )
+
+    return inserted_utt_ids
+
+
 def init_corpus_from_storage_manager(corpus, utt_ids=None):
+    """
+    Use an already-populated MongoDB database to initialize the components of
+    the specified Corpus (which should be empty before this function is called)
+    """
     # we will bypass the initialization step when constructing components since
     # we know their necessary data already exists within the db
     corpus.storage.bypass_init = True

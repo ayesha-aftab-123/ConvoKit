@@ -128,48 +128,23 @@ class Corpus:
                 idx_dict = json.load(f)
                 self.meta_index.update_from_dict(idx_dict)
 
-            binary_meta = load_binary_metadata(
+            # populate the DB with the contents of the source file
+            ids_in_db = populate_db_from_file(
                 filename,
-                self.meta_index,
-                {
-                    "utterance": exclude_utterance_meta,
-                    "conversation": exclude_conversation_meta,
-                    "speaker": exclude_speaker_meta,
-                    "corpus": exclude_overall_meta,
-                },
-            )
-
-            # first load the utterance data
-            inserted_utt_ids = load_jsonlist_to_db(
-                os.path.join(filename, "utterances.jsonl"),
                 self.storage.db,
                 self.id,
+                self.meta_index,
                 utterance_start_index,
                 utterance_end_index,
                 exclude_utterance_meta,
-                binary_meta["utterance"],
+                exclude_conversation_meta,
+                exclude_speaker_meta,
+                exclude_overall_meta,
             )
-            # next load the speaker and conversation data
-            for component_type in ["speaker", "conversation"]:
-                load_json_to_db(
-                    filename,
-                    self.storage.db,
-                    self.id,
-                    component_type,
-                    (
-                        exclude_speaker_meta
-                        if component_type == "speaker"
-                        else exclude_conversation_meta
-                    ),
-                    binary_meta[component_type],
-                )
-            # finally, load the corpus metadata
-            load_corpus_info_to_db(
-                filename, self.storage.db, self.id, exclude_overall_meta, binary_meta["corpus"]
-            )
+
             # with the StorageManager's DB now populated, initialize the corresponding
             # CorpusComponent instances.
-            init_corpus_from_storage_manager(self, inserted_utt_ids)
+            init_corpus_from_storage_manager(self, ids_in_db)
 
             self.meta_index.enable_type_check()
             # load preload_vectors

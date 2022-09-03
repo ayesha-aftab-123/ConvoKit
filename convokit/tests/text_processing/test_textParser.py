@@ -1,33 +1,27 @@
 import unittest
 
-from convokit.model import Corpus, Speaker, Utterance
-from convokit.text_processing.textParser import _process_sentence, _process_token, TextParser
-from convokit.tests.util import (
-    buffalo_doc,
-    fox_doc,
-    fox_buffalo_doc,
-    burr_sir_corpus,
-    BUFFALO_TEXT,
-    FOX_TEXT,
-    FOX_BUFFALO_TEXT,
+from convokit.tests.test_utils import (
+    fox_spacy_doc,
+    small_burr_corpus,
     BURR_SIR_TEXT_1,
     BURR_SIR_TEXT_2,
-    burr_sir_doc_1,
-    burr_sir_doc_2,
+    burr_spacy_doc_1,
+    burr_spacy_doc_2,
     BURR_SIR_SENTENCE_1,
     BURR_SIR_SENTENCE_2,
     BURR_SIR_SENTENCE_3,
     BURR_SIR_SENTENCE_4,
-    burr_sir_sentence_doc_1,
-    burr_sir_sentence_doc_2,
-    burr_sir_sentence_doc_3,
-    burr_sir_sentence_doc_4,
+    burr_spacy_sentence_doc_1,
+    burr_spacy_sentence_doc_2,
+    burr_spacy_sentence_doc_3,
+    burr_spacy_sentence_doc_4,
 )
+from convokit.text_processing.textParser import _process_sentence, _process_token, TextParser
 
 
 class TestTextParser(unittest.TestCase):
     def test_process_token_tokenize_mode(self):
-        doc = fox_doc()
+        doc = fox_spacy_doc()
         token = doc[3]
 
         expected = {"tok": "fox"}
@@ -35,7 +29,7 @@ class TestTextParser(unittest.TestCase):
         self.assertDictEqual(expected, actual)
 
     def test_process_token_tag_mode(self):
-        doc = fox_doc()
+        doc = fox_spacy_doc()
         token = doc[3]
 
         expected = {"tok": "fox", "tag": "NN"}
@@ -43,7 +37,7 @@ class TestTextParser(unittest.TestCase):
         self.assertDictEqual(expected, actual)
 
     def test_process_token_parse_mode(self):
-        doc = fox_doc()
+        doc = fox_spacy_doc()
         token = doc[3]
 
         expected = {"tok": "fox", "tag": "NN", "dn": [], "up": 2, "dep": "NN"}
@@ -51,7 +45,7 @@ class TestTextParser(unittest.TestCase):
         self.assertDictEqual(expected, actual)
 
     def test_process_sentence_parse_mode(self):
-        doc = fox_doc()
+        doc = fox_spacy_doc()
 
         expected = {
             "rt": 1,
@@ -72,7 +66,7 @@ class TestTextParser(unittest.TestCase):
         self.assertDictEqual(expected, actual)
 
     def test_process_sentence_nonparse_mode(self):
-        doc = fox_doc()
+        doc = fox_spacy_doc()
 
         expected = {
             "toks": [
@@ -93,12 +87,12 @@ class TestTextParser(unittest.TestCase):
 
     def test_process_text_parse_mode(self):
         def fake_spacy_nlp(input_text):
-            text_to_doc = {BURR_SIR_TEXT_1: burr_sir_doc_1(), BURR_SIR_TEXT_2: burr_sir_doc_2()}
+            text_to_doc = {BURR_SIR_TEXT_1: burr_spacy_doc_1(), BURR_SIR_TEXT_2: burr_spacy_doc_2()}
 
             return text_to_doc[input_text]
 
         parser = TextParser(spacy_nlp=fake_spacy_nlp, mode="parse")
-        corpus = burr_sir_corpus()
+        corpus = small_burr_corpus()
         actual = [
             utterance.meta["parsed"] for utterance in parser.transform(corpus).iter_utterances()
         ]
@@ -160,10 +154,10 @@ class TestTextParser(unittest.TestCase):
 
         def fake_spacy_nlp(input_text):
             text_to_doc = {
-                BURR_SIR_SENTENCE_1: burr_sir_sentence_doc_1(),
-                BURR_SIR_SENTENCE_2: burr_sir_sentence_doc_2(),
-                BURR_SIR_SENTENCE_3: burr_sir_sentence_doc_3(),
-                BURR_SIR_SENTENCE_4: burr_sir_sentence_doc_4(),
+                BURR_SIR_SENTENCE_1: burr_spacy_sentence_doc_1(),
+                BURR_SIR_SENTENCE_2: burr_spacy_sentence_doc_2(),
+                BURR_SIR_SENTENCE_3: burr_spacy_sentence_doc_3(),
+                BURR_SIR_SENTENCE_4: burr_spacy_sentence_doc_4(),
             }
 
             return text_to_doc[input_text]
@@ -171,7 +165,7 @@ class TestTextParser(unittest.TestCase):
         parser = TextParser(
             spacy_nlp=fake_spacy_nlp, sent_tokenizer=FakeSentenceTokenizer(), mode="tag"
         )
-        corpus = burr_sir_corpus()
+        corpus = small_burr_corpus()
         actual = [
             utterance.meta["parsed"] for utterance in parser.transform(corpus).iter_utterances()
         ]
@@ -229,10 +223,10 @@ class TestTextParser(unittest.TestCase):
 
         def fake_spacy_nlp(input_text):
             text_to_doc = {
-                BURR_SIR_SENTENCE_1: burr_sir_sentence_doc_1(),
-                BURR_SIR_SENTENCE_2: burr_sir_sentence_doc_2(),
-                BURR_SIR_SENTENCE_3: burr_sir_sentence_doc_3(),
-                BURR_SIR_SENTENCE_4: burr_sir_sentence_doc_4(),
+                BURR_SIR_SENTENCE_1: burr_spacy_sentence_doc_1(),
+                BURR_SIR_SENTENCE_2: burr_spacy_sentence_doc_2(),
+                BURR_SIR_SENTENCE_3: burr_spacy_sentence_doc_3(),
+                BURR_SIR_SENTENCE_4: burr_spacy_sentence_doc_4(),
             }
 
             return text_to_doc[input_text]
@@ -240,7 +234,7 @@ class TestTextParser(unittest.TestCase):
         parser = TextParser(
             spacy_nlp=fake_spacy_nlp, sent_tokenizer=FakeSentenceTokenizer(), mode="tokenize"
         )
-        corpus = burr_sir_corpus()
+        corpus = small_burr_corpus()
         actual = [
             utterance.meta["parsed"] for utterance in parser.transform(corpus).iter_utterances()
         ]

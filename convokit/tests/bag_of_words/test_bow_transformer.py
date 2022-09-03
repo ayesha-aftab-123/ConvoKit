@@ -1,11 +1,10 @@
-from unittest import TestCase
 import unittest
+from unittest import TestCase
 
-from numpy.testing import assert_array_equal
-from scipy.sparse import coo_matrix, csr_matrix
+from scipy.sparse import coo_matrix
 
 from convokit import BoWTransformer
-from convokit.tests.util import burr_sir_corpus, BURR_SIR_TEXT_1, BURR_SIR_TEXT_2
+from convokit.tests.test_utils import small_burr_corpus, BURR_SIR_TEXT_1, BURR_SIR_TEXT_2
 
 
 def burr_sir_sentence_1_vector():
@@ -37,7 +36,7 @@ class FakeVectorizer:
 
 class TestBoWTransformer(TestCase):
     def test_transform_utterances(self):
-        corpus = burr_sir_corpus()
+        corpus = small_burr_corpus()
         transformer = BoWTransformer(obj_type="utterance", vectorizer=FakeVectorizer())
         corpus = transformer.fit_transform(corpus)
 
@@ -46,6 +45,9 @@ class TestBoWTransformer(TestCase):
         for expected_vector, utterance in zip(expected_vectors, corpus.iter_utterances()):
             actual_vector = utterance.get_vector("bow_vector")
             assert_sparse_matrices_equal(expected_vector, actual_vector)
+
+
+# class TestWithDB(TestBoWTransformer):
 
 
 if __name__ == "__main__":

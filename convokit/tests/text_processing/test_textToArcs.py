@@ -1,13 +1,13 @@
 import unittest
 
-from convokit.tests.util import parsed_burr_sir_corpus
+from convokit.tests.test_utils import small_burr_corpus_parsed
 from convokit.text_processing.textToArcs import TextToArcs
 
 
 class TestTextToArcs(unittest.TestCase):
     def test_default_options(self):
         transformer = TextToArcs(output_field="arcs")
-        corpus = parsed_burr_sir_corpus()
+        corpus = small_burr_corpus_parsed()
 
         transformed_corpus = transformer.transform(corpus)
         expected_arcs = [
@@ -25,7 +25,7 @@ class TestTextToArcs(unittest.TestCase):
 
     def test_dont_use_start(self):
         transformer = TextToArcs(output_field="arcs", use_start=False)
-        corpus = parsed_burr_sir_corpus()
+        corpus = small_burr_corpus_parsed()
 
         transformed_corpus = transformer.transform(corpus)
         expected_arcs = [
@@ -40,7 +40,7 @@ class TestTextToArcs(unittest.TestCase):
 
     def test_root_only(self):
         transformer = TextToArcs(output_field="arcs", root_only=True)
-        corpus = parsed_burr_sir_corpus()
+        corpus = small_burr_corpus_parsed()
 
         transformed_corpus = transformer.transform(corpus)
         expected_arcs = [

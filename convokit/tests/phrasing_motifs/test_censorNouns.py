@@ -1,13 +1,13 @@
 import unittest
 
-from convokit.tests.util import parsed_burr_sir_corpus
 from convokit.phrasing_motifs.censorNouns import CensorNouns
+from convokit.tests.test_utils import small_burr_corpus_parsed
 
 
 class TestCensorNouns(unittest.TestCase):
     def test_censor_nouns(self):
         transformer = CensorNouns(output_field="censored")
-        corpus = parsed_burr_sir_corpus()
+        corpus = small_burr_corpus_parsed()
 
         transformed_corpus = transformer.transform(corpus)
         expected_censored_list = [

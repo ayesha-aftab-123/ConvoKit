@@ -1,13 +1,13 @@
-from copy import deepcopy
 import unittest
+from copy import deepcopy
 
-from convokit.tests.util import burr_sir_corpus
+from convokit.tests.test_utils import small_burr_corpus
 from convokit.text_processing.textCleaner import clean_str, TextCleaner
 
 
 class TestTextCleaner(unittest.TestCase):
     def test_no_options(self):
-        corpus = burr_sir_corpus()
+        corpus = small_burr_corpus()
         cleaner = TextCleaner(text_cleaner=lambda text: "cleaned text")
         cleaned_corpus = cleaner.transform(deepcopy(corpus))
 
@@ -15,7 +15,7 @@ class TestTextCleaner(unittest.TestCase):
             self.assertEqual(utterance.text, "cleaned text")
 
     def test_dont_replace_text(self):
-        corpus = burr_sir_corpus()
+        corpus = small_burr_corpus()
         cleaner = TextCleaner(text_cleaner=lambda text: "cleaned text", replace_text=False)
         cleaned_corpus = cleaner.transform(deepcopy(corpus))
 
@@ -26,7 +26,7 @@ class TestTextCleaner(unittest.TestCase):
             self.assertEqual(cleaned_utterance.meta["cleaned"], "cleaned text")
 
     def test_save_original(self):
-        corpus = burr_sir_corpus()
+        corpus = small_burr_corpus()
         cleaner = TextCleaner(
             text_cleaner=lambda text: "cleaned text", replace_text=True, save_original=True
         )

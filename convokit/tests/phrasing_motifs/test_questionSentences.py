@@ -1,11 +1,11 @@
 import unittest
 
-from convokit.tests.util import parsed_burr_sir_corpus
 from convokit.phrasing_motifs.questionSentences import QuestionSentences
+from convokit.tests.test_utils import small_burr_corpus_parsed
 
 
 def parsed_burr_sir_corpus_with_lowercase_are():
-    corpus = parsed_burr_sir_corpus()
+    corpus = small_burr_corpus_parsed()
     for utterance in corpus.iter_utterances():
         parsed = utterance.get_info("parsed")
         for sentence in parsed:

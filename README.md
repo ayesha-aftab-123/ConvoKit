@@ -1,6 +1,6 @@
 # [ConvoKit](http://convokit.cornell.edu/)
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-29-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-30-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![pypi](https://img.shields.io/pypi/v/convokit.svg)](https://pypi.org/pypi/convokit/)
@@ -170,12 +170,17 @@ CaSiNo (stands for CampSite Negotiations) is a novel dataset of 1030 negotiation
 
 Name for download: `casino-corpus`
 
+### [SPOLIN Corpus](https://convokit.cornell.edu/documentation/spolin.html)
+Selected Pairs of Learnable ImprovisatioN (SPOLIN) is a collection of more than 68,000 "Yes, and" type utterance pairs extracted from the long-form improvisation podcast Spontaneanation by Paul F. Tompkins, the Cornell Movie-Dialogs Corpus, and the SubTle corpus.
+
+Name for download: `spolin-corpus`
+
 ### ...And your own corpus!
 
 In addition to the provided datasets, you may also use ConvoKit with your own custom datasets by loading them into a `convokit.Corpus` object. [This example script](https://github.com/CornellNLP/ConvoKit/blob/master/examples/converting_movie_corpus.ipynb) shows how to construct a Corpus from custom data.
 
 ## Installation
-This toolkit requires Python >= 3.6.
+This toolkit requires Python >= 3.7.
 
 1. Download the toolkit: `pip3 install convokit`
 2. Download Spacy's English model: `python3 -m spacy download en`
@@ -249,6 +254,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/oscarso2000"><img src="https://avatars.githubusercontent.com/u/20172573?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Oscar So</b></sub></a><br /><a href="https://github.com/CornellNLP/ConvoKit/commits?author=oscarso2000" title="Code">💻</a></td>
+    <td align="center"><a href="http://justin-cho.com"><img src="https://avatars.githubusercontent.com/u/31977186?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Justin Cho</b></sub></a><br /><a href="#data-wise-east" title="Data">🔣</a></td>
   </tr>
 </table>
 

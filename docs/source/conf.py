@@ -367,4 +367,8 @@ autodoc_mock_imports = [
     "numpy",
     "joblib",
     "torch",
+    "pymongo",
+    "yaml",
+    "bson",
+    "dnspython",
 ]

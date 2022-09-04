@@ -6,7 +6,7 @@ from pandas import DataFrame
 from tqdm import tqdm
 
 from convokit.convokitConfig import ConvoKitConfig
-from convokit.util import deprecation, create_safe_id
+from convokit.util import create_safe_id
 from .convoKitIndex import ConvoKitIndex
 from .convoKitMatrix import ConvoKitMatrix
 from .corpusUtil import *
@@ -457,10 +457,6 @@ class Corpus:
         """
         return speaker_id in self.speakers
 
-    def has_user(self, speaker_id):
-        deprecation("has_user()", "has_speaker()")
-        return self.has_speaker(speaker_id)
-
     def random_utterance(self) -> Utterance:
         """
         Get a random Utterance from the Corpus
@@ -576,10 +572,6 @@ class Corpus:
         """
         return get_speakers_dataframe(self, selector, exclude_meta)
 
-    def iter_users(self, selector=lambda speaker: True):
-        deprecation("iter_users()", "iter_speakers()")
-        return self.iter_speakers(selector)
-
     def iter_objs(
         self,
         obj_type: str,
@@ -654,25 +646,6 @@ class Corpus:
         """
         assert obj_type in ["speaker", "utterance", "conversation"]
         return [obj.id for obj in self.iter_objs(obj_type, selector)]
-
-    def get_usernames(
-        self, selector: Optional[Callable[[Speaker], bool]] = lambda user: True
-    ) -> Set[str]:
-        """Get names of speakers in the dataset.
-
-        This function will be deprecated and replaced by get_speaker_ids()
-
-        :param selector: optional function that takes in a
-            `Speaker` and returns True to include the speaker's name in the
-            resulting list, or False otherwise.
-
-        :return: Set containing all speaker names selected by the selector
-            function, or all speaker names in the dataset if no selector function
-            was used.
-
-        """
-        deprecation("get_usernames()", "get_speaker_ids()")
-        return set([u.id for u in self.iter_speakers(selector)])
 
     def filter_conversations_by(self, selector: Callable[[Conversation], bool]):
         """

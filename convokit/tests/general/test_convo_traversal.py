@@ -1,4 +1,5 @@
 import unittest
+
 from convokit.model import Utterance, Speaker, Corpus
 
 
@@ -236,7 +237,6 @@ class CorpusTraversal(unittest.TestCase):
         self.assertEqual([utt.id for utt in convo.traverse("preorder")], ["other"])
 
     def test_reindex_corpus(self):
-        self.setUp()  # reinitialize corpus since reindex is destructive
         original_convo_meta = {
             k: v for k, v in self.corpus.get_conversation("0").meta.to_dict().items()
         }
@@ -254,7 +254,6 @@ class CorpusTraversal(unittest.TestCase):
         self.assertEqual(original_corpus_meta, new_corpus.meta)
 
     def test_reindex_corpus2(self):
-        self.setUp()  # reinitialize corpus since reindex is destructive
         new_convo_conversation_ids = ["1", "2", "3"]
         new_corpus = Corpus.reindex_conversations(
             self.corpus,

@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 import spacy
 from spacy.tokens import Doc
 
@@ -257,3 +259,10 @@ def burr_spacy_sentence_doc_4():
         deps=["nsubj", "aux", "ROOT", "punct"],
         tags=["WP", "VBZ", "VBG", "."],
     )
+
+
+def reload_corpus_in_db_mode(corpus):
+    corpus_id = uuid4().hex
+    corpus.dump(corpus_id, base_path=".")
+    db_corpus = Corpus(corpus_id, storage_type="db")
+    return db_corpus

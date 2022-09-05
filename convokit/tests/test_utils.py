@@ -1,3 +1,4 @@
+import shutil
 from uuid import uuid4
 
 import spacy
@@ -265,4 +266,5 @@ def reload_corpus_in_db_mode(corpus):
     corpus_id = uuid4().hex
     corpus.dump(corpus_id, base_path=".")
     db_corpus = Corpus(corpus_id, storage_type="db")
+    shutil.rmtree(corpus_id)
     return db_corpus

@@ -1,4 +1,5 @@
 import unittest
+
 from convokit.model import Utterance, Speaker, Corpus
 
 
@@ -99,7 +100,7 @@ class CorpusIndexMeta(unittest.TestCase):
         corpus1.get_conversation(None).meta["convo_meta"] = 1
 
         corpus1.get_speaker("alice").meta["surname"] = 1.0
-        corpus1.dump("test_index_meta_corpus", base_path="./")
+        corpus1.dump("test_index_meta_corpus", base_path="../")
         corpus2 = Corpus(filename="test_index_meta_corpus")
 
         self.assertEqual(corpus1.meta_index.utterances_index, corpus2.meta_index.utterances_index)

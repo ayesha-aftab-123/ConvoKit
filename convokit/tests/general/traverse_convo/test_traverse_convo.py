@@ -1,7 +1,7 @@
 import unittest
 
 from convokit.model import Corpus
-from convokit.tests.general.convo_traversal.convo_traversal_helpers import (
+from convokit.tests.general.traverse_convo.traverse_convo_helpers import (
     construct_tree_corpus,
     construct_nonexistent_reply_to_corpus,
     construct_multiple_convo_id_corpus,

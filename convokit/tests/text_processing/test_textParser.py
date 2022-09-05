@@ -15,6 +15,7 @@ from convokit.tests.test_utils import (
     burr_spacy_sentence_doc_2,
     burr_spacy_sentence_doc_3,
     burr_spacy_sentence_doc_4,
+    reload_corpus_in_db_mode,
 )
 from convokit.text_processing.textParser import _process_sentence, _process_token, TextParser
 
@@ -85,16 +86,16 @@ class TestTextParser(unittest.TestCase):
 
         self.assertDictEqual(expected, actual)
 
-    def test_process_text_parse_mode(self):
+    def process_text_parse_mode(self):
         def fake_spacy_nlp(input_text):
             text_to_doc = {BURR_SIR_TEXT_1: burr_spacy_doc_1(), BURR_SIR_TEXT_2: burr_spacy_doc_2()}
 
             return text_to_doc[input_text]
 
         parser = TextParser(spacy_nlp=fake_spacy_nlp, mode="parse")
-        corpus = small_burr_corpus()
         actual = [
-            utterance.meta["parsed"] for utterance in parser.transform(corpus).iter_utterances()
+            utterance.meta["parsed"]
+            for utterance in parser.transform(self.corpus).iter_utterances()
         ]
         expected = [
             [
@@ -142,7 +143,7 @@ class TestTextParser(unittest.TestCase):
 
         self.assertListEqual(expected, actual)
 
-    def test_process_text_tag_mode(self):
+    def process_text_tag_mode(self):
         class FakeSentenceTokenizer:
             def tokenize(self, input_text):
                 text_to_sentences = {
@@ -165,9 +166,9 @@ class TestTextParser(unittest.TestCase):
         parser = TextParser(
             spacy_nlp=fake_spacy_nlp, sent_tokenizer=FakeSentenceTokenizer(), mode="tag"
         )
-        corpus = small_burr_corpus()
         actual = [
-            utterance.meta["parsed"] for utterance in parser.transform(corpus).iter_utterances()
+            utterance.meta["parsed"]
+            for utterance in parser.transform(self.corpus).iter_utterances()
         ]
         expected = [
             [
@@ -211,7 +212,7 @@ class TestTextParser(unittest.TestCase):
 
         self.assertListEqual(expected, actual)
 
-    def test_process_text_tokenize_mode(self):
+    def process_text_tokenize_mode(self):
         class FakeSentenceTokenizer:
             def tokenize(self, input_text):
                 text_to_sentences = {
@@ -234,9 +235,9 @@ class TestTextParser(unittest.TestCase):
         parser = TextParser(
             spacy_nlp=fake_spacy_nlp, sent_tokenizer=FakeSentenceTokenizer(), mode="tokenize"
         )
-        corpus = small_burr_corpus()
         actual = [
-            utterance.meta["parsed"] for utterance in parser.transform(corpus).iter_utterances()
+            utterance.meta["parsed"]
+            for utterance in parser.transform(self.corpus).iter_utterances()
         ]
         expected = [
             [
@@ -260,6 +261,34 @@ class TestTextParser(unittest.TestCase):
         ]
 
         self.assertListEqual(expected, actual)
+
+
+class TestWithMem(TestTextParser):
+    def setUp(self) -> None:
+        self.corpus = small_burr_corpus()
+
+    def test_process_text_tag_mode(self):
+        self.process_text_tag_mode()
+
+    def test_process_text_parse_mode(self):
+        self.process_text_parse_mode()
+
+    def test_process_text_tokenize_mode(self):
+        self.process_text_tokenize_mode()
+
+
+class TestWithDB(TestTextParser):
+    def setUp(self) -> None:
+        self.corpus = reload_corpus_in_db_mode(small_burr_corpus())
+
+    def test_process_text_tag_mode(self):
+        self.process_text_tag_mode()
+
+    def test_process_text_parse_mode(self):
+        self.process_text_parse_mode()
+
+    def test_process_text_tokenize_mode(self):
+        self.process_text_tokenize_mode()
 
 
 if __name__ == "__main__":

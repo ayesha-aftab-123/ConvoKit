@@ -268,5 +268,8 @@ def reload_corpus_in_db_mode(corpus):
     try:
         db_corpus = Corpus(corpus_id, storage_type="db")
         return db_corpus
+    except Exception as e:
+        shutil.rmtree(corpus_id)
+        raise e
     finally:
         shutil.rmtree(corpus_id)

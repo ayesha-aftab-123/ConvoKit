@@ -1,3 +1,4 @@
+import os.path
 import shutil
 from uuid import uuid4
 
@@ -264,12 +265,10 @@ def burr_spacy_sentence_doc_4():
 
 def reload_corpus_in_db_mode(corpus):
     corpus_id = uuid4().hex
-    corpus.dump(corpus_id, base_path=".")
     try:
+        corpus.dump(corpus_id, base_path=".")
         db_corpus = Corpus(corpus_id, storage_type="db")
         return db_corpus
-    except Exception as e:
-        shutil.rmtree(corpus_id)
-        raise e
     finally:
-        shutil.rmtree(corpus_id)
+        if os.path.exists(corpus_id):
+            shutil.rmtree(corpus_id)

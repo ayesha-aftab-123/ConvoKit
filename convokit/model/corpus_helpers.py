@@ -431,10 +431,14 @@ def load_binary_metadata(filename, index, exclude_meta=None):
             if meta_type == ["bin"] and (
                 exclude_meta is None or meta_key not in exclude_meta[component_type]
             ):
+                # filename format differs for utterances versus everything else
+                filename_suffix = (
+                    "-bin.p"
+                    if component_type == "utterance"
+                    else "-{}-bin.p".format(component_type)
+                )
                 try:
-                    with open(
-                        os.path.join(filename, meta_key + "-{}-bin.p".format(component_type)), "rb"
-                    ) as f:
+                    with open(os.path.join(filename, meta_key + filename_suffix), "rb") as f:
                         l_bin = pickle.load(f)
                         binary_data[component_type][meta_key] = l_bin
                 except FileNotFoundError:
@@ -505,7 +509,7 @@ def load_jsonlist_to_db(
                 for key, bin_list in bin_meta.items():
                     bin_locator = utt_meta[key]
                     if (
-                        type(bin_locator) == "str"
+                        type(bin_locator) == str
                         and bin_locator.startswith(BIN_DELIM_L)
                         and bin_locator.endswith(BIN_DELIM_R)
                     ):

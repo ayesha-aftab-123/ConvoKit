@@ -28,8 +28,9 @@ class ConvoKitMeta(MutableMapping, dict):
         return f"{self.obj_type}_{self.owner.id}"
 
     def __getitem__(self, item):
-        item_type = self.index.get_index(self.obj_type).get(item, None)
-        return self._get_storage().get_data("meta", self.storage_key, item, item_type)
+        return self._get_storage().get_data(
+            "meta", self.storage_key, item, self.index.get_index(self.obj_type)
+        )
 
     def _get_storage(self):
         # special case for Corpus meta since that's the only time owner is not a CorpusComponent
@@ -66,8 +67,9 @@ class ConvoKitMeta(MutableMapping, dict):
 
         if self.index.type_check:
             ConvoKitMeta._check_type_and_update_index(self.index, self.obj_type, key, value)
-        item_type = self.index.get_index(self.obj_type).get(key, None)
-        self._get_storage().update_data("meta", self.storage_key, key, value, item_type)
+        self._get_storage().update_data(
+            "meta", self.storage_key, key, value, self.index.get_index(self.obj_type)
+        )
 
     def __delitem__(self, key):
         if self.obj_type == "corpus":
@@ -87,19 +89,35 @@ class ConvoKitMeta(MutableMapping, dict):
                 self._get_storage().delete_data("meta", self.storage_key, key)
 
     def __iter__(self):
-        return self._get_storage().get_data("meta", self.storage_key).__iter__()
+        return (
+            self._get_storage()
+            .get_data("meta", self.storage_key, index=self.index.get_index(self.obj_type))
+            .__iter__()
+        )
 
     def __len__(self):
-        return self._get_storage().get_data("meta", self.storage_key).__len__()
+        return (
+            self._get_storage()
+            .get_data("meta", self.storage_key, index=self.index.get_index(self.obj_type))
+            .__len__()
+        )
 
     def __contains__(self, x):
-        return self._get_storage().get_data("meta", self.storage_key).__contains__(x)
+        return (
+            self._get_storage()
+            .get_data("meta", self.storage_key, index=self.index.get_index(self.obj_type))
+            .__contains__(x)
+        )
 
     def __repr__(self) -> str:
         return "ConvoKitMeta(" + self.to_dict().__repr__() + ")"
 
     def to_dict(self):
-        return dict(self._get_storage().get_data("meta", self.storage_key))
+        return dict(
+            self._get_storage().get_data(
+                "meta", self.storage_key, index=self.index.get_index(self.obj_type)
+            )
+        )
 
     def reinitialize_from(self, other: Union["ConvoKitMeta", dict]):
         """

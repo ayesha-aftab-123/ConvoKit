@@ -507,7 +507,7 @@ def load_jsonlist_to_db(
                         del utt_meta[exclude_key]
             if bin_meta is not None:
                 for key, bin_list in bin_meta.items():
-                    bin_locator = utt_meta[key]
+                    bin_locator = utt_meta.get(key, None)
                     if (
                         type(bin_locator) == str
                         and bin_locator.startswith(BIN_DELIM_L)
@@ -564,7 +564,7 @@ def load_json_to_db(
         )
         if bin_meta is not None:
             for key, bin_list in bin_meta.items():
-                bin_locator = meta[key]
+                bin_locator = meta.get(key, None)
                 if (
                     type(bin_locator) == "str"
                     and bin_locator.startswith(BIN_DELIM_L)
@@ -591,7 +591,7 @@ def load_corpus_info_to_db(filename, db, collection_prefix, exclude_meta=None, b
         corpus_meta = {k: v for k, v in json.load(f).items() if k not in exclude_meta}
         if bin_meta is not None:
             for key, bin_list in bin_meta.items():
-                bin_locator = corpus_meta[key]
+                bin_locator = corpus_meta.get(key, None)
                 if (
                     type(bin_locator) == "str"
                     and bin_locator.startswith(BIN_DELIM_L)

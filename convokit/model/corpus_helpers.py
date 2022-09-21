@@ -566,7 +566,7 @@ def load_json_to_db(
             for key, bin_list in bin_meta.items():
                 bin_locator = meta.get(key, None)
                 if (
-                    type(bin_locator) == "str"
+                    type(bin_locator) == str
                     and bin_locator.startswith(BIN_DELIM_L)
                     and bin_locator.endswith(BIN_DELIM_R)
                 ):
@@ -593,7 +593,7 @@ def load_corpus_info_to_db(filename, db, collection_prefix, exclude_meta=None, b
             for key, bin_list in bin_meta.items():
                 bin_locator = corpus_meta.get(key, None)
                 if (
-                    type(bin_locator) == "str"
+                    type(bin_locator) == str
                     and bin_locator.startswith(BIN_DELIM_L)
                     and bin_locator.endswith(BIN_DELIM_R)
                 ):

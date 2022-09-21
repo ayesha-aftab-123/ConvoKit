@@ -252,7 +252,7 @@ class DBStorageManager(StorageManager):
         collection = self.get_collection(component_type)
         if overwrite or not self.has_data_for_component(component_type, component_id):
             data = initial_value if initial_value is not None else {}
-            collection.update_one({"_id": component_id}, {"$set": data}, upsert=True)
+            collection.replace_one({"_id": component_id}, data, upsert=True)
 
     def get_data(
         self,

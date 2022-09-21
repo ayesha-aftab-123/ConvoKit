@@ -16,12 +16,14 @@ class ConvoKitMeta(MutableMapping, dict):
     ConvoKitMeta is a dictlike object that stores the metadata attributes of a corpus component
     """
 
-    def __init__(self, owner, convokit_index, obj_type):
+    def __init__(self, owner, convokit_index, obj_type, overwrite=False):
         self.owner = owner  # Corpus or CorpusComponent
         self.index: ConvoKitIndex = convokit_index
         self.obj_type = obj_type
 
-        self._get_storage().initialize_data_for_component("meta", self.storage_key)
+        self._get_storage().initialize_data_for_component(
+            "meta", self.storage_key, overwrite=overwrite
+        )
 
     @property
     def storage_key(self) -> str:

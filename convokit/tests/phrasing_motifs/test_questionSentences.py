@@ -7,7 +7,7 @@ from convokit.tests.test_utils import small_burr_corpus_parsed, reload_corpus_in
 def parsed_burr_sir_corpus_with_lowercase_are():
     corpus = small_burr_corpus_parsed()
     for utterance in corpus.iter_utterances():
-        parsed = utterance.get_info("parsed")
+        parsed = utterance.retrieve_meta("parsed")
         for sentence in parsed:
             if sentence["toks"][0]["tok"] == "Are":
                 sentence["toks"][0]["tok"] = "are"
@@ -25,7 +25,7 @@ class TestQuestionSentences(unittest.TestCase):
         for utterance, expected_sentences in zip(
             transformed_corpus.iter_utterances(), expected_sentences_list
         ):
-            self.assertListEqual(expected_sentences, utterance.get_info("questions"))
+            self.assertListEqual(expected_sentences, utterance.retrieve_meta("questions"))
 
     def use_caps_false(self):
         transformer = QuestionSentences(

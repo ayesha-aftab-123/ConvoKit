@@ -28,7 +28,9 @@ class CorpusIndexMeta(unittest.TestCase):
         self.corpus.get_utterance("1").meta["foo"] = "bar2"
         self.corpus.get_utterance("2").meta["hey"] = "jude"
 
-        self.corpus.get_conversation(None).meta["convo_meta"] = 1
+        self.corpus.get_conversation(Conversation.generate_default_conversation_id("0")).meta[
+            "convo_meta"
+        ] = 1
 
         self.corpus.get_speaker("alice").meta["surname"] = 1.0
 

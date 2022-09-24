@@ -394,7 +394,9 @@ def fill_missing_conversation_ids(utterances_dict: Dict[str, Utterance]) -> None
 
     # connect the reply-to edges
     for root_utt_id in convo_roots:
-        generated_conversation_id = f"__default_conversation__{root_utt_id}"
+        generated_conversation_id = Conversation.generate_default_conversation_id(
+            utterance_id=root_utt_id
+        )
         utterances_dict[root_utt_id].conversation_id = generated_conversation_id
         repliers = utt_ids_to_replier_ids.get(root_utt_id, deque())
         while len(repliers) > 0:

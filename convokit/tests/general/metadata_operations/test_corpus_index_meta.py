@@ -1,5 +1,6 @@
 import unittest
 
+from convokit import Conversation
 from convokit.model import Utterance, Speaker, Corpus
 from convokit.tests.test_utils import reload_corpus_in_db_mode
 
@@ -74,7 +75,9 @@ class CorpusIndexMeta(unittest.TestCase):
         self.corpus.get_utterance("1").meta["foo"] = "bar2"
         self.corpus.get_utterance("2").meta["hey"] = "jude"
 
-        self.corpus.get_conversation(None).meta["convo_meta"] = 1
+        self.corpus.get_conversation(Conversation.generate_default_conversation_id("0")).meta[
+            "convo_meta"
+        ] = 1
 
         self.corpus.get_speaker("alice").meta["surname"] = 1.0
         self.corpus.dump("test_index_meta_corpus", base_path=".")
@@ -132,7 +135,9 @@ class TestWithDB(CorpusIndexMeta):
             Corpus(
                 utterances=[
                     Utterance(id="0", text="hello world", speaker=Speaker(id="alice")),
-                    Utterance(id="1", text="my name is bob", speaker=Speaker(id="bob")),
+                    Utterance(
+                        id="1", text="my name is bob", reply_to="0", speaker=Speaker(id="bob")
+                    ),
                     Utterance(id="2", text="this is a test", speaker=Speaker(id="charlie")),
                 ]
             )

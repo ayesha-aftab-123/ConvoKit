@@ -5,7 +5,7 @@ Contains functions that help with the construction / dumping of a Corpus
 import json
 import os
 import pickle
-from collections import defaultdict
+from collections import defaultdict, deque
 from typing import Dict, Optional, List
 
 import bson
@@ -375,7 +375,37 @@ def merge_utterance_lines(utt_dict):
     return new_utterances
 
 
-def initialize_conversations(corpus, utt_dict, convos_data, convo_to_utts=None):
+def fill_missing_conversation_ids(utterances_dict: Dict[str, Utterance]) -> None:
+    """
+    Populates `conversation_id` in Utterances that have `conversation_id` set to `None`, with a Conversation root-specific generated ID
+    :param utterances_dict:
+    :return:
+    """
+    utts_without_convo_ids = [
+        utt for utt in utterances_dict.values() if utt.conversation_id is None
+    ]
+    utt_ids_to_replier_ids = defaultdict(deque)
+    convo_roots = []
+    for utt in utts_without_convo_ids:
+        if utt.reply_to is None:
+            convo_roots.append(utt.id)
+        else:
+            utt_ids_to_replier_ids[utt.reply_to].append(utt.id)
+
+    # connect the reply-to edges
+    for root_utt_id in convo_roots:
+        generated_conversation_id = f"__default_conversation__{root_utt_id}"
+        utterances_dict[root_utt_id].conversation_id = generated_conversation_id
+        repliers = utt_ids_to_replier_ids.get(root_utt_id, deque())
+        while len(repliers) > 0:
+            replier_id = repliers.popleft()
+            utterances_dict[replier_id].conversation_id = generated_conversation_id
+            repliers.extend(utt_ids_to_replier_ids[replier_id])
+
+
+def initialize_conversations(
+    corpus, convos_data, convo_to_utts=None, fill_missing_convo_ids: bool = False
+):
     """
     Initialize Conversation objects from utterances and conversations data.
     If a mapping from Conversation IDs to their constituent Utterance IDs is
@@ -383,14 +413,17 @@ def initialize_conversations(corpus, utt_dict, convos_data, convo_to_utts=None):
     directly provided via the convo_to_utts parameter, otherwise the mapping
     will be computed by iteration over the Utterances in utt_dict.
     """
+    if fill_missing_convo_ids:
+        fill_missing_conversation_ids(corpus.utterances)
+
     # organize utterances by conversation
     if convo_to_utts is None:
         convo_to_utts = defaultdict(list)  # temp container identifying utterances by conversation
-        for u in utt_dict.values():
+        for utt in corpus.utterances.values():
             convo_key = (
-                u.conversation_id
+                utt.conversation_id
             )  # each conversation_id is considered a separate conversation
-            convo_to_utts[convo_key].append(u.id)
+            convo_to_utts[convo_key].append(utt.id)
     conversations = {}
     for convo_id in convo_to_utts:
         # look up the metadata associated with this conversation, if any
@@ -774,7 +807,7 @@ def init_corpus_from_storage_manager(corpus, utt_ids=None):
     corpus.utterances = utterances
 
     # run post-construction integrity steps as in regular constructor
-    corpus.conversations = initialize_conversations(corpus, corpus.utterances, {}, convo_to_utts)
+    corpus.conversations = initialize_conversations(corpus, {}, convo_to_utts)
     corpus.meta_index.enable_type_check()
     corpus.update_speakers_data()
 

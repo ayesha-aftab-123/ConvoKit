@@ -198,7 +198,9 @@ class Corpus:
             # if corpus is nonempty (check for self.utterances), construct the conversation
             # data from the utterance list
             if hasattr(self, "utterances"):
-                self.conversations = initialize_conversations(self, self.utterances, convos_data)
+                self.conversations = initialize_conversations(
+                    self, convos_data, fill_missing_convo_ids=True
+                )
                 self.meta_index.enable_type_check()
                 self.update_speakers_data()
 

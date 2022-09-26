@@ -1,7 +1,7 @@
 import unittest
 
 from convokit import Conversation
-from convokit.tests.general.fill_missing_convo_ids.missing_convo_ids_helpers import (
+from convokit.tests.general.fill_missing_convo_ids.fill_missing_convo_ids_helpers import (
     get_new_utterances_without_convo_ids,
     get_new_utterances_without_existing_convo_ids,
     construct_missing_convo_ids_corpus,

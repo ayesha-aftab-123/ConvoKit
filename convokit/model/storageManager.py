@@ -273,6 +273,8 @@ class DBStorageManager(StorageManager):
                 for key in all_fields:
                     if index.get(key, None) == ["bin"]:
                         all_fields[key] = pickle.loads(all_fields[key])
+            # do not include the MongoDB-specific _id field
+            del all_fields["_id"]
             return all_fields
         else:
             result = all_fields[property_name]

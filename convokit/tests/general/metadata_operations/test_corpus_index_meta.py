@@ -28,7 +28,6 @@ class CorpusIndexMeta(unittest.TestCase):
         self.corpus.get_utterance("2").meta["hey"] = "jude"
 
         self.corpus.get_conversation("convo_id_0").meta["convo_meta"] = 1
-
         self.corpus.get_speaker("alice").meta["surname"] = 1.0
 
         self.assertEqual(self.corpus.meta_index.utterances_index["foo"], [str(type("bar"))])

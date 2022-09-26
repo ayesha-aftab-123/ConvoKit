@@ -136,7 +136,7 @@ def unpack_binary_data_for_utts(utterances, filename, utterance_index, exclude_m
     :return:
     """
     for field, field_types in utterance_index.items():
-        if field_types[0] == "bin" and field not in exclude_meta:
+        if len(field_types) > 0 and field_types[0] == "bin" and field not in exclude_meta:
             with open(os.path.join(filename, field + "-bin.p"), "rb") as f:
                 l_bin = pickle.load(f)
             for i, ut in enumerate(utterances):
@@ -171,7 +171,7 @@ def unpack_binary_data(filename, objs_data, object_index, obj_type, exclude_meta
     """
     # unpack speaker meta
     for field, field_types in object_index.items():
-        if field_types[0] == "bin" and field not in exclude_meta:
+        if len(field_types) > 0 and field_types[0] == "bin" and field not in exclude_meta:
             with open(os.path.join(filename, field + "-{}-bin.p".format(obj_type)), "rb") as f:
                 l_bin = pickle.load(f)
             for obj, data in objs_data.items():
@@ -343,7 +343,7 @@ def dump_helper_bin(d: ConvoKitMeta, d_bin: Dict, fields_to_skip=None) -> Dict: 
         if k in fields_to_skip:
             continue
         try:
-            if obj_idx[k][0] == "bin":
+            if len(obj_idx[k]) > 0 and obj_idx[k][0] == "bin":
                 d_out[k] = "{}{}{}".format(BIN_DELIM_L, len(d_bin[k]), BIN_DELIM_R)
                 d_bin[k].append(v)
             else:

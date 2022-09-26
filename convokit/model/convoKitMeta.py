@@ -47,12 +47,15 @@ class ConvoKitMeta(MutableMapping, dict):
 
     @staticmethod
     def _check_type_and_update_index(index, obj_type, key, value):
-        if not isinstance(value, type(None)):  # do nothing to index if value is None
-            if key not in index.indices[obj_type]:
+        if key not in index.indices[obj_type]:
+            if isinstance(value, type(None)):  # new entry with None type means can't infer type yet
+                index.create_new_index(obj_type, key=key)
+            else:
                 type_ = _optimized_type_check(value)
                 index.update_index(obj_type, key=key, class_type=type_)
-            else:
-                # entry exists
+        else:
+            # entry exists
+            if not isinstance(value, type(None)):  # do not update index if value is None
                 if index.get_index(obj_type)[key] != ["bin"]:  # if "bin" do no further checks
                     if str(type(value)) not in index.get_index(obj_type)[key]:
                         new_type = _optimized_type_check(value)

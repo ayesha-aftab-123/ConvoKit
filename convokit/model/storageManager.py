@@ -100,6 +100,14 @@ class StorageManager(metaclass=ABCMeta):
         """
         return NotImplemented
 
+    @abstractmethod
+    def count_entries(self, component_type: str):
+        """
+        Count the number of entries held for the specified component type by
+        this StorageManager instance
+        """
+        return NotImplemented
+
     def get_collection(self, component_type: str):
         if component_type not in self.data:
             raise ValueError(
@@ -202,6 +210,9 @@ class MemStorageManager(StorageManager):
     def clear_all_data(self):
         for key in self.data:
             self.data[key] = {}
+
+    def count_entries(self, component_type: str):
+        return len(self.get_collection(component_type))
 
 
 class DBStorageManager(StorageManager):
@@ -314,3 +325,6 @@ class DBStorageManager(StorageManager):
         for key in self.data:
             self.data[key].drop()
             self.data[key] = self.db[self._get_collection_name(key)]
+
+    def count_entries(self, component_type: str):
+        return self.get_collection(component_type).estimated_document_count()

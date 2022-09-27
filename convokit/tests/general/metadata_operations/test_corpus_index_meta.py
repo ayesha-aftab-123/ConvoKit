@@ -27,8 +27,7 @@ class CorpusIndexMeta(unittest.TestCase):
         self.corpus.get_utterance("1").meta["foo"] = "bar2"
         self.corpus.get_utterance("2").meta["hey"] = "jude"
 
-        self.corpus.get_conversation(None).meta["convo_meta"] = 1
-
+        self.corpus.get_conversation("convo_id_0").meta["convo_meta"] = 1
         self.corpus.get_speaker("alice").meta["surname"] = 1.0
 
         self.assertEqual(self.corpus.meta_index.utterances_index["foo"], [str(type("bar"))])
@@ -64,9 +63,24 @@ class CorpusIndexMeta(unittest.TestCase):
     def corpus_dump(self):
         self.corpus = Corpus(
             utterances=[
-                Utterance(id="0", text="hello world", speaker=Speaker(id="alice")),
-                Utterance(id="1", text="my name is bob", speaker=Speaker(id="bob")),
-                Utterance(id="2", text="this is a test", speaker=Speaker(id="charlie")),
+                Utterance(
+                    id="0",
+                    text="hello world",
+                    conversation_id="convo_id_0",
+                    speaker=Speaker(id="alice"),
+                ),
+                Utterance(
+                    id="1",
+                    text="my name is bob",
+                    conversation_id="convo_id_0",
+                    speaker=Speaker(id="bob"),
+                ),
+                Utterance(
+                    id="2",
+                    text="this is a test",
+                    conversation_id="convo_id_0",
+                    speaker=Speaker(id="charlie"),
+                ),
             ]
         )
 
@@ -74,7 +88,7 @@ class CorpusIndexMeta(unittest.TestCase):
         self.corpus.get_utterance("1").meta["foo"] = "bar2"
         self.corpus.get_utterance("2").meta["hey"] = "jude"
 
-        self.corpus.get_conversation(None).meta["convo_meta"] = 1
+        self.corpus.get_conversation("convo_id_0").meta["convo_meta"] = 1
 
         self.corpus.get_speaker("alice").meta["surname"] = 1.0
         self.corpus.dump("test_index_meta_corpus", base_path=".")
@@ -132,7 +146,9 @@ class TestWithDB(CorpusIndexMeta):
             Corpus(
                 utterances=[
                     Utterance(id="0", text="hello world", speaker=Speaker(id="alice")),
-                    Utterance(id="1", text="my name is bob", speaker=Speaker(id="bob")),
+                    Utterance(
+                        id="1", text="my name is bob", reply_to="0", speaker=Speaker(id="bob")
+                    ),
                     Utterance(id="2", text="this is a test", speaker=Speaker(id="charlie")),
                 ]
             )

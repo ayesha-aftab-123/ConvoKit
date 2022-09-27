@@ -5,16 +5,18 @@ Contains functions that help with the construction / dumping of a Corpus
 import json
 import os
 import pickle
-from collections import defaultdict
-from typing import Dict
+from collections import defaultdict, deque
+from typing import Dict, Optional, List, Iterable
 
 import bson
 from pymongo import UpdateOne
 
 from convokit.util import warn
 from .conversation import Conversation
+from .convoKitIndex import ConvoKitIndex
 from .convoKitMeta import ConvoKitMeta
 from .speaker import Speaker
+from .storageManager import StorageManager, MemStorageManager, DBStorageManager
 from .utterance import Utterance
 
 BIN_DELIM_L, BIN_DELIM_R = "<##bin{", "}&&@**>"
@@ -29,6 +31,44 @@ KeyMeta = "meta"
 KeyVectors = "vectors"
 
 JSONLIST_BUFFER_SIZE = 1000
+
+
+def get_corpus_id(db_collection_prefix: Optional[str], filename: Optional[str]) -> Optional[str]:
+    if db_collection_prefix is not None:
+        # treat the unique collection prefix as the ID (even if a filename is specified)
+        return db_collection_prefix
+    elif filename is not None:
+        # automatically derive an ID from the file path
+        return os.path.basename(os.path.normpath(filename))
+    else:
+        return None
+
+
+def get_corpus_dirpath(filename: str) -> Optional[str]:
+    if filename is None:
+        return None
+    elif os.path.isdir(filename):
+        return filename
+    else:
+        return os.path.dirname(filename)
+
+
+def initialize_storage(
+    corpus: "Corpus", storage: Optional[StorageManager], storage_type: str, db_host: Optional[str]
+):
+    if storage is not None:
+        return storage
+    else:
+        if storage_type == "mem":
+            return MemStorageManager()
+        elif storage_type == "db":
+            if db_host is None:
+                db_host = corpus.config.db_host
+            return DBStorageManager(corpus.id, db_host)
+        else:
+            raise ValueError(
+                f"Unrecognized setting '{storage_type}' for storage type; should be either 'mem' or 'db'."
+            )
 
 
 def load_utterance_info_from_dir(
@@ -189,6 +229,54 @@ def unpack_binary_data(filename, objs_data, object_index, obj_type, exclude_meta
         del object_index[field]
 
 
+def unpack_all_binary_data(
+    filename: str,
+    meta_index: ConvoKitIndex,
+    meta: ConvoKitMeta,
+    utterances: List[Utterance],
+    speakers_data: Dict[str, Dict],
+    convos_data: Dict[str, Dict],
+    exclude_utterance_meta: List[str],
+    exclude_speaker_meta: List[str],
+    exclude_conversation_meta: List[str],
+    exclude_overall_meta: List[str],
+):
+    # unpack binary data for utterances
+    unpack_binary_data_for_utts(
+        utterances,
+        filename,
+        meta_index.utterances_index,
+        exclude_utterance_meta,
+        KeyMeta,
+    )
+    # unpack binary data for speakers
+    unpack_binary_data(
+        filename,
+        speakers_data,
+        meta_index.speakers_index,
+        "speaker",
+        exclude_speaker_meta,
+    )
+
+    # unpack binary data for conversations
+    unpack_binary_data(
+        filename,
+        convos_data,
+        meta_index.conversations_index,
+        "convo",
+        exclude_conversation_meta,
+    )
+
+    # unpack binary data for overall corpus
+    unpack_binary_data(
+        filename,
+        meta,
+        meta_index.overall_index,
+        "overall",
+        exclude_overall_meta,
+    )
+
+
 def load_from_utterance_file(filename, utterance_start_index, utterance_end_index):
     """
     where filename is "utterances.json" or "utterances.jsonl" for example
@@ -216,9 +304,7 @@ def load_from_utterance_file(filename, utterance_start_index, utterance_end_inde
     return utterances
 
 
-def initialize_speakers_and_utterances_objects(
-    corpus, utt_dict, utterances, speakers_dict, speakers_data
-):
+def initialize_speakers_and_utterances_objects(corpus, utterances, speakers_data):
     """
     Initialize Speaker and Utterance objects
     """
@@ -229,7 +315,7 @@ def initialize_speakers_and_utterances_objects(
     for i, u in enumerate(utterances):
         u = defaultdict(lambda: None, u)
         speaker_key = u[KeySpeaker]
-        if speaker_key not in speakers_dict:
+        if speaker_key not in corpus.speakers:
             if u[KeySpeaker] not in speakers_data:
                 warn(
                     "CorpusLoadWarning: Missing speaker metadata for speaker ID: {}. "
@@ -237,15 +323,15 @@ def initialize_speakers_and_utterances_objects(
                 )
                 speakers_data[u[KeySpeaker]] = {}
             if KeyMeta in speakers_data[u[KeySpeaker]]:
-                speakers_dict[speaker_key] = Speaker(
+                corpus.speakers[speaker_key] = Speaker(
                     owner=corpus, id=u[KeySpeaker], meta=speakers_data[u[KeySpeaker]][KeyMeta]
                 )
             else:
-                speakers_dict[speaker_key] = Speaker(
+                corpus.speakers[speaker_key] = Speaker(
                     owner=corpus, id=u[KeySpeaker], meta=speakers_data[u[KeySpeaker]]
                 )
 
-        speaker = speakers_dict[speaker_key]
+        speaker = corpus.speakers[speaker_key]
         speaker.vectors = speakers_data[u[KeySpeaker]].get(KeyVectors, [])
 
         # temp fix for reddit reply_to
@@ -264,7 +350,7 @@ def initialize_speakers_and_utterances_objects(
             meta=u[KeyMeta],
         )
         utt.vectors = u.get(KeyVectors, [])
-        utt_dict[utt.id] = utt
+        corpus.utterances[utt.id] = utt
 
 
 def merge_utterance_lines(utt_dict):
@@ -289,7 +375,76 @@ def merge_utterance_lines(utt_dict):
     return new_utterances
 
 
-def initialize_conversations(corpus, utt_dict, convos_data, convo_to_utts=None):
+def _update_reply_to_chain_with_conversation_id(
+    utterances_dict: Dict[str, Utterance],
+    utt_ids_to_replier_ids: Dict[str, Iterable[str]],
+    root_utt_id: str,
+    conversation_id: str,
+):
+    repliers = utt_ids_to_replier_ids.get(root_utt_id, deque())
+    while len(repliers) > 0:
+        replier_id = repliers.popleft()
+        utterances_dict[replier_id].conversation_id = conversation_id
+        repliers.extend(utt_ids_to_replier_ids[replier_id])
+
+
+def fill_missing_conversation_ids(utterances_dict: Dict[str, Utterance]) -> None:
+    """
+    Populates `conversation_id` in Utterances that have `conversation_id` set to `None`, with a Conversation root-specific generated ID
+    :param utterances_dict:
+    :return:
+    """
+    utts_without_convo_ids = [
+        utt for utt in utterances_dict.values() if utt.conversation_id is None
+    ]
+    utt_ids_to_replier_ids = defaultdict(deque)
+    convo_roots_without_convo_ids = []
+    convo_roots_with_convo_ids = []
+    for utt in utterances_dict.values():
+        if utt.reply_to is None:
+            if utt.conversation_id is None:
+                convo_roots_without_convo_ids.append(utt.id)
+            else:
+                convo_roots_with_convo_ids.append(utt.id)
+        else:
+            utt_ids_to_replier_ids[utt.reply_to].append(utt.id)
+
+    # connect the reply-to edges for convo roots without convo ids
+    for root_utt_id in convo_roots_without_convo_ids:
+        generated_conversation_id = Conversation.generate_default_conversation_id(
+            utterance_id=root_utt_id
+        )
+        utterances_dict[root_utt_id].conversation_id = generated_conversation_id
+        _update_reply_to_chain_with_conversation_id(
+            utterances_dict=utterances_dict,
+            utt_ids_to_replier_ids=utt_ids_to_replier_ids,
+            root_utt_id=root_utt_id,
+            conversation_id=generated_conversation_id,
+        )
+
+    # Previous section handles all *new* conversations
+    # Next section handles utts that belong to existing conversations
+    for root_utt_id in convo_roots_with_convo_ids:
+        conversation_id = utterances_dict[root_utt_id].conversation_id
+        _update_reply_to_chain_with_conversation_id(
+            utterances_dict=utterances_dict,
+            utt_ids_to_replier_ids=utt_ids_to_replier_ids,
+            root_utt_id=root_utt_id,
+            conversation_id=conversation_id,
+        )
+
+    # It's still possible to have utts that reply to non-existent utts
+    # These are the utts that do not have a conversation_id even at this step
+    for utt in utts_without_convo_ids:
+        if utt.conversation_id is None:
+            raise ValueError(
+                f"Invalid Utterance found: Utterance {utt.id} replies to an Utterance '{utt.reply_to}' that does not exist. See utterances dict: {set(utterances_dict)}"
+            )
+
+
+def initialize_conversations(
+    corpus, convos_data, convo_to_utts=None, fill_missing_convo_ids: bool = False
+):
     """
     Initialize Conversation objects from utterances and conversations data.
     If a mapping from Conversation IDs to their constituent Utterance IDs is
@@ -297,14 +452,17 @@ def initialize_conversations(corpus, utt_dict, convos_data, convo_to_utts=None):
     directly provided via the convo_to_utts parameter, otherwise the mapping
     will be computed by iteration over the Utterances in utt_dict.
     """
+    if fill_missing_convo_ids:
+        fill_missing_conversation_ids(corpus.utterances)
+
     # organize utterances by conversation
     if convo_to_utts is None:
         convo_to_utts = defaultdict(list)  # temp container identifying utterances by conversation
-        for u in utt_dict.values():
+        for utt in corpus.utterances.values():
             convo_key = (
-                u.conversation_id
+                utt.conversation_id
             )  # each conversation_id is considered a separate conversation
-            convo_to_utts[convo_key].append(u.id)
+            convo_to_utts[convo_key].append(utt.id)
     conversations = {}
     for convo_id in convo_to_utts:
         # look up the metadata associated with this conversation, if any
@@ -692,7 +850,7 @@ def init_corpus_from_storage_manager(corpus, utt_ids=None):
     corpus.utterances = utterances
 
     # run post-construction integrity steps as in regular constructor
-    corpus.conversations = initialize_conversations(corpus, corpus.utterances, {}, convo_to_utts)
+    corpus.conversations = initialize_conversations(corpus, {}, convo_to_utts)
     corpus.meta_index.enable_type_check()
     corpus.update_speakers_data()
 

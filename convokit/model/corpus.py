@@ -1,17 +1,16 @@
 import random
 import shutil
-from typing import List, Collection, Callable, Set, Generator, Tuple, Optional, ValuesView, Union
+from typing import Collection, Callable, Set, Generator, Tuple, ValuesView, Union
 
 from pandas import DataFrame
 from tqdm import tqdm
 
 from convokit.convokitConfig import ConvoKitConfig
-from convokit.util import deprecation, create_safe_id
-from .convoKitIndex import ConvoKitIndex
+from convokit.util import create_safe_id
 from .convoKitMatrix import ConvoKitMatrix
 from .corpusUtil import *
 from .corpus_helpers import *
-from .storageManager import DBStorageManager, StorageManager, MemStorageManager
+from .storageManager import StorageManager
 
 
 class Corpus:
@@ -62,13 +61,7 @@ class Corpus:
     ):
 
         self.config = ConvoKitConfig()
-
-        if filename is None:
-            self.corpus_dirpath = None
-        elif os.path.isdir(filename):
-            self.corpus_dirpath = filename
-        else:
-            self.corpus_dirpath = os.path.dirname(filename)
+        self.corpus_dirpath = get_corpus_dirpath(filename)
 
         # configure corpus ID (optional for mem mode, required for DB mode)
         if storage_type is None:
@@ -79,28 +72,8 @@ class Corpus:
                 "You are in DB mode, but no collection prefix was specified and no filename was given from which to infer one."
                 "Will use a randomly generated unique prefix " + db_collection_prefix
             )
-        self.id = None
-        if db_collection_prefix is not None:
-            # treat the unique collection prefix as the ID (even if a filename is specified)
-            self.id = db_collection_prefix
-        elif filename is not None:
-            # automatically derive an ID from the file path
-            self.id = os.path.basename(os.path.normpath(filename))
-
-        # Setup storage
-        if storage is not None:
-            self.storage = storage
-        else:
-            if storage_type == "mem":
-                self.storage = MemStorageManager()
-            elif storage_type == "db":
-                if db_host is None:
-                    db_host = self.config.db_host
-                self.storage = DBStorageManager(self.id, db_host)
-            else:
-                raise ValueError(
-                    f"Unrecognized setting '{storage_type}' for storage type; should be either 'mem' or 'db'."
-                )
+        self.id = get_corpus_id(db_collection_prefix, filename)
+        self.storage = initialize_storage(self, storage, storage_type, db_host)
 
         self.meta_index = ConvoKitIndex(self)
         self.meta = ConvoKitMeta(self, self.meta_index, "corpus")
@@ -174,47 +147,18 @@ class Corpus:
                         idx_dict = json.load(f)
                         self.meta_index.update_from_dict(idx_dict)
 
-                    # load all processed text information, but don't load actual text.
-                    # also checks if the index file exists.
-                    # try:
-                    #     with open(os.path.join(filename, "processed_text.index.json"), "r") as f:
-                    #         self.processed_text = {k: {} for k in json.load(f)}
-                    # except:
-                    #     pass
-
-                    # unpack binary data for utterances
-                    unpack_binary_data_for_utts(
-                        utterances,
-                        filename,
-                        self.meta_index.utterances_index,
-                        exclude_utterance_meta,
-                        KeyMeta,
-                    )
-                    # unpack binary data for speakers
-                    unpack_binary_data(
-                        filename,
-                        speakers_data,
-                        self.meta_index.speakers_index,
-                        "speaker",
-                        exclude_speaker_meta,
-                    )
-
-                    # unpack binary data for conversations
-                    unpack_binary_data(
-                        filename,
-                        convos_data,
-                        self.meta_index.conversations_index,
-                        "convo",
-                        exclude_conversation_meta,
-                    )
-
-                    # unpack binary data for overall corpus
-                    unpack_binary_data(
-                        filename,
-                        self.meta,
-                        self.meta_index.overall_index,
-                        "overall",
-                        exclude_overall_meta,
+                    # unpack all binary data
+                    unpack_all_binary_data(
+                        filename=filename,
+                        meta_index=self.meta_index,
+                        meta=self.meta,
+                        utterances=utterances,
+                        speakers_data=speakers_data,
+                        convos_data=convos_data,
+                        exclude_utterance_meta=exclude_utterance_meta,
+                        exclude_speaker_meta=exclude_speaker_meta,
+                        exclude_conversation_meta=exclude_conversation_meta,
+                        exclude_overall_meta=exclude_overall_meta,
                     )
 
                 else:
@@ -227,9 +171,7 @@ class Corpus:
                 self.utterances = dict()
                 self.speakers = dict()
 
-                initialize_speakers_and_utterances_objects(
-                    self, self.utterances, utterances, self.speakers, speakers_data
-                )
+                initialize_speakers_and_utterances_objects(self, utterances, speakers_data)
 
                 self.meta_index.enable_type_check()
 
@@ -241,11 +183,11 @@ class Corpus:
                             self._vector_matrices[vector_name] = matrix
 
             elif utterances is not None:  # Construct corpus from utterances list
-                self.speakers = {u.speaker.id: u.speaker for u in utterances}
-                self.utterances = {u.id: u for u in utterances}
-                for _, speaker in self.speakers.items():
+                self.speakers = {utt.speaker.id: utt.speaker for utt in utterances}
+                self.utterances = {utt.id: utt for utt in utterances}
+                for speaker in self.speakers.values():
                     speaker.owner = self
-                for _, utt in self.utterances.items():
+                for utt in self.utterances.values():
                     utt.owner = self
 
             if merge_lines:
@@ -256,7 +198,9 @@ class Corpus:
             # if corpus is nonempty (check for self.utterances), construct the conversation
             # data from the utterance list
             if hasattr(self, "utterances"):
-                self.conversations = initialize_conversations(self, self.utterances, convos_data)
+                self.conversations = initialize_conversations(
+                    self, convos_data, fill_missing_convo_ids=True
+                )
                 self.meta_index.enable_type_check()
                 self.update_speakers_data()
 
@@ -414,10 +358,6 @@ class Corpus:
         """
         return self.speakers[speaker_id]
 
-    def get_user(self, user_id: str) -> Speaker:
-        deprecation("get_user()", "get_speaker()")
-        return self.get_speaker(user_id)
-
     def get_object(self, obj_type: str, oid: str):
         """
         General Corpus object getter. Gets Speaker / Utterance / Conversation of specified id from the Corpus
@@ -461,10 +401,6 @@ class Corpus:
         """
         return speaker_id in self.speakers
 
-    def has_user(self, speaker_id):
-        deprecation("has_user()", "has_speaker()")
-        return self.has_speaker(speaker_id)
-
     def random_utterance(self) -> Utterance:
         """
         Get a random Utterance from the Corpus
@@ -488,10 +424,6 @@ class Corpus:
         :return: a random Speaker
         """
         return random.choice(list(self.speakers.values()))
-
-    def random_user(self) -> Speaker:
-        deprecation("random_user()", "random_speaker()")
-        return self.random_speaker()
 
     def iter_utterances(
         self, selector: Optional[Callable[[Utterance], bool]] = lambda utt: True
@@ -584,10 +516,6 @@ class Corpus:
         """
         return get_speakers_dataframe(self, selector, exclude_meta)
 
-    def iter_users(self, selector=lambda speaker: True):
-        deprecation("iter_users()", "iter_speakers()")
-        return self.iter_speakers(selector)
-
     def iter_objs(
         self,
         obj_type: str,
@@ -662,25 +590,6 @@ class Corpus:
         """
         assert obj_type in ["speaker", "utterance", "conversation"]
         return [obj.id for obj in self.iter_objs(obj_type, selector)]
-
-    def get_usernames(
-        self, selector: Optional[Callable[[Speaker], bool]] = lambda user: True
-    ) -> Set[str]:
-        """Get names of speakers in the dataset.
-
-        This function will be deprecated and replaced by get_speaker_ids()
-
-        :param selector: optional function that takes in a
-            `Speaker` and returns True to include the speaker's name in the
-            resulting list, or False otherwise.
-
-        :return: Set containing all speaker names selected by the selector
-            function, or all speaker names in the dataset if no selector function
-            was used.
-
-        """
-        deprecation("get_usernames()", "get_speaker_ids()")
-        return set([u.id for u in self.iter_speakers(selector)])
 
     def filter_conversations_by(self, selector: Callable[[Conversation], bool]):
         """
@@ -1156,8 +1065,12 @@ class Corpus:
                 self.utterances[new_utt_id] = new_utt
                 self.speakers[new_utt.speaker.id]._add_utterance(new_utt)
 
+        # add convo ids if new utts are missing convo ids
+        fill_missing_conversation_ids(self.utterances)
+
         # update corpus conversations + (link convo <-> utt)
         new_convos = defaultdict(list)
+        convo_id_to_root_utt_id = dict()
         for utt in new_utterances.values():
             if utt.conversation_id in self.conversations:
                 if (not with_checks) or (
@@ -1166,11 +1079,16 @@ class Corpus:
                     self.conversations[utt.conversation_id]._add_utterance(utt)
             else:
                 new_convos[utt.conversation_id].append(utt.id)
+            if utt.reply_to is None:
+                convo_id_to_root_utt_id[utt.conversation_id] = utt.id
+
         for convo_id, convo_utts in new_convos.items():
             new_convo = Conversation(owner=self, id=convo_id, utterances=convo_utts, meta=None)
             self.conversations[convo_id] = new_convo
             # (link speaker -> convo)
-            new_convo_speaker = self.speakers[new_convo.get_utterance(convo_id).speaker.id]
+            convo_root_utt_id = convo_id_to_root_utt_id[convo_id]
+            convo_root_utt = new_convo.get_utterance(convo_root_utt_id)
+            new_convo_speaker = self.speakers[convo_root_utt.speaker.id]
             new_convo_speaker._add_conversation(new_convo)
 
         # update speaker metadata (only in cases of conflict)
@@ -1365,7 +1283,7 @@ class Corpus:
             for k, v in entries.items():
                 try:
                     obj = getter(k)
-                    obj.set_info(field, v)
+                    obj.add_meta(field, v)
                 except:
                     continue
 
@@ -1397,45 +1315,6 @@ class Corpus:
             # self.dump_jsonlist_from_dict(self.aux_info[field],
             #     os.path.join(dir_name, 'feat.%s.jsonl' % field))
             dump_jsonlist_from_dict(entries, os.path.join(dir_name, "info.%s.jsonl" % field))
-
-    # def load_vector_reprs(self, field, dir_name=None):
-    #     """
-    #     reads vector representations of Corpus objects from disk.
-    #
-    #     Will read matrices from a file called vect_info.<field>.npy and corresponding object IDs from a file called vect_info.<field>.keys,
-    #
-    #     :param field: the name of the representation
-    #     :param dir_name: the directory to read from; by default, or if set to None, will read from the directory that the Corpus was loaded from.
-    #     :return: None
-    #     """
-    #
-    #     if (self.corpus_dirpath is None) and (dir_name is None):
-    #         raise ValueError('must specify a directory to read from')
-    #     if dir_name is None:
-    #         dir_name = self.corpus_dirpath
-    #
-    #     self._vector_matrices[field] = self._load_vectors(
-    #         os.path.join(dir_name, 'vect_info.' + field)
-    #     )
-    #
-    # def dump_vector_reprs(self, field, dir_name=None):
-    #     """
-    #     writes vector representations of Corpus objects to disk.
-    #
-    #     Will write matrices to a file called vect_info.<field>.npy and corresponding object IDs to a file called vect_info.<field>.keys,
-    #
-    #     :param field: the name of the representation to write to disk
-    #     :param dir_name: the directory to write to. by default, or if set to None, will read from the directory that the Corpus was loaded from.
-    #     :return: None
-    #     """
-    #
-    #     if (self.corpus_dirpath is None) and (dir_name is None):
-    #         raise ValueError('must specify a directory to write to')
-    #
-    #     if dir_name is None:
-    #         dir_name = self.corpus_dirpath
-    #
-    #     self._dump_vectors(self._vector_matrices[field], os.path.join(dir_name, 'vect_info.' + field))
 
     def get_attribute_table(self, obj_type, attrs):
         """
@@ -1529,7 +1408,7 @@ class Corpus:
                 self.set_speaker_convo_info(speaker, convo, "n_utterances", len(sorted_utts))
         for speaker in self.iter_speakers():
             try:
-                speaker.set_info("n_convos", len(speaker.retrieve_meta("conversations")))
+                speaker.add_meta("n_convos", len(speaker.retrieve_meta("conversations")))
             except:
                 continue
 
@@ -1537,7 +1416,7 @@ class Corpus:
                 speaker.retrieve_meta("conversations").items(),
                 key=lambda x: (x[1]["start_time"], x[1]["utterance_ids"][0]),
             )
-            speaker.set_info("start_time", sorted_convos[0][1]["start_time"])
+            speaker.add_meta("start_time", sorted_convos[0][1]["start_time"])
             for idx, (convo_id, _) in enumerate(sorted_convos):
                 self.set_speaker_convo_info(speaker.id, convo_id, "idx", idx)
 

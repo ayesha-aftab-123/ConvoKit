@@ -438,7 +438,7 @@ def fill_missing_conversation_ids(utterances_dict: Dict[str, Utterance]) -> None
     for utt in utts_without_convo_ids:
         if utt.conversation_id is None:
             raise ValueError(
-                f"Invalid Utterance found: Utterance {utt.id} replies to an Utterance '{utt.reply_to}' that does not exist. See utterances dict: {set(utterances_dict)}"
+                f"Invalid Utterance found: Utterance {utt.id} replies to an Utterance '{utt.reply_to}' that does not exist."
             )
 
 

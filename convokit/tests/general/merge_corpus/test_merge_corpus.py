@@ -57,7 +57,7 @@ class CorpusMerge(unittest.TestCase):
         for utt_id in all_utt_ids:
             self.assertTrue(merged.storage.has_data_for_component("utterance", utt_id))
         for speaker_id in all_speaker_ids:
-            self.assertTrue(merged.storage.get_collection_ids("speaker", speaker_id))
+            self.assertTrue(merged.storage.has_data_for_component("speaker", speaker_id))
 
         for component_type in self.base_corpus.storage.data.keys():
             self.assertEqual(self.base_corpus.storage.count_entries(component_type), 0)
@@ -159,7 +159,7 @@ class CorpusMerge(unittest.TestCase):
         self.assertEqual(merged.get_conversation("convo1").meta["hello"], "food")
 
         self.assertTrue(merged.storage.has_data_for_component("conversation", "convo1"))
-        self.assertTrue(merged.storage.has_data_for_component("meta", "convo1"))
+        self.assertTrue(merged.storage.has_data_for_component("meta", "conversation_convo1"))
 
         self.assertFalse(
             self.base_corpus_with_convo_id.storage.has_data_for_component("conversation", "convo1")

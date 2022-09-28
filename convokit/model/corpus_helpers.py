@@ -603,7 +603,12 @@ def load_binary_metadata(filename, index, exclude_meta=None):
                     warn(
                         f"Metadata field {meta_key} is specified to have binary type but no saved binary data was found. This field will be skipped."
                     )
-    return binary_data
+                    # update the exclude_meta list to force this field to get skipped
+                    # in the subsequent corpus loading logic
+                    if exclude_meta is None:
+                        exclude_meta = defaultdict(list)
+                    exclude_meta[component_type].append(meta_key)
+    return binary_data, exclude_meta
 
 
 def load_jsonlist_to_db(
@@ -762,6 +767,15 @@ def load_corpus_info_to_db(filename, db, collection_prefix, exclude_meta=None, b
         )
 
 
+def clean_up_excluded_meta(meta_index, exclude_meta):
+    """
+    Remove excluded metadata from the metadata index
+    """
+    for component_type, excluded_keys in exclude_meta.items():
+        for key in excluded_keys:
+            meta_index.del_from_index(component_type, key)
+
+
 def populate_db_from_file(
     filename,
     db,
@@ -779,7 +793,7 @@ def populate_db_from_file(
     used by a DBStorageManager, sourcing data from the valid ConvoKit Corpus
     data pointed to by the filename parameter.
     """
-    binary_meta = load_binary_metadata(
+    binary_meta, updated_exclude_meta = load_binary_metadata(
         filename,
         meta_index,
         {
@@ -789,6 +803,14 @@ def populate_db_from_file(
             "corpus": exclude_overall_meta,
         },
     )
+
+    # exclusion lists may have changed if errors were encountered while loading
+    # the binary metadata
+    if updated_exclude_meta is not None:
+        exclude_utterance_meta = updated_exclude_meta["utterance"]
+        exclude_conversation_meta = updated_exclude_meta["conversation"]
+        exclude_speaker_meta = updated_exclude_meta["speaker"]
+        exclude_overall_meta = updated_exclude_meta["corpus"]
 
     # first load the utterance data
     inserted_utt_ids = load_jsonlist_to_db(
@@ -813,6 +835,17 @@ def populate_db_from_file(
     # finally, load the corpus metadata
     load_corpus_info_to_db(
         filename, db, collection_prefix, exclude_overall_meta, binary_meta["corpus"]
+    )
+
+    # make sure skipped metadata isn't kept in the final index
+    clean_up_excluded_meta(
+        meta_index,
+        {
+            "utterance": exclude_utterance_meta,
+            "conversation": exclude_conversation_meta,
+            "speaker": exclude_speaker_meta,
+            "corpus": exclude_overall_meta,
+        },
     )
 
     return inserted_utt_ids

@@ -217,7 +217,7 @@ class FightingWords(Transformer):
             raise ValueError("class2_func returned 0 valid corpus components.")
 
         overlaps_found = set([obj.id for obj in class1]) & set([obj.id for obj in class2])
-        if overlaps_found:
+        if len(overlaps_found):
             warnings.warn(
                 "There are components that appear in both classes. "
                 "Note that FightingWords is typically used to compare two disjoint sets of texts."
